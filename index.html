@@ -1,22 +1,354 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Travel Deals</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floppy Bird</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #70c5ce;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    
+    #gameCanvas {
+      border: 2px solid #000;
+      display: none;
+      background-color: #70c5ce;
+    }
+    
+    #startScreen, #gameOverScreen {
+      position: absolute;
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    
+    #gameOverScreen {
+      display: none;
+    }
+    
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 2px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    #score {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+
+    #soundToggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Search Flights</h1>
-    <div class="search-box">
-      <input id="origin" placeholder="From (e.g. NYC)" />
-      <input id="destination" placeholder="To (e.g. LON)" />
-      <input id="depart" type="date" />
-      <button id="searchBtn">Search</button>
-    </div>
-    <div id="results" class="results"></div>
+  <button id="soundToggle">🔊</button>
+  <div id="startScreen">
+    <h1>Floppy Bird</h1>
+    <button id="startBtn">Play</button>
+  </div>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <div id="score">0</div>
+  <div id="gameOverScreen">
+    <h2>Game Over</h2>
+    <p id="finalScore">Final Score: 0</p>
+    <p id="highScore">High Score: 0</p>
+    <button id="restartBtn">Restart</button>
   </div>
 
-  <script src="app.js"></script>
+  <script>
+    // Game variables
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startScreen = document.getElementById('startScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const scoreDisplay = document.getElementById('score');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    const highScoreDisplay = document.getElementById('highScore');
+    const soundToggle = document.getElementById('soundToggle');
+    
+    // Sound variables
+    let soundEnabled = true;
+    const jumpSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-quick-jump-arcade-game-239.mp3');
+    const hitSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-explosion-2759.mp3');
+    const bgMusic = new Audio('https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-668.mp3');
+    bgMusic.loop = true;
+    
+    // Game state
+    let gameRunning = false;
+    let score = 0;
+    let highScore = localStorage.getItem('flappyBirdHighScore') || 0;
+    let gravity = 0.5;
+    let bird;
+    let pipes = [];
+    let pipeTimer = 0;
+    let pipeInterval = 1500; // milliseconds
+    let lastTime = 0;
+    
+    // Bird object
+    class Bird {
+      constructor() {
+        this.x = 100;
+        this.y = canvas.height / 2;
+        this.width = 40;
+        this.height = 30;
+        this.velocity = 0;
+        this.jumpPower = -10;
+      }
+      
+      draw() {
+        ctx.fillStyle = '#ff0';
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        
+        // Draw eye
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(this.x + 30, this.y + 10, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw beak
+        ctx.fillStyle = '#f80';
+        ctx.beginPath();
+        ctx.moveTo(this.x + 40, this.y + 15);
+        ctx.lineTo(this.x + 50, this.y + 15);
+        ctx.lineTo(this.x + 40, this.y + 20);
+        ctx.fill();
+      }
+      
+      update() {
+        this.velocity += gravity;
+        this.y += this.velocity;
+        
+        // Prevent bird from going above canvas
+        if (this.y < 0) {
+          this.y = 0;
+          this.velocity = 0;
+        }
+        
+        // Check if bird hits the ground
+        if (this.y + this.height > canvas.height) {
+          gameOver();
+        }
+      }
+      
+      jump() {
+        this.velocity = this.jumpPower;
+        if (soundEnabled) {
+          jumpSound.currentTime = 0;
+          jumpSound.play();
+        }
+      }
+    }
+    
+    // Pipe object
+    class Pipe {
+      constructor() {
+        this.width = 60;
+        this.x = canvas.width;
+        this.gap = 150;
+        this.topHeight = Math.random() * (canvas.height - this.gap - 100) + 50;
+        this.bottomHeight = canvas.height - this.topHeight - this.gap;
+        this.passed = false;
+        this.speed = 2;
+      }
+      
+      draw() {
+        // Top pipe
+        ctx.fillStyle = '#0a0';
+        ctx.fillRect(this.x, 0, this.width, this.topHeight);
+        
+        // Bottom pipe
+        ctx.fillRect(this.x, canvas.height - this.bottomHeight, this.width, this.bottomHeight);
+      }
+      
+      update() {
+        this.x -= this.speed;
+        
+        // Check if bird passed the pipe
+        if (!this.passed && this.x + this.width < bird.x) {
+          this.passed = true;
+          score++;
+          scoreDisplay.textContent = score;
+        }
+        
+        // Check collision with bird
+        if (
+          bird.x + bird.width > this.x && 
+          bird.x < this.x + this.width && 
+          (bird.y < this.topHeight || bird.y + bird.height > canvas.height - this.bottomHeight)
+        ) {
+          gameOver();
+        }
+      }
+    }
+    
+    // Initialize game
+    function init() {
+      bird = new Bird();
+      pipes = [];
+      score = 0;
+      scoreDisplay.textContent = score;
+      gameRunning = true;
+      lastTime = 0;
+      pipeTimer = 0;
+      
+      // Show canvas and score, hide start screen
+      canvas.style.display = 'block';
+      scoreDisplay.style.display = 'block';
+      startScreen.style.display = 'none';
+      gameOverScreen.style.display = 'none';
+      
+      // Start background music
+      if (soundEnabled) {
+        bgMusic.currentTime = 0;
+        bgMusic.play();
+      }
+      
+      // Start game loop
+      requestAnimationFrame(gameLoop);
+    }
+    
+    // Game loop
+    function gameLoop(timestamp) {
+      if (!gameRunning) return;
+      
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Update and draw bird
+      bird.update();
+      bird.draw();
+      
+      // Generate new pipes
+      pipeTimer += deltaTime;
+      if (pipeTimer > pipeInterval) {
+        pipes.push(new Pipe());
+        pipeTimer = 0;
+        
+        // Increase speed slightly every 5 pipes
+        if (pipes.length % 5 === 0) {
+          Pipe.prototype.speed += 0.2;
+        }
+      }
+      
+      // Update and draw pipes
+      for (let i = pipes.length - 1; i >= 0; i--) {
+        pipes[i].update();
+        pipes[i].draw();
+        
+        // Remove pipes that are off screen
+        if (pipes[i].x + pipes[i].width < 0) {
+          pipes.splice(i, 1);
+        }
+      }
+      
+      requestAnimationFrame(gameLoop);
+    }
+    
+    // Game over function
+    function gameOver() {
+      gameRunning = false;
+      
+      // Play hit sound
+      if (soundEnabled) {
+        hitSound.currentTime = 0;
+        hitSound.play();
+      }
+      
+      // Stop background music
+      bgMusic.pause();
+      
+      // Update high score
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('flappyBirdHighScore', highScore);
+      }
+      
+      // Update score displays before showing game over screen
+      finalScoreDisplay.textContent = `Final Score: ${score}`;
+      highScoreDisplay.textContent = `High Score: ${highScore}`;
+      
+      // Show game over screen
+      gameOverScreen.style.display = 'block';
+      canvas.style.display = 'none';
+      scoreDisplay.style.display = 'none';
+    }
+    
+    // Toggle sound
+    soundToggle.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = soundEnabled ? "🔊" : "🔇";
+      
+      if (!soundEnabled) {
+        bgMusic.pause();
+      } else if (gameRunning) {
+        bgMusic.play();
+      }
+    });
+    
+    // Event listeners
+    startBtn.addEventListener('click', init);
+    restartBtn.addEventListener('click', () => {
+      // Ensure scores are displayed before restarting
+      finalScoreDisplay.textContent = `Final Score: ${score}`;
+      highScoreDisplay.textContent = `High Score: ${highScore}`;
+      init();
+    });
+    
+    // Space bar or click to jump
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && gameRunning) {
+        bird.jump();
+      }
+    });
+    
+    canvas.addEventListener('click', () => {
+      if (gameRunning) {
+        bird.jump();
+      }
+    });
+  </script>
 </body>
 </html>
