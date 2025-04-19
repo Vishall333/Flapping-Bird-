@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Flappy Bird</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         body {
             margin: 0;
@@ -10,12 +11,32 @@
             touch-action: manipulation;
             font-family: Arial, sans-serif;
             background-color: #70c5ce;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         #gameContainer {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
             overflow: hidden;
+            touch-action: none;
+            max-width: 100%;
+            max-height: 100vh;
+            aspect-ratio: 9/16;
+            background-color: #70c5ce;
+        }
+        @media (orientation: landscape) {
+            #gameContainer {
+                width: 70vh;
+                height: 100vh;
+                left: 50%;
+                transform: translateX(-50%);
+            }
         }
         #gameCanvas {
             display: block;
@@ -43,7 +64,7 @@
             background-color: #4CAF50;
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 15px 25px;
             margin: 10px;
             cursor: pointer;
             border-radius: 5px;
@@ -100,6 +121,19 @@
             cursor: pointer;
             z-index: 20;
         }
+        @media (max-width: 768px) {
+            #score {
+                font-size: 18px;
+            }
+            button {
+                padding: 15px 25px;
+                font-size: 18px;
+            }
+            #startScreen, #gameOverScreen, #nameInputScreen {
+                width: 90%;
+                padding: 15px;
+            }
+        }
     </style>
     <!-- Add Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -143,15 +177,22 @@
         // Initialize Firebase - REPLACE WITH YOUR CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyDB3lFCiydUjrlPUA0OYC1B-ivPgKcXZ9A",
-            authDomain: "https://console.firebase.google.com/u/0/project/flappy-bird-c3341/database/flappy-bird-c3341-default-rtdb/data/",
-            projectId: "flappy-bird-c3341",
-            storageBucket: "flappy-bird-c3341.firebasestorage.app",
-            messagingSenderId: "625544046566",
-            appId: "1:625544046566:android:487e29b7796976b8c01827"
-        };
+            authDomain: "https://console.firebase.google.com/u/0/project/flappy-bird-c3341/database/flappy-bird-c3341-default-rtdb/data/",
+            projectId: "flappy-bird-c3341",
+            storageBucket: "flappy-bird-c3341.firebasestorage.app",
+            messagingSenderId: "625544046566",
+            appId: "1:625544046566:android:487e29b7796976b8c01827"
+        };
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        console.log("Firebase initialized:", firebase.app().name);
+        
+        // Test Firestore connection
+        db.collection("test").add({test: Date.now()})
+            .then(doc => console.log("Test document written with ID: ", doc.id))
+            .catch(e => console.error("Error writing test document:", e));
+            
         const db = firebase.firestore();
         const auth = firebase.auth();
 
@@ -207,8 +248,14 @@
         
         // Initialize canvas size
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            } else {
+                canvas.width = 400;
+                canvas.height = 600;
+            }
             bird.y = canvas.height / 3;
         }
         
@@ -269,12 +316,24 @@
         canvas.addEventListener('touchstart', handleJump);
         soundToggle.addEventListener('click', toggleSound);
         
+        // Prevent touch scrolling
+        document.addEventListener('touchmove', function(e) {
+            if (gameRunning) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
         // Firebase anonymous authentication
-        function signInAnonymously() {
-            auth.signInAnonymously()
-                .catch(error => {
-                    console.error("Authentication error:", error);
-                });
+        async function signInAnonymously() {
+            try {
+                await auth.signInAnonymously();
+                console.log("Anonymous auth successful");
+            } catch (error) {
+                console.error("Authentication error:", error);
+                // Fallback to local-only mode
+                highScores = JSON.parse(localStorage.getItem('flappyHighScores')) || [];
+                updateHighScoresDisplay();
+            }
         }
         
         function toggleSound() {
@@ -529,7 +588,13 @@
         
         function createPipe() {
             const pipeWidth = 60;
-            const currentGap = Math.max(minGap, pipeGap - (score * 2));
+            let currentGap = Math.max(minGap, pipeGap - (score * 2));
+            
+            // Adjust gap for mobile
+            if (window.innerWidth < 768) {
+                currentGap = Math.max(minGap * 1.2, currentGap * 1.2);
+            }
+            
             const maxTopHeight = canvas.height - currentGap - 150;
             const topHeight = Math.random() * maxTopHeight + 50;
             
@@ -626,6 +691,7 @@
                 
                 highScores = snapshot.docs.map(doc => doc.data());
                 updateHighScoresDisplay();
+                console.log("High scores loaded from Firestore");
             } catch (error) {
                 console.error("Error loading high scores:", error);
                 // Fallback to local storage if online fails
@@ -639,7 +705,7 @@
             loadHighScores();
             
             // Check if score qualifies for top 10
-            if (highScores.length < 10 || currentScore > highScores[highScores.length - 1].score) {
+            if (highScores.length < 10 || currentScore > highScores[highScores.length - 1]?.score || 0) {
                 newScoreDisplay.textContent = currentScore;
                 nameInputScreen.style.display = 'block';
                 playerNameInput.focus();
@@ -662,13 +728,15 @@
             try {
                 // Add to Firestore
                 await db.collection("highscores").add(newScore);
+                console.log("Score saved to Firestore");
                 
-                // Also save locally
+                // Update local cache
                 highScores.push(newScore);
                 highScores.sort((a, b) => b.score - a.score);
                 highScores = highScores.slice(0, 10);
                 localStorage.setItem('flappyHighScores', JSON.stringify(highScores));
                 
+                // Hide input screen and show game over
                 nameInputScreen.style.display = 'none';
                 gameOverScreen.style.display = 'block';
                 playerNameInput.value = '';
