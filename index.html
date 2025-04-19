@@ -171,11 +171,10 @@
             #score {
                 font-size: 20px;
             }
-        }   
+        }    
     </style>
 </head>
 <body>
-    <!-- Keep all original HTML structure -->
     <div id="gameContainer">
       <button id="soundToggle">🔊</button>
         <div id="startScreen">
@@ -209,15 +208,15 @@
     <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
 
     <script>
-        // Your Firebase Config (Replace with yours)
+        // Firebase Configuration (Replace with your actual config)
         const firebaseConfig = {
             apiKey: "AIzaSyDB3lFCiydUjrlPUA0OYC1B-ivPgKcXZ9A",
-            authDomain: "https://console.firebase.google.com/u/0/project/flappy-bird-c3341/database/flappy-bird-c3341-default-rtdb/data/",
-            projectId: "flappy-bird-c3341",
-            storageBucket: "flappy-bird-c3341.firebasestorage.app",
-            messagingSenderId: "625544046566",
-            appId: "1:625544046566:android:487e29b7796976b8c01827"
-        };
+            authDomain: "flappy-bird-c3341.firebaseapp.com",
+            projectId: "flappy-bird-c3341",
+            storageBucket: "flappy-bird-c3341.appspot.com",
+            messagingSenderId: "625544046566",
+            appId: "1:625544046566:web:487e29b7796976b8c01827"
+        };
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
@@ -273,7 +272,12 @@
             trees: []
         };
 
-        // Modified Score Functions
+        // Input sanitization
+        function sanitizeInput(input) {
+            return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Modified score functions
         async function loadHighScores() {
             try {
                 const snapshot = await db.collection('scores')
@@ -283,6 +287,7 @@
                 
                 highScores = snapshot.docs.map(doc => doc.data());
                 updateHighScoresDisplay();
+                updateGameOverHighScores();
             } catch (error) {
                 console.error("Error loading scores:", error);
             }
@@ -316,10 +321,9 @@
 
             try {
                 await db.collection('scores').add({
-                    name: sanitizeInput(name),
+                    name: sanitizeInput(name.substring(0, 15)),
                     score: score,
-                    dedication: sanitizeInput(dedication) || null,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    dedication: sanitizeInput(dedication.substring(0, 100)) || null
                 });
 
                 await loadHighScores();
@@ -333,7 +337,7 @@
             }
         }
 
-        // Real-time Score Updates
+        // Real-time updates
         function setupRealTimeUpdates() {
             db.collection('scores')
                 .orderBy('score', 'desc')
@@ -341,7 +345,32 @@
                 .onSnapshot(snapshot => {
                     highScores = snapshot.docs.map(doc => doc.data());
                     updateHighScoresDisplay();
+                    updateGameOverHighScores();
                 });
+        }
+
+        function updateHighScoresDisplay() {
+            highScoresList.innerHTML = '';
+            highScores.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
+                if (entry.dedication) {
+                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
+                }
+                highScoresList.appendChild(li);
+            });
+        }
+
+        function updateGameOverHighScores() {
+            gameOverHighScores.innerHTML = '';
+            highScores.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
+                if (entry.dedication) {
+                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
+                }
+                gameOverHighScores.appendChild(li);
+            });
         }
 
         // Initialize real-time listener
