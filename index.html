@@ -4,72 +4,69 @@
     <title>Flappy Bird</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
-        body {
+        /* Mobile-first responsive styles */
+        html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            touch-action: manipulation;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
             font-family: Arial, sans-serif;
             background-color: #70c5ce;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
+
         #gameContainer {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            margin: auto;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             touch-action: none;
-            max-width: 100%;
-            max-height: 100vh;
-            aspect-ratio: 9/16;
-            background-color: #70c5ce;
         }
-        @media (orientation: landscape) {
-            #gameContainer {
-                width: 70vh;
-                height: 100vh;
-                left: 50%;
-                transform: translateX(-50%);
-            }
-        }
+
         #gameCanvas {
             display: block;
             width: 100%;
             height: 100%;
+            max-height: -webkit-fill-available; /* For iOS Safari */
         }
+
         #startScreen, #gameOverScreen, #nameInputScreen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            width: 80%;
-            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            width: 85%;
+            max-width: 350px;
             z-index: 10;
         }
+
         #gameOverScreen, #nameInputScreen {
             display: none;
         }
+
         button {
             background-color: #4CAF50;
             border: none;
             color: white;
-            padding: 15px 25px;
+            padding: 12px 25px;
             margin: 10px;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
+            width: 80%;
+            max-width: 200px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
         }
+
         #score {
             position: absolute;
             top: 20px;
@@ -81,64 +78,99 @@
             display: none;
             z-index: 5;
         }
+
         #highScoresList {
             list-style: none;
             padding: 0;
             text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
         }
+
         #highScoresList li {
-            padding: 5px 10px;
+            padding: 8px 12px;
             background: rgba(255,255,255,0.3);
             margin: 5px 0;
-            border-radius: 3px;
+            border-radius: 5px;
+            font-size: 14px;
         }
+
         input, textarea {
-            padding: 8px;
+            padding: 10px;
             margin: 10px 0;
-            width: 80%;
+            width: 85%;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-size: 14px;
         }
+
         textarea {
-            height: 60px;
+            height: 70px;
             resize: none;
         }
+
         .dedication {
             font-style: italic;
             font-size: 12px;
             color: #555;
-            margin-top: 5px;
+            margin-top: 3px;
         }
+
         #soundToggle {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.5);
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.7);
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             cursor: pointer;
             z-index: 20;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        @media (max-width: 768px) {
-            #score {
-                font-size: 18px;
+
+        /* Landscape orientation */
+        @media (orientation: landscape) {
+            #gameContainer {
+                width: 100vh;
+                height: 100vw;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(90deg);
+                transform-origin: center center;
             }
-            button {
-                padding: 15px 25px;
-                font-size: 18px;
-            }
+            
             #startScreen, #gameOverScreen, #nameInputScreen {
-                width: 90%;
-                padding: 15px;
+                max-width: 300px;
+            }
+            
+            #highScoresList {
+                max-height: 100px;
+            }
+        }
+
+        /* Small mobile devices */
+        @media (max-width: 400px) {
+            #startScreen h1 {
+                font-size: 24px;
+                margin: 10px 0;
+            }
+            
+            button {
+                padding: 10px 20px;
+                font-size: 15px;
+            }
+            
+            #score {
+                font-size: 20px;
             }
         }
     </style>
-    <!-- Add Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
 <body>
     <div id="gameContainer">
@@ -174,28 +206,6 @@
     <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
 
     <script>
-        // Initialize Firebase - REPLACE WITH YOUR CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyDB3lFCiydUjrlPUA0OYC1B-ivPgKcXZ9A",
-            authDomain: "https://console.firebase.google.com/u/0/project/flappy-bird-c3341/database/flappy-bird-c3341-default-rtdb/data/",
-            projectId: "flappy-bird-c3341",
-            storageBucket: "flappy-bird-c3341.firebasestorage.app",
-            messagingSenderId: "625544046566",
-            appId: "1:625544046566:android:487e29b7796976b8c01827"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        console.log("Firebase initialized:", firebase.app().name);
-        
-        // Test Firestore connection
-        db.collection("test").add({test: Date.now()})
-            .then(doc => console.log("Test document written with ID: ", doc.id))
-            .catch(e => console.error("Error writing test document:", e));
-            
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
         // Game elements
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -248,7 +258,7 @@
         
         // Initialize canvas size
         function resizeCanvas() {
-            const isMobile = window.innerWidth < 768;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             if (isMobile) {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
@@ -306,14 +316,13 @@
         window.addEventListener('resize', resizeCanvas);
         startBtn.addEventListener('click', function() {
             userInteracted = true;
-            signInAnonymously();
             startGame();
         });
         restartBtn.addEventListener('click', startGame);
         saveScoreBtn.addEventListener('click', saveHighScore);
         document.addEventListener('keydown', handleKeyPress);
         canvas.addEventListener('click', handleJump);
-        canvas.addEventListener('touchstart', handleJump);
+        canvas.addEventListener('touchstart', handleJump, { passive: false });
         soundToggle.addEventListener('click', toggleSound);
         
         // Prevent touch scrolling
@@ -322,19 +331,6 @@
                 e.preventDefault();
             }
         }, { passive: false });
-        
-        // Firebase anonymous authentication
-        async function signInAnonymously() {
-            try {
-                await auth.signInAnonymously();
-                console.log("Anonymous auth successful");
-            } catch (error) {
-                console.error("Authentication error:", error);
-                // Fallback to local-only mode
-                highScores = JSON.parse(localStorage.getItem('flappyHighScores')) || [];
-                updateHighScoresDisplay();
-            }
-        }
         
         function toggleSound() {
             soundEnabled = !soundEnabled;
@@ -350,7 +346,6 @@
         function handleKeyPress(e) {
             if (!userInteracted) {
                 userInteracted = true;
-                signInAnonymously();
             }
             
             if (e.code === 'Space') {
@@ -365,7 +360,6 @@
             e.preventDefault();
             if (!userInteracted) {
                 userInteracted = true;
-                signInAnonymously();
             }
             
             if (gameRunning) {
@@ -591,8 +585,8 @@
             let currentGap = Math.max(minGap, pipeGap - (score * 2));
             
             // Adjust gap for mobile
-            if (window.innerWidth < 768) {
-                currentGap = Math.max(minGap * 1.2, currentGap * 1.2);
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                currentGap = Math.max(minGap * 1.3, currentGap * 1.3);
             }
             
             const maxTopHeight = canvas.height - currentGap - 150;
@@ -682,22 +676,14 @@
             checkHighScore(score);
         }
         
-        async function loadHighScores() {
-            try {
-                const snapshot = await db.collection("highscores")
-                    .orderBy("score", "desc")
-                    .limit(10)
-                    .get();
-                
-                highScores = snapshot.docs.map(doc => doc.data());
-                updateHighScoresDisplay();
-                console.log("High scores loaded from Firestore");
-            } catch (error) {
-                console.error("Error loading high scores:", error);
-                // Fallback to local storage if online fails
-                highScores = JSON.parse(localStorage.getItem('flappyHighScores')) || [];
-                updateHighScoresDisplay();
-            }
+        function loadHighScores() {
+            // For demo purposes - in a real game you'd use Firebase or localStorage
+            highScores = [
+                {name: "Player 1", score: 25, dedication: "For mom"},
+                {name: "Player 2", score: 18, dedication: null},
+                {name: "Player 3", score: 15, dedication: "First try!"}
+            ];
+            updateHighScoresDisplay();
         }
         
         function checkHighScore(currentScore) {
@@ -714,7 +700,7 @@
             }
         }
         
-        async function saveHighScore() {
+        function saveHighScore() {
             const name = playerNameInput.value.trim() || 'Anonymous';
             const dedication = dedicationInput.value.trim();
             
@@ -722,38 +708,21 @@
                 name, 
                 score,
                 dedication: dedication || null,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: new Date().toISOString()
             };
             
-            try {
-                // Add to Firestore
-                await db.collection("highscores").add(newScore);
-                console.log("Score saved to Firestore");
-                
-                // Update local cache
-                highScores.push(newScore);
-                highScores.sort((a, b) => b.score - a.score);
-                highScores = highScores.slice(0, 10);
-                localStorage.setItem('flappyHighScores', JSON.stringify(highScores));
-                
-                // Hide input screen and show game over
-                nameInputScreen.style.display = 'none';
-                gameOverScreen.style.display = 'block';
-                playerNameInput.value = '';
-                dedicationInput.value = '';
-                updateHighScoresDisplay();
-            } catch (error) {
-                console.error("Error saving high score:", error);
-                // Fallback to local storage
-                highScores.push(newScore);
-                highScores.sort((a, b) => b.score - a.score);
-                highScores = highScores.slice(0, 10);
-                localStorage.setItem('flappyHighScores', JSON.stringify(highScores));
-                
-                nameInputScreen.style.display = 'none';
-                gameOverScreen.style.display = 'block';
-                updateHighScoresDisplay();
-            }
+            // Add to high scores
+            highScores.push(newScore);
+            highScores.sort((a, b) => b.score - a.score);
+            highScores = highScores.slice(0, 10);
+            
+            // In a real app, you would save to Firebase here
+            
+            nameInputScreen.style.display = 'none';
+            gameOverScreen.style.display = 'block';
+            playerNameInput.value = '';
+            dedicationInput.value = '';
+            updateHighScoresDisplay();
         }
         
         function updateHighScoresDisplay() {
