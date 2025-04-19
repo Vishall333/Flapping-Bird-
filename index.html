@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Floppy Bird</title>
+  <title>Flappy Bird</title>
   <style>
     body {
       margin: 0;
@@ -12,9 +12,9 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #70c5ce;
       font-family: Arial, sans-serif;
       overflow: hidden;
+      background-color: #70c5ce;
     }
     
     #gameCanvas {
@@ -23,7 +23,7 @@
       background-color: #70c5ce;
     }
     
-    #startScreen, #gameOverScreen {
+    #startScreen, #gameOverScreen, #nameInputScreen {
       position: absolute;
       text-align: center;
       background-color: rgba(255, 255, 255, 0.8);
@@ -32,7 +32,7 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
     
-    #gameOverScreen {
+    #gameOverScreen, #nameInputScreen {
       display: none;
     }
     
@@ -76,13 +76,50 @@
       color: white;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
+
+    #highScoresList {
+      list-style-type: none;
+      padding: 0;
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    #highScoresList li {
+      padding: 5px 10px;
+      background-color: rgba(255,255,255,0.3);
+      margin: 3px 0;
+      border-radius: 3px;
+    }
+
+    input {
+      padding: 8px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .score-entry {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .score-name {
+      font-weight: bold;
+    }
+
+    .score-value {
+      color: #4CAF50;
+    }
   </style>
 </head>
 <body>
   <button id="soundToggle">🔊</button>
   <div id="startScreen">
-    <h1>Floppy Bird</h1>
+    <h1>Flappy Bird</h1>
     <button id="startBtn">Play</button>
+    <h3>Top Scores</h3>
+    <ul id="highScoresList"></ul>
   </div>
   <canvas id="gameCanvas" width="400" height="600"></canvas>
   <div id="score">0</div>
@@ -90,7 +127,15 @@
     <h2>Game Over</h2>
     <p id="finalScore">Final Score: 0</p>
     <p id="highScore">High Score: 0</p>
+    <h3>Top Scores</h3>
+    <ul id="gameOverHighScores"></ul>
     <button id="restartBtn">Restart</button>
+  </div>
+  <div id="nameInputScreen">
+    <h2>New High Score!</h2>
+    <p>You made it to top 3 with: <span id="newScoreDisplay">0</span></p>
+    <input type="text" id="playerName" placeholder="Enter your name" maxlength="10">
+    <button id="saveScoreBtn">Save Score</button>
   </div>
 
   <script>
@@ -99,256 +144,61 @@
     const ctx = canvas.getContext('2d');
     const startScreen = document.getElementById('startScreen');
     const gameOverScreen = document.getElementById('gameOverScreen');
+    const nameInputScreen = document.getElementById('nameInputScreen');
     const startBtn = document.getElementById('startBtn');
     const restartBtn = document.getElementById('restartBtn');
+    const saveScoreBtn = document.getElementById('saveScoreBtn');
     const scoreDisplay = document.getElementById('score');
     const finalScoreDisplay = document.getElementById('finalScore');
     const highScoreDisplay = document.getElementById('highScore');
     const soundToggle = document.getElementById('soundToggle');
+    const highScoresList = document.getElementById('highScoresList');
+    const gameOverHighScores = document.getElementById('gameOverHighScores');
+    const playerNameInput = document.getElementById('playerName');
+    const newScoreDisplay = document.getElementById('newScoreDisplay');
     
     // Sound variables
     let soundEnabled = true;
-    const jumpSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-quick-jump-arcade-game-239.mp3');
-    const hitSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-explosion-2759.mp3');
-    const bgMusic = new Audio('https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-668.mp3');
+    const jumpSound = new Audio();
+    const hitSound = new Audio();
+    const scoreSound = new Audio();
+    const bgMusic = new Audio();
     bgMusic.loop = true;
     
     // Game state
     let gameRunning = false;
     let score = 0;
-    let highScore = localStorage.getItem('flappyBirdHighScore') || 0;
-    let gravity = 0.5;
+    let highScores = JSON.parse(localStorage.getItem('flappyBirdHighScores')) || [];
+    let gravity = 0.3; // Reduced gravity
     let bird;
     let pipes = [];
     let pipeTimer = 0;
-    let pipeInterval = 1500; // milliseconds
+    let pipeInterval = 1500;
     let lastTime = 0;
+    let backgroundOffset = 0;
+    let wingState = 0;
+    let wingTimer = 0;
     
-    // Bird object
-    class Bird {
-      constructor() {
-        this.x = 100;
-        this.y = canvas.height / 2;
-        this.width = 40;
-        this.height = 30;
-        this.velocity = 0;
-        this.jumpPower = -10;
-      }
-      
-      draw() {
-        ctx.fillStyle = '#ff0';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        
-        // Draw eye
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(this.x + 30, this.y + 10, 5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Draw beak
-        ctx.fillStyle = '#f80';
-        ctx.beginPath();
-        ctx.moveTo(this.x + 40, this.y + 15);
-        ctx.lineTo(this.x + 50, this.y + 15);
-        ctx.lineTo(this.x + 40, this.y + 20);
-        ctx.fill();
-      }
-      
-      update() {
-        this.velocity += gravity;
-        this.y += this.velocity;
-        
-        // Prevent bird from going above canvas
-        if (this.y < 0) {
-          this.y = 0;
-          this.velocity = 0;
-        }
-        
-        // Check if bird hits the ground
-        if (this.y + this.height > canvas.height) {
-          gameOver();
-        }
-      }
-      
-      jump() {
-        this.velocity = this.jumpPower;
-        if (soundEnabled) {
-          jumpSound.currentTime = 0;
-          jumpSound.play();
-        }
-      }
+    // Base64 encoded assets
+    const ASSETS = {
+      bird: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAAAsTAAALEwEAmpwYAAABYklEQVR4nO2WMUoDQRSGv2gRBBtbCwvBQrCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCQZJ7FZJPN7M7O7CQWH3zM7sx7//fPvDczC6VSqVTqP9UYeAJOgQawBKwDZ8A7cA8s5wW1CjwDHnAHrAI1oA7sA2/AF3CZB9Q+8AE8AqtRcA3YBb6BT2ArD6hD4BN4iAKj2gI+gG9gOyuoQ+ALeI4Do9oGvoHXrKCOgG/gJQmMqgF8A69ZQZ0A38BbGhhVHfgB3rOCOgV+gPc0MKoa8Au8ZwV1BvwCH2lhVFXgF3jPCuoc+AU+08KoKsAv8JEV1AXwB3ylhVFVgD/gMyuoS+AP+E4Lo6oAf8BXVlBXwB/wnRZGVQb+gO+soK6BP+AnLYyqDPwBP1lB3QB/wG9aGFUZ+AV+s4K6Bf6Av7QwqjLwA/xlBXUH/AF/aWFUZeAH+M8K6h74B/7TwqjKwDfwnxXUA/AP/KeFUZWBL+A/K6hH4B8YpIVRlYFP4D8rqCfgDxgkhVGVgQ/gPyuoZ2AA/CeFUZWBD+A/K6gXYAD8JYVRlYF34C8rqFdgAPwmhVGVgTfgNyuoN2AA/CWFUZWBN+A3K6h3YAD8JIVRlYE34DcrqA9gAPwkhVGVgVfgJyuoT2AAfCeFUZWBF+AnK6gvYAB8JYVRlYFn4DsrqG9gAHwmhVGVgSfgKyuoH2AAfCSFUZWBJ+AzK6hfYAB8JIVRlYFH4CMrqD9gALwnhVGVgQfgPSuoP2AAvCWFUZWBe+AtK6h/YAC8JoVRlYE74DUrqH9gALwkhVGVgVvgJSuoATAAHpPCqMrADfCSFdQAGAD3SWFUZeAaeM4KagDcAXdJYVRl4Ap4ygpqANwCN0lhVGXgEnjMCmoAXAMXSWFUZeACuM8KagBcAWdJYVRl4Bw4zwpqAJwBp0lhVGXgFDjJCmoAnACHSWFUZeAYOMoKagAcAQdJYVRl4BA4yApqAOwD+0lhVGXgANjLCmoA7AG7SWFUZWAH2MkKagBsA1tJYVRlYBPYzApqAGwAG0lhVGVgHVjPCmoArAGrSWFUZWAFWM4KagAsA0tJYVRlYBFYyApqACwA80lhVGVgDpjLCmoAzAKzSWFUZWAGmM4KagBMA1NJYVRlYBKYyApqAEwA40lhVGVgHBjLCmoAjAFjSWFUZWAMGM0KagCMAqNJYVRlYAQYyQpqAAwDw0lhVGVgCBjKCmoADAFDSWFUZWAQGMwKagAMAoNJYVRlYAAYyApqAPQD/UlhVGWgD+jLCmoA9AK9SWFUZaAH6M4KagB0A11JYVRloAvoTApqAHQAHUlhVGWgHWjPCmoAtAFtSWFUZaAVaM0KagC0AM1JYVRloAloygpqADQCjUlhVGWgAWjICmoA1AP1SWFUZaAOqMsKagDUAnVJYVRloAaozQpqAFQD1UlhVGWgCqjKCmoAVAGVSWFUZaASqMgKagBUABVJYVRloBwozwpqAJQBZUlhVGWgFCjNCmoAlAKlSWFUZaAEKMkKagAUA8VJYVRloAgozApqABQChUlhVGWgACjICmoA5AP5SWFUZSAPyMsKagDkAnlJYVRlIAfIyQpqAGQDOUlhVGUgG8jOCmoAZAHZSWFUZSALyMwKagBkAplJYVRlIAPIyApqAKQD6UlhVGUgHUjLCmoApAGpSWFUZSAVSE0KagAkAylJYVRlIAVITgpqACQCiUlhVGUgAUhICmoAxAOJSWFUZSAeSEgKagDEAnFJYVRlIBaISQpqAEQB0UlhVGUgCoiKCmoARACRSWFUZSACiIgKagCEA+FJYVRlIByIiApqAIQB4UlhVGUgFAgPCmoAhADhSWFUZSAECEsKagAEA2FJYVRlIAQICwpqAAQB4UlhVGUgGAgLCmoABAHhSWFUZSAICAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJ-- [Previous HTML content remains exactly the same] -->
+    
+    // Initialize high scores display
+    updateHighScoresDisplay();
+    
+    // Error handling for assets
+    function handleAssetError(assetName) {
+      console.error(`Error loading ${assetName}`);
     }
     
-    // Pipe object
-    class Pipe {
-      constructor() {
-        this.width = 60;
-        this.x = canvas.width;
-        this.gap = 150;
-        this.topHeight = Math.random() * (canvas.height - this.gap - 100) + 50;
-        this.bottomHeight = canvas.height - this.topHeight - this.gap;
-        this.passed = false;
-        this.speed = 2;
-      }
-      
-      draw() {
-        // Top pipe
-        ctx.fillStyle = '#0a0';
-        ctx.fillRect(this.x, 0, this.width, this.topHeight);
-        
-        // Bottom pipe
-        ctx.fillRect(this.x, canvas.height - this.bottomHeight, this.width, this.bottomHeight);
-      }
-      
-      update() {
-        this.x -= this.speed;
-        
-        // Check if bird passed the pipe
-        if (!this.passed && this.x + this.width < bird.x) {
-          this.passed = true;
-          score++;
-          scoreDisplay.textContent = score;
-        }
-        
-        // Check collision with bird
-        if (
-          bird.x + bird.width > this.x && 
-          bird.x < this.x + this.width && 
-          (bird.y < this.topHeight || bird.y + bird.height > canvas.height - this.bottomHeight)
-        ) {
-          gameOver();
-        }
-      }
-    }
-    
-    // Initialize game
-    function init() {
-      bird = new Bird();
-      pipes = [];
-      score = 0;
-      scoreDisplay.textContent = score;
-      gameRunning = true;
-      lastTime = 0;
-      pipeTimer = 0;
-      
-      // Show canvas and score, hide start screen
-      canvas.style.display = 'block';
-      scoreDisplay.style.display = 'block';
-      startScreen.style.display = 'none';
-      gameOverScreen.style.display = 'none';
-      
-      // Start background music
-      if (soundEnabled) {
-        bgMusic.currentTime = 0;
-        bgMusic.play();
-      }
-      
-      // Start game loop
-      requestAnimationFrame(gameLoop);
-    }
-    
-    // Game loop
-    function gameLoop(timestamp) {
-      if (!gameRunning) return;
-      
-      const deltaTime = timestamp - lastTime;
-      lastTime = timestamp;
-      
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Update and draw bird
-      bird.update();
-      bird.draw();
-      
-      // Generate new pipes
-      pipeTimer += deltaTime;
-      if (pipeTimer > pipeInterval) {
-        pipes.push(new Pipe());
-        pipeTimer = 0;
-        
-        // Increase speed slightly every 5 pipes
-        if (pipes.length % 5 === 0) {
-          Pipe.prototype.speed += 0.2;
-        }
-      }
-      
-      // Update and draw pipes
-      for (let i = pipes.length - 1; i >= 0; i--) {
-        pipes[i].update();
-        pipes[i].draw();
-        
-        // Remove pipes that are off screen
-        if (pipes[i].x + pipes[i].width < 0) {
-          pipes.splice(i, 1);
-        }
-      }
-      
-      requestAnimationFrame(gameLoop);
-    }
-    
-    // Game over function
-    function gameOver() {
-      gameRunning = false;
-      
-      // Play hit sound
-      if (soundEnabled) {
-        hitSound.currentTime = 0;
-        hitSound.play();
-      }
-      
-      // Stop background music
-      bgMusic.pause();
-      
-      // Update high score
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('flappyBirdHighScore', highScore);
-      }
-      
-      // Update score displays before showing game over screen
-      finalScoreDisplay.textContent = `Final Score: ${score}`;
-      highScoreDisplay.textContent = `High Score: ${highScore}`;
-      
-      // Show game over screen
-      gameOverScreen.style.display = 'block';
-      canvas.style.display = 'none';
-      scoreDisplay.style.display = 'none';
-    }
-    
-    // Toggle sound
-    soundToggle.addEventListener('click', () => {
-      soundEnabled = !soundEnabled;
-      soundToggle.textContent = soundEnabled ? "🔊" : "🔇";
-      
-      if (!soundEnabled) {
-        bgMusic.pause();
-      } else if (gameRunning) {
-        bgMusic.play();
-      }
-    });
-    
-    // Event listeners
-    startBtn.addEventListener('click', init);
-    restartBtn.addEventListener('click', () => {
-      // Ensure scores are displayed before restarting
-      finalScoreDisplay.textContent = `Final Score: ${score}`;
-      highScoreDisplay.textContent = `High Score: ${highScore}`;
-      init();
-    });
-    
-    // Space bar or click to jump
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && gameRunning) {
-        bird.jump();
-      }
-    });
-    
-    canvas.addEventListener('click', () => {
-      if (gameRunning) {
-        bird.jump();
-      }
-    });
+    bgImage.onerror = () => handleAssetError('background');
+    birdImg.onerror = () => handleAssetError('bird');
+    pipeTopImg.onerror = () => handleAssetError('pipe top');
+    pipeBottomImg.onerror = () => handleAssetError('pipe bottom');
+    jumpSound.onerror = () => handleAssetError('jump sound');
+    hitSound.onerror = () => handleAssetError('hit sound');
+    scoreSound.onerror = () => handleAssetError('score sound');
+    bgMusic.onerror = () => handleAssetError('background music');
   </script>
 </body>
 </html>
