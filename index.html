@@ -18,6 +18,8 @@
         #gameCanvas {
             border: 2px solid #000;
             display: none;
+            max-width: 100%;
+            max-height: 100%;
         }
         #startScreen, #gameOverScreen, #nameInputScreen {
             position: absolute;
@@ -27,6 +29,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             max-width: 90%;
+            width: 300px;
         }
         #gameOverScreen, #nameInputScreen {
             display: none;
@@ -79,9 +82,33 @@
             color: #555;
             margin-top: 5px;
         }
+        #soundToggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.5);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+        @media (max-height: 600px) {
+            #gameCanvas {
+                height: 90vh;
+                width: auto;
+            }
+        }
+        @media (max-width: 400px) {
+            #gameCanvas {
+                width: 90vw;
+                height: auto;
+            }
+        }
     </style>
 </head>
 <body>
+    <button id="soundToggle">🔊</button>
     <div id="startScreen">
         <h1>Flappy Bird</h1>
         <button id="startBtn">Play</button>
@@ -105,10 +132,11 @@
         <button id="saveScoreBtn">Save</button>
     </div>
 
-    <!-- Hidden audio elements for sound effects -->
-    <audio id="flapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bird-flapping-1480.mp3" preload="auto"></audio>
-    <audio id="scoreSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
-    <audio id="hitSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3" preload="auto"></audio>
+    <!-- Audio elements -->
+    <audio id="flapSound" src="flap.mp3" preload="auto"></audio>
+    <audio id="scoreSound" src="score.mp3" preload="auto"></audio>
+    <audio id="hitSound" src="hit.mp3" preload="auto"></audio>
+    <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
 
     <script>
         // Game elements
@@ -127,11 +155,16 @@
         const dedicationInput = document.getElementById('dedication');
         const highScoresList = document.getElementById('highScoresList');
         const gameOverHighScores = document.getElementById('gameOverHighScores');
+        const soundToggle = document.getElementById('soundToggle');
         
         // Sound effects
         const flapSound = document.getElementById('flapSound');
         const scoreSound = document.getElementById('scoreSound');
         const hitSound = document.getElementById('hitSound');
+        const bgMusic = document.getElementById('bgMusic');
+        
+        // Sound control
+        let soundEnabled = true;
         
         // Game variables
         let bird = {
@@ -142,13 +175,16 @@
             velocity: 0,
             gravity: 0.5,
             jump: -10,
-            wingState: 0, // 0 = down, 1 = middle, 2 = up
-            wingTimer: 0
+            wingState: 0,
+            wingTimer: 0,
+            initialHover: true,
+            hoverAmplitude: 5,
+            hoverSpeed: 0.05,
+            hoverOffset: 0
         };
         
         // Background elements
         let background = {
-            offset: 0,
             clouds: [],
             trees: []
         };
@@ -176,30 +212,59 @@
         let score = 0;
         let gameRunning = false;
         let animationId;
+        let pipeSpeed = 2;
         let pipeGap = 200;
+        let minGap = 120;
         let pipeFrequency = 1500;
         let lastPipeTime = 0;
         let highScores = JSON.parse(localStorage.getItem('flappyHighScores')) || [];
+        let userInteracted = false;
         
         // Initialize high scores display
         updateHighScoresDisplay();
         
         // Event listeners
-        startBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('click', function() {
+            userInteracted = true;
+            startGame();
+        });
         restartBtn.addEventListener('click', startGame);
         saveScoreBtn.addEventListener('click', saveHighScore);
         document.addEventListener('keydown', handleKeyPress);
         canvas.addEventListener('click', handleJump);
         canvas.addEventListener('touchstart', handleJump);
+        soundToggle.addEventListener('click', toggleSound);
+        
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? "🔊" : "🔇";
+            
+            if (soundEnabled && gameRunning) {
+                bgMusic.play().catch(e => console.log("Background music play failed:", e));
+            } else {
+                bgMusic.pause();
+            }
+        }
         
         function handleKeyPress(e) {
-            if (e.code === 'Space' && gameRunning) {
-                birdJump();
+            if (!userInteracted) {
+                userInteracted = true;
+            }
+            
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (gameRunning) {
+                    birdJump();
+                }
             }
         }
         
         function handleJump(e) {
             e.preventDefault();
+            if (!userInteracted) {
+                userInteracted = true;
+            }
+            
             if (gameRunning) {
                 birdJump();
             }
@@ -207,8 +272,11 @@
         
         function birdJump() {
             bird.velocity = bird.jump;
-            flapSound.currentTime = 0;
-            flapSound.play();
+            bird.initialHover = false;
+            if (soundEnabled) {
+                flapSound.currentTime = 0;
+                flapSound.play().catch(e => console.log("Flap sound play failed:", e));
+            }
         }
         
         function startGame() {
@@ -217,8 +285,11 @@
             bird.velocity = 0;
             bird.wingState = 0;
             bird.wingTimer = 0;
+            bird.initialHover = true;
+            bird.hoverOffset = 0;
             pipes = [];
             score = 0;
+            pipeGap = 200;
             scoreDisplay.textContent = score;
             gameRunning = true;
             
@@ -228,6 +299,12 @@
             nameInputScreen.style.display = 'none';
             canvas.style.display = 'block';
             scoreDisplay.style.display = 'block';
+            
+            // Start background music
+            if (soundEnabled) {
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(e => console.log("Background music play failed:", e));
+            }
             
             // Start game loop
             if (animationId) {
@@ -246,12 +323,12 @@
             // Draw background
             drawBackground();
             
-            // Draw ground
-            ctx.fillStyle = '#8B4513';
+            // Draw green ground
+            ctx.fillStyle = '#5a8f3d';
             ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
             
-            // Draw grass on top of ground
-            ctx.fillStyle = '#5a8f3d';
+            // Draw grass details
+            ctx.fillStyle = '#4a7d34';
             for (let i = 0; i < canvas.width; i += 20) {
                 ctx.beginPath();
                 ctx.moveTo(i, canvas.height - 50);
@@ -294,14 +371,12 @@
             // Draw clouds
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             background.clouds.forEach(cloud => {
-                // Update cloud position
                 cloud.x -= cloud.speed;
                 if (cloud.x + cloud.width < 0) {
                     cloud.x = canvas.width;
                     cloud.y = Math.random() * 200;
                 }
                 
-                // Draw cloud
                 ctx.beginPath();
                 ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
                 ctx.arc(cloud.x + cloud.width * 0.3, cloud.y - cloud.width * 0.1, cloud.width * 0.25, 0, Math.PI * 2);
@@ -313,36 +388,42 @@
             // Draw distant trees
             ctx.fillStyle = '#2E8B57';
             background.trees.forEach(tree => {
-                // Update tree position
                 tree.x -= 0.5;
                 if (tree.x + tree.width < 0) {
                     tree.x = canvas.width;
                     tree.height = 80 + Math.random() * 40;
                 }
                 
-                // Draw tree
                 ctx.beginPath();
                 ctx.moveTo(tree.x, canvas.height - 50);
                 ctx.lineTo(tree.x + tree.width/2, canvas.height - 50 - tree.height);
                 ctx.lineTo(tree.x + tree.width, canvas.height - 50);
                 ctx.fill();
-                
-                // Tree trunk
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(tree.x + tree.width/2 - 5, canvas.height - 50, 10, 20);
-                ctx.fillStyle = '#2E8B57';
             });
         }
         
         function updateBird() {
-            bird.velocity += bird.gravity;
-            bird.y += bird.velocity;
-            
-            // Update wing animation
-            bird.wingTimer++;
-            if (bird.wingTimer > 5) {
-                bird.wingTimer = 0;
-                bird.wingState = (bird.wingState + 1) % 3;
+            if (bird.initialHover) {
+                // Enhanced hover animation before first jump
+                bird.hoverOffset = Math.sin(bird.wingTimer * bird.hoverSpeed) * bird.hoverAmplitude;
+                bird.y = 150 + bird.hoverOffset;
+                bird.wingTimer++;
+                
+                // Make wings flap during hover
+                if (bird.wingTimer % 10 === 0) {
+                    bird.wingState = (bird.wingState + 1) % 3;
+                }
+            } else {
+                // Normal physics after first jump
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+                
+                // Update wing animation
+                bird.wingTimer++;
+                if (bird.wingTimer > 5) {
+                    bird.wingTimer = 0;
+                    bird.wingState = (bird.wingState + 1) % 3;
+                }
             }
             
             // Keep bird within canvas
@@ -357,12 +438,12 @@
             ctx.fillStyle = '#FFD700';
             ctx.beginPath();
             ctx.ellipse(bird.x + bird.width/2, bird.y + bird.height/2, 
-                         bird.width/2, bird.height/2, 0, 0, Math.PI * 2);
+                       bird.width/2, bird.height/2, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Draw wings based on wingState
+            // Draw wings
             ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
-            if (bird.wingState === 0) { // Down position
+            if (bird.wingState === 0) {
                 ctx.beginPath();
                 ctx.moveTo(bird.x, bird.y + bird.height/2);
                 ctx.quadraticCurveTo(bird.x - 15, bird.y + bird.height/2 + 10, 
@@ -370,7 +451,7 @@
                 ctx.quadraticCurveTo(bird.x + 10, bird.y + bird.height/2 + 5, 
                                     bird.x, bird.y + bird.height/2);
                 ctx.fill();
-            } else if (bird.wingState === 1) { // Middle position
+            } else if (bird.wingState === 1) {
                 ctx.beginPath();
                 ctx.moveTo(bird.x, bird.y + bird.height/2);
                 ctx.quadraticCurveTo(bird.x - 10, bird.y + bird.height/2, 
@@ -378,7 +459,7 @@
                 ctx.quadraticCurveTo(bird.x + 10, bird.y + bird.height/2, 
                                     bird.x, bird.y + bird.height/2);
                 ctx.fill();
-            } else { // Up position
+            } else {
                 ctx.beginPath();
                 ctx.moveTo(bird.x, bird.y + bird.height/2);
                 ctx.quadraticCurveTo(bird.x - 15, bird.y + bird.height/2 - 10, 
@@ -405,31 +486,33 @@
         
         function createPipe() {
             const pipeWidth = 60;
-            const topHeight = Math.random() * (canvas.height - pipeGap - 200) + 50;
+            const currentGap = Math.max(minGap, pipeGap - (score * 2));
+            const maxTopHeight = canvas.height - currentGap - 150;
+            const topHeight = Math.random() * maxTopHeight + 50;
             
             pipes.push({
                 x: canvas.width,
                 width: pipeWidth,
                 topHeight: topHeight,
-                bottomHeight: canvas.height - topHeight - pipeGap - 50,
+                bottomHeight: canvas.height - topHeight - currentGap - 50,
                 passed: false
             });
         }
         
         function updatePipes() {
             for (let i = pipes.length - 1; i >= 0; i--) {
-                pipes[i].x -= 2;
+                pipes[i].x -= pipeSpeed;
                 
-                // Check if bird passed the pipe
                 if (!pipes[i].passed && pipes[i].x + pipes[i].width < bird.x) {
                     pipes[i].passed = true;
                     score++;
                     scoreDisplay.textContent = score;
-                    scoreSound.currentTime = 0;
-                    scoreSound.play();
+                    if (soundEnabled) {
+                        scoreSound.currentTime = 0;
+                        scoreSound.play().catch(e => console.log("Score sound play failed:", e));
+                    }
                 }
                 
-                // Remove pipes that are off screen
                 if (pipes[i].x + pipes[i].width < 0) {
                     pipes.splice(i, 1);
                 }
@@ -478,9 +561,14 @@
             cancelAnimationFrame(animationId);
             finalScoreDisplay.textContent = `Score: ${score}`;
             
-            // Play hit sound
-            hitSound.currentTime = 0;
-            hitSound.play();
+            // Stop background music
+            bgMusic.pause();
+            
+            // Play hit sound if enabled
+            if (soundEnabled) {
+                hitSound.currentTime = 0;
+                hitSound.play().catch(e => console.log("Hit sound play failed:", e));
+            }
             
             // Check if score is in top 3
             if (isHighScore(score)) {
