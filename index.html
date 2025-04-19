@@ -1,204 +1,409 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flappy Bird</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-      background-color: #70c5ce;
-    }
-    
-    #gameCanvas {
-      border: 2px solid #000;
-      display: none;
-      background-color: #70c5ce;
-    }
-    
-    #startScreen, #gameOverScreen, #nameInputScreen {
-      position: absolute;
-      text-align: center;
-      background-color: rgba(255, 255, 255, 0.8);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-    
-    #gameOverScreen, #nameInputScreen {
-      display: none;
-    }
-    
-    button {
-      background-color: #4CAF50;
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 10px 2px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    
-    button:hover {
-      background-color: #45a049;
-    }
-    
-    #score {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 24px;
-      color: white;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      display: none;
-    }
-
-    #soundToggle {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: white;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    }
-
-    #highScoresList {
-      list-style-type: none;
-      padding: 0;
-      margin: 15px 0;
-      text-align: left;
-    }
-
-    #highScoresList li {
-      padding: 5px 10px;
-      background-color: rgba(255,255,255,0.3);
-      margin: 3px 0;
-      border-radius: 3px;
-    }
-
-    input {
-      padding: 8px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-
-    .score-entry {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .score-name {
-      font-weight: bold;
-    }
-
-    .score-value {
-      color: #4CAF50;
-    }
-  </style>
+    <title>Flappy Bird</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #70c5ce;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #gameCanvas {
+            border: 2px solid #000;
+            background-color: #70c5ce;
+            display: none;
+        }
+        #startScreen, #gameOverScreen, #nameInputScreen {
+            position: absolute;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 300px;
+        }
+        #gameOverScreen, #nameInputScreen {
+            display: none;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        #highScoresList {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin: 15px 0;
+        }
+        #highScoresList li {
+            padding: 8px;
+            background: rgba(255,255,255,0.3);
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        input, textarea {
+            padding: 8px;
+            margin: 8px 0;
+            width: 90%;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .dedication {
+            font-style: italic;
+            color: #555;
+            font-size: 0.9em;
+            margin-top: 3px;
+        }
+    </style>
 </head>
 <body>
-  <button id="soundToggle">🔊</button>
-  <div id="startScreen">
-    <h1>Flappy Bird</h1>
-    <button id="startBtn">Play</button>
-    <h3>Top Scores</h3>
-    <ul id="highScoresList"></ul>
-  </div>
-  <canvas id="gameCanvas" width="400" height="600"></canvas>
-  <div id="score">0</div>
-  <div id="gameOverScreen">
-    <h2>Game Over</h2>
-    <p id="finalScore">Final Score: 0</p>
-    <p id="highScore">High Score: 0</p>
-    <h3>Top Scores</h3>
-    <ul id="gameOverHighScores"></ul>
-    <button id="restartBtn">Restart</button>
-  </div>
-  <div id="nameInputScreen">
-    <h2>New High Score!</h2>
-    <p>You made it to top 3 with: <span id="newScoreDisplay">0</span></p>
-    <input type="text" id="playerName" placeholder="Enter your name" maxlength="10">
-    <button id="saveScoreBtn">Save Score</button>
-  </div>
+    <div id="startScreen">
+        <h1>Flappy Bird</h1>
+        <button id="startBtn">Play</button>
+        <h3>Top Scores</h3>
+        <ul id="highScoresList"></ul>
+    </div>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div id="score">0</div>
+    <div id="gameOverScreen">
+        <h2>Game Over</h2>
+        <p id="finalScore">Score: 0</p>
+        <h3>Top Scores</h3>
+        <ul id="gameOverHighScores"></ul>
+        <button id="restartBtn">Play Again</button>
+    </div>
+    <div id="nameInputScreen">
+        <h2>New High Score!</h2>
+        <p>Your score: <span id="newScoreDisplay">0</span></p>
+        
+        <div class="input-group">
+            <label for="playerName">Your Name:</label>
+            <input type="text" id="playerName" placeholder="Enter your name" maxlength="15">
+        </div>
+        
+        <div class="input-group">
+            <label for="dedication">Dedication (optional):</label>
+            <textarea id="dedication" placeholder="Who are you playing for?"></textarea>
+        </div>
+        
+        <button id="saveScoreBtn">Save Score</button>
+    </div>
 
-  <script>
-    // Game variables
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const startScreen = document.getElementById('startScreen');
-    const gameOverScreen = document.getElementById('gameOverScreen');
-    const nameInputScreen = document.getElementById('nameInputScreen');
-    const startBtn = document.getElementById('startBtn');
-    const restartBtn = document.getElementById('restartBtn');
-    const saveScoreBtn = document.getElementById('saveScoreBtn');
-    const scoreDisplay = document.getElementById('score');
-    const finalScoreDisplay = document.getElementById('finalScore');
-    const highScoreDisplay = document.getElementById('highScore');
-    const soundToggle = document.getElementById('soundToggle');
-    const highScoresList = document.getElementById('highScoresList');
-    const gameOverHighScores = document.getElementById('gameOverHighScores');
-    const playerNameInput = document.getElementById('playerName');
-    const newScoreDisplay = document.getElementById('newScoreDisplay');
-    
-    // Sound variables
-    let soundEnabled = true;
-    const jumpSound = new Audio();
-    const hitSound = new Audio();
-    const scoreSound = new Audio();
-    const bgMusic = new Audio();
-    bgMusic.loop = true;
-    
-    // Game state
-    let gameRunning = false;
-    let score = 0;
-    let highScores = JSON.parse(localStorage.getItem('flappyBirdHighScores')) || [];
-    let gravity = 0.3; // Reduced gravity
-    let bird;
-    let pipes = [];
-    let pipeTimer = 0;
-    let pipeInterval = 1500;
-    let lastTime = 0;
-    let backgroundOffset = 0;
-    let wingState = 0;
-    let wingTimer = 0;
-    
-    // Base64 encoded assets
-    const ASSETS = {
-      bird: "data:image/png;base64,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ZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJYVRlIBgICwpqAAQA4UlhVGUgGAgLCmoABADhSWFUZSAYCAsKagAEAOFJ-- [Previous HTML content remains exactly the same] -->
-    
-    // Initialize high scores display
-    updateHighScoresDisplay();
-    
-    // Error handling for assets
-    function handleAssetError(assetName) {
-      console.error(`Error loading ${assetName}`);
-    }
-    
-    bgImage.onerror = () => handleAssetError('background');
-    birdImg.onerror = () => handleAssetError('bird');
-    pipeTopImg.onerror = () => handleAssetError('pipe top');
-    pipeBottomImg.onerror = () => handleAssetError('pipe bottom');
-    jumpSound.onerror = () => handleAssetError('jump sound');
-    hitSound.onerror = () => handleAssetError('hit sound');
-    scoreSound.onerror = () => handleAssetError('score sound');
-    bgMusic.onerror = () => handleAssetError('background music');
-  </script>
+    <script>
+        // Game elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const nameInputScreen = document.getElementById('nameInputScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const saveScoreBtn = document.getElementById('saveScoreBtn');
+        const scoreDisplay = document.getElementById('score');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const newScoreDisplay = document.getElementById('newScoreDisplay');
+        const playerNameInput = document.getElementById('playerName');
+        const dedicationInput = document.getElementById('dedication');
+        const highScoresList = document.getElementById('highScoresList');
+        const gameOverHighScores = document.getElementById('gameOverHighScores');
+        
+        // Game variables
+        let bird = {
+            x: 50,
+            y: 150,
+            width: 40,
+            height: 30,
+            velocity: 0,
+            gravity: 0.5,
+            jump: -10
+        };
+        
+        let pipes = [];
+        let score = 0;
+        let gameRunning = false;
+        let animationId;
+        let pipeGap = 200; // Wider gap
+        let pipeFrequency = 1500;
+        let lastPipeTime = 0;
+        let highScores = JSON.parse(localStorage.getItem('flappyHighScores')) || [];
+        
+        // Initialize high scores display
+        updateHighScoresDisplay();
+        
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        saveScoreBtn.addEventListener('click', saveHighScore);
+        document.addEventListener('keydown', handleKeyPress);
+        canvas.addEventListener('click', handleClick);
+        
+        function handleKeyPress(e) {
+            if (e.code === 'Space' && gameRunning) {
+                bird.velocity = bird.jump;
+            }
+        }
+        
+        function handleClick() {
+            if (gameRunning) {
+                bird.velocity = bird.jump;
+            }
+        }
+        
+        function startGame() {
+            // Reset game state
+            bird.y = 150;
+            bird.velocity = 0;
+            pipes = [];
+            score = 0;
+            scoreDisplay.textContent = score;
+            gameRunning = true;
+            
+            // Hide/show screens
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            nameInputScreen.style.display = 'none';
+            canvas.style.display = 'block';
+            scoreDisplay.style.display = 'block';
+            
+            // Start game loop
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            lastPipeTime = performance.now();
+            gameLoop();
+        }
+        
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw sky
+            ctx.fillStyle = '#70c5ce';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw ground
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            
+            // Update and draw bird
+            updateBird();
+            drawBird();
+            
+            // Generate new pipes
+            if (timestamp - lastPipeTime > pipeFrequency) {
+                createPipe();
+                lastPipeTime = timestamp;
+            }
+            
+            // Update and draw pipes
+            updatePipes();
+            drawPipes();
+            
+            // Check collisions
+            if (checkCollisions()) {
+                gameOver();
+                return;
+            }
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        function updateBird() {
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+            
+            // Keep bird within canvas
+            if (bird.y < 0) {
+                bird.y = 0;
+                bird.velocity = 0;
+            }
+        }
+        
+        function drawBird() {
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+            
+            // Draw beak
+            ctx.fillStyle = '#FF8C00';
+            ctx.beginPath();
+            ctx.moveTo(bird.x + bird.width, bird.y + 15);
+            ctx.lineTo(bird.x + bird.width + 15, bird.y + 15);
+            ctx.lineTo(bird.x + bird.width, bird.y + 25);
+            ctx.fill();
+            
+            // Draw eye
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(bird.x + 30, bird.y + 10, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function createPipe() {
+            const pipeWidth = 60;
+            const topHeight = Math.random() * (canvas.height - pipeGap - 200) + 50;
+            
+            pipes.push({
+                x: canvas.width,
+                width: pipeWidth,
+                topHeight: topHeight,
+                bottomHeight: canvas.height - topHeight - pipeGap - 50,
+                passed: false
+            });
+        }
+        
+        function updatePipes() {
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                pipes[i].x -= 2;
+                
+                // Check if bird passed the pipe
+                if (!pipes[i].passed && pipes[i].x + pipes[i].width < bird.x) {
+                    pipes[i].passed = true;
+                    score++;
+                    scoreDisplay.textContent = score;
+                }
+                
+                // Remove pipes that are off screen
+                if (pipes[i].x + pipes[i].width < 0) {
+                    pipes.splice(i, 1);
+                }
+            }
+        }
+        
+        function drawPipes() {
+            ctx.fillStyle = '#228B22';
+            pipes.forEach(pipe => {
+                // Top pipe
+                ctx.fillRect(pipe.x, 0, pipe.width, pipe.topHeight);
+                
+                // Bottom pipe
+                ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight - 50, pipe.width, pipe.bottomHeight);
+                
+                // Pipe edges
+                ctx.fillStyle = '#1E701E';
+                ctx.fillRect(pipe.x - 5, pipe.topHeight - 20, pipe.width + 10, 20);
+                ctx.fillRect(pipe.x - 5, canvas.height - pipe.bottomHeight - 70, pipe.width + 10, 20);
+                ctx.fillStyle = '#228B22';
+            });
+        }
+        
+        function checkCollisions() {
+            // Ground collision
+            if (bird.y + bird.height > canvas.height - 50) {
+                return true;
+            }
+            
+            // Pipe collisions
+            for (const pipe of pipes) {
+                if (
+                    bird.x + bird.width > pipe.x &&
+                    bird.x < pipe.x + pipe.width &&
+                    (bird.y < pipe.topHeight || bird.y + bird.height > canvas.height - pipe.bottomHeight - 50)
+                ) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            finalScoreDisplay.textContent = `Score: ${score}`;
+            
+            // Check if score is in top 3
+            if (isHighScore(score)) {
+                newScoreDisplay.textContent = score;
+                playerNameInput.value = '';
+                dedicationInput.value = '';
+                nameInputScreen.style.display = 'block';
+                playerNameInput.focus();
+            } else {
+                gameOverScreen.style.display = 'block';
+            }
+            
+            canvas.style.display = 'none';
+            updateHighScoresDisplay();
+        }
+        
+        function isHighScore(score) {
+            if (highScores.length < 3) return true;
+            return score > highScores[highScores.length - 1].score;
+        }
+        
+        function saveHighScore() {
+            const name = playerNameInput.value.trim() || 'Anonymous';
+            const dedication = dedicationInput.value.trim();
+            
+            const scoreEntry = {
+                name: name,
+                score: score,
+                dedication: dedication || null
+            };
+            
+            highScores.push(scoreEntry);
+            highScores.sort((a, b) => b.score - a.score);
+            highScores = highScores.slice(0, 3);
+            localStorage.setItem('flappyHighScores', JSON.stringify(highScores));
+            
+            nameInputScreen.style.display = 'none';
+            gameOverScreen.style.display = 'block';
+            playerNameInput.value = '';
+            dedicationInput.value = '';
+            updateHighScoresDisplay();
+        }
+        
+        function updateHighScoresDisplay() {
+            highScoresList.innerHTML = '';
+            gameOverHighScores.innerHTML = '';
+            
+            if (highScores.length === 0) {
+                highScoresList.innerHTML = '<li>No scores yet!</li>';
+                gameOverHighScores.innerHTML = '<li>No scores yet!</li>';
+            } else {
+                highScores.forEach((entry, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>${index + 1}. ${entry.name}: ${entry.score}</strong>
+                        ${entry.dedication ? `<div class="dedication">For ${entry.dedication}</div>` : ''}
+                    `;
+                    highScoresList.appendChild(li.cloneNode(true));
+                    gameOverHighScores.appendChild(li);
+                });
+            }
+        }
+    </script>
 </body>
 </html>
