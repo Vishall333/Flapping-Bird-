@@ -3,6 +3,8 @@
 <head>
     <title>Flappy Bird</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <style>
         /* Mobile-first responsive styles */
         html, body {
@@ -169,12 +171,13 @@
             #score {
                 font-size: 20px;
             }
-        }
+        }   
     </style>
 </head>
 <body>
+    <!-- Keep all original HTML structure -->
     <div id="gameContainer">
-        <button id="soundToggle">🔊</button>
+      <button id="soundToggle">🔊</button>
         <div id="startScreen">
             <h1>Flappy Bird</h1>
             <button id="startBtn">Play</button>
@@ -206,7 +209,21 @@
     <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
 
     <script>
-        // Game elements
+        // Your Firebase Config (Replace with yours)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDB3lFCiydUjrlPUA0OYC1B-ivPgKcXZ9A",
+            authDomain: "https://console.firebase.google.com/u/0/project/flappy-bird-c3341/database/flappy-bird-c3341-default-rtdb/data/",
+            projectId: "flappy-bird-c3341",
+            storageBucket: "flappy-bird-c3341.firebasestorage.app",
+            messagingSenderId: "625544046566",
+            appId: "1:625544046566:android:487e29b7796976b8c01827"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Original Game Variables
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startScreen = document.getElementById('startScreen');
@@ -255,7 +272,81 @@
             clouds: [],
             trees: []
         };
-        
+
+        // Modified Score Functions
+        async function loadHighScores() {
+            try {
+                const snapshot = await db.collection('scores')
+                    .orderBy('score', 'desc')
+                    .limit(10)
+                    .get();
+                
+                highScores = snapshot.docs.map(doc => doc.data());
+                updateHighScoresDisplay();
+            } catch (error) {
+                console.error("Error loading scores:", error);
+            }
+        }
+
+        async function checkHighScore(currentScore) {
+            try {
+                const snapshot = await db.collection('scores')
+                    .orderBy('score', 'asc')
+                    .limit(1)
+                    .get();
+
+                const lowestHighScore = snapshot.empty ? 0 : snapshot.docs[0].data().score;
+                
+                if (currentScore > lowestHighScore || highScores.length < 10) {
+                    newScoreDisplay.textContent = currentScore;
+                    nameInputScreen.style.display = 'block';
+                    playerNameInput.focus();
+                } else {
+                    gameOverScreen.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error checking high score:", error);
+                gameOverScreen.style.display = 'block';
+            }
+        }
+
+        async function saveHighScore() {
+            const name = playerNameInput.value.trim() || 'Anonymous';
+            const dedication = dedicationInput.value.trim();
+
+            try {
+                await db.collection('scores').add({
+                    name: sanitizeInput(name),
+                    score: score,
+                    dedication: sanitizeInput(dedication) || null,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                await loadHighScores();
+                nameInputScreen.style.display = 'none';
+                gameOverScreen.style.display = 'block';
+                playerNameInput.value = '';
+                dedicationInput.value = '';
+            } catch (error) {
+                console.error("Error saving score:", error);
+                alert("Error saving score. Please try again.");
+            }
+        }
+
+        // Real-time Score Updates
+        function setupRealTimeUpdates() {
+            db.collection('scores')
+                .orderBy('score', 'desc')
+                .limit(10)
+                .onSnapshot(snapshot => {
+                    highScores = snapshot.docs.map(doc => doc.data());
+                    updateHighScoresDisplay();
+                });
+        }
+
+        // Initialize real-time listener
+        setupRealTimeUpdates();
+
         // Initialize canvas size
         function resizeCanvas() {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -497,8 +588,8 @@
                 ctx.fill();
             });
         }
-        
-        function updateBird() {
+    
+    function updateBird() {
             if (bird.initialHover) {
                 // Enhanced hover animation before first jump
                 bird.hoverOffset = Math.sin(bird.wingTimer * bird.hoverSpeed) * bird.hoverAmplitude;
@@ -747,3 +838,4 @@
     </script>
 </body>
 </html>
+   
