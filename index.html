@@ -13,10 +13,10 @@
             background-color: #70c5ce;
             font-family: Arial, sans-serif;
             overflow: hidden;
+            touch-action: manipulation;
         }
         #gameCanvas {
             border: 2px solid #000;
-            background-color: #70c5ce;
             display: none;
         }
         #startScreen, #gameOverScreen, #nameInputScreen {
@@ -26,7 +26,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            width: 300px;
+            max-width: 90%;
         }
         #gameOverScreen, #nameInputScreen {
             display: none;
@@ -36,10 +36,10 @@
             border: none;
             color: white;
             padding: 10px 20px;
-            margin: 10px 5px;
+            margin: 10px;
             cursor: pointer;
             border-radius: 5px;
-            width: 100%;
+            font-size: 16px;
         }
         #score {
             position: absolute;
@@ -55,34 +55,29 @@
             list-style: none;
             padding: 0;
             text-align: left;
-            margin: 15px 0;
         }
         #highScoresList li {
-            padding: 8px;
+            padding: 5px 10px;
             background: rgba(255,255,255,0.3);
             margin: 5px 0;
             border-radius: 3px;
         }
         input, textarea {
             padding: 8px;
-            margin: 8px 0;
-            width: 90%;
-            border-radius: 4px;
+            margin: 10px 0;
+            width: 80%;
             border: 1px solid #ccc;
+            border-radius: 4px;
         }
-        .input-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+        textarea {
+            height: 60px;
+            resize: none;
         }
         .dedication {
             font-style: italic;
+            font-size: 12px;
             color: #555;
-            font-size: 0.9em;
-            margin-top: 3px;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -105,19 +100,15 @@
     <div id="nameInputScreen">
         <h2>New High Score!</h2>
         <p>Your score: <span id="newScoreDisplay">0</span></p>
-        
-        <div class="input-group">
-            <label for="playerName">Your Name:</label>
-            <input type="text" id="playerName" placeholder="Enter your name" maxlength="15">
-        </div>
-        
-        <div class="input-group">
-            <label for="dedication">Dedication (optional):</label>
-            <textarea id="dedication" placeholder="Who are you playing for?"></textarea>
-        </div>
-        
-        <button id="saveScoreBtn">Save Score</button>
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="15">
+        <textarea id="dedication" placeholder="Dedicate this score to someone special (optional)" maxlength="100"></textarea>
+        <button id="saveScoreBtn">Save</button>
     </div>
+
+    <!-- Hidden audio elements for sound effects -->
+    <audio id="flapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bird-flapping-1480.mp3" preload="auto"></audio>
+    <audio id="scoreSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
+    <audio id="hitSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3" preload="auto"></audio>
 
     <script>
         // Game elements
@@ -137,22 +128,55 @@
         const highScoresList = document.getElementById('highScoresList');
         const gameOverHighScores = document.getElementById('gameOverHighScores');
         
+        // Sound effects
+        const flapSound = document.getElementById('flapSound');
+        const scoreSound = document.getElementById('scoreSound');
+        const hitSound = document.getElementById('hitSound');
+        
         // Game variables
         let bird = {
             x: 50,
             y: 150,
-            width: 40,
-            height: 30,
+            width: 30,
+            height: 20,
             velocity: 0,
             gravity: 0.5,
-            jump: -10
+            jump: -10,
+            wingState: 0, // 0 = down, 1 = middle, 2 = up
+            wingTimer: 0
         };
+        
+        // Background elements
+        let background = {
+            offset: 0,
+            clouds: [],
+            trees: []
+        };
+        
+        // Create initial clouds
+        for (let i = 0; i < 5; i++) {
+            background.clouds.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * 200,
+                width: 60 + Math.random() * 40,
+                speed: 0.2 + Math.random() * 0.3
+            });
+        }
+        
+        // Create initial trees
+        for (let i = 0; i < 3; i++) {
+            background.trees.push({
+                x: Math.random() * canvas.width,
+                width: 40 + Math.random() * 20,
+                height: 80 + Math.random() * 40
+            });
+        }
         
         let pipes = [];
         let score = 0;
         let gameRunning = false;
         let animationId;
-        let pipeGap = 200; // Wider gap
+        let pipeGap = 200;
         let pipeFrequency = 1500;
         let lastPipeTime = 0;
         let highScores = JSON.parse(localStorage.getItem('flappyHighScores')) || [];
@@ -165,24 +189,34 @@
         restartBtn.addEventListener('click', startGame);
         saveScoreBtn.addEventListener('click', saveHighScore);
         document.addEventListener('keydown', handleKeyPress);
-        canvas.addEventListener('click', handleClick);
+        canvas.addEventListener('click', handleJump);
+        canvas.addEventListener('touchstart', handleJump);
         
         function handleKeyPress(e) {
             if (e.code === 'Space' && gameRunning) {
-                bird.velocity = bird.jump;
+                birdJump();
             }
         }
         
-        function handleClick() {
+        function handleJump(e) {
+            e.preventDefault();
             if (gameRunning) {
-                bird.velocity = bird.jump;
+                birdJump();
             }
+        }
+        
+        function birdJump() {
+            bird.velocity = bird.jump;
+            flapSound.currentTime = 0;
+            flapSound.play();
         }
         
         function startGame() {
             // Reset game state
             bird.y = 150;
             bird.velocity = 0;
+            bird.wingState = 0;
+            bird.wingTimer = 0;
             pipes = [];
             score = 0;
             scoreDisplay.textContent = score;
@@ -209,13 +243,22 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw sky
-            ctx.fillStyle = '#70c5ce';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Draw background
+            drawBackground();
             
             // Draw ground
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            
+            // Draw grass on top of ground
+            ctx.fillStyle = '#5a8f3d';
+            for (let i = 0; i < canvas.width; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i, canvas.height - 50);
+                ctx.lineTo(i + 10, canvas.height - 70);
+                ctx.lineTo(i + 20, canvas.height - 50);
+                ctx.fill();
+            }
             
             // Update and draw bird
             updateBird();
@@ -240,9 +283,67 @@
             animationId = requestAnimationFrame(gameLoop);
         }
         
+        function drawBackground() {
+            // Sky gradient
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(1, '#E0F7FA');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height - 50);
+            
+            // Draw clouds
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            background.clouds.forEach(cloud => {
+                // Update cloud position
+                cloud.x -= cloud.speed;
+                if (cloud.x + cloud.width < 0) {
+                    cloud.x = canvas.width;
+                    cloud.y = Math.random() * 200;
+                }
+                
+                // Draw cloud
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width * 0.3, cloud.y - cloud.width * 0.1, cloud.width * 0.25, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width * 0.6, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width * 0.3, cloud.y + cloud.width * 0.1, cloud.width * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw distant trees
+            ctx.fillStyle = '#2E8B57';
+            background.trees.forEach(tree => {
+                // Update tree position
+                tree.x -= 0.5;
+                if (tree.x + tree.width < 0) {
+                    tree.x = canvas.width;
+                    tree.height = 80 + Math.random() * 40;
+                }
+                
+                // Draw tree
+                ctx.beginPath();
+                ctx.moveTo(tree.x, canvas.height - 50);
+                ctx.lineTo(tree.x + tree.width/2, canvas.height - 50 - tree.height);
+                ctx.lineTo(tree.x + tree.width, canvas.height - 50);
+                ctx.fill();
+                
+                // Tree trunk
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(tree.x + tree.width/2 - 5, canvas.height - 50, 10, 20);
+                ctx.fillStyle = '#2E8B57';
+            });
+        }
+        
         function updateBird() {
             bird.velocity += bird.gravity;
             bird.y += bird.velocity;
+            
+            // Update wing animation
+            bird.wingTimer++;
+            if (bird.wingTimer > 5) {
+                bird.wingTimer = 0;
+                bird.wingState = (bird.wingState + 1) % 3;
+            }
             
             // Keep bird within canvas
             if (bird.y < 0) {
@@ -252,21 +353,53 @@
         }
         
         function drawBird() {
+            // Draw body
             ctx.fillStyle = '#FFD700';
-            ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+            ctx.beginPath();
+            ctx.ellipse(bird.x + bird.width/2, bird.y + bird.height/2, 
+                         bird.width/2, bird.height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw wings based on wingState
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+            if (bird.wingState === 0) { // Down position
+                ctx.beginPath();
+                ctx.moveTo(bird.x, bird.y + bird.height/2);
+                ctx.quadraticCurveTo(bird.x - 15, bird.y + bird.height/2 + 10, 
+                                    bird.x, bird.y + bird.height);
+                ctx.quadraticCurveTo(bird.x + 10, bird.y + bird.height/2 + 5, 
+                                    bird.x, bird.y + bird.height/2);
+                ctx.fill();
+            } else if (bird.wingState === 1) { // Middle position
+                ctx.beginPath();
+                ctx.moveTo(bird.x, bird.y + bird.height/2);
+                ctx.quadraticCurveTo(bird.x - 10, bird.y + bird.height/2, 
+                                    bird.x, bird.y + bird.height/2 + 10);
+                ctx.quadraticCurveTo(bird.x + 10, bird.y + bird.height/2, 
+                                    bird.x, bird.y + bird.height/2);
+                ctx.fill();
+            } else { // Up position
+                ctx.beginPath();
+                ctx.moveTo(bird.x, bird.y + bird.height/2);
+                ctx.quadraticCurveTo(bird.x - 15, bird.y + bird.height/2 - 10, 
+                                    bird.x, bird.y);
+                ctx.quadraticCurveTo(bird.x + 10, bird.y + bird.height/2 - 5, 
+                                    bird.x, bird.y + bird.height/2);
+                ctx.fill();
+            }
             
             // Draw beak
             ctx.fillStyle = '#FF8C00';
             ctx.beginPath();
-            ctx.moveTo(bird.x + bird.width, bird.y + 15);
-            ctx.lineTo(bird.x + bird.width + 15, bird.y + 15);
-            ctx.lineTo(bird.x + bird.width, bird.y + 25);
+            ctx.moveTo(bird.x + bird.width, bird.y + 10);
+            ctx.lineTo(bird.x + bird.width + 10, bird.y + 10);
+            ctx.lineTo(bird.x + bird.width, bird.y + 15);
             ctx.fill();
             
             // Draw eye
             ctx.fillStyle = '#000';
             ctx.beginPath();
-            ctx.arc(bird.x + 30, bird.y + 10, 5, 0, Math.PI * 2);
+            ctx.arc(bird.x + 22, bird.y + 7, 3, 0, Math.PI * 2);
             ctx.fill();
         }
         
@@ -292,6 +425,8 @@
                     pipes[i].passed = true;
                     score++;
                     scoreDisplay.textContent = score;
+                    scoreSound.currentTime = 0;
+                    scoreSound.play();
                 }
                 
                 // Remove pipes that are off screen
@@ -343,11 +478,13 @@
             cancelAnimationFrame(animationId);
             finalScoreDisplay.textContent = `Score: ${score}`;
             
+            // Play hit sound
+            hitSound.currentTime = 0;
+            hitSound.play();
+            
             // Check if score is in top 3
             if (isHighScore(score)) {
                 newScoreDisplay.textContent = score;
-                playerNameInput.value = '';
-                dedicationInput.value = '';
                 nameInputScreen.style.display = 'block';
                 playerNameInput.focus();
             } else {
@@ -367,13 +504,12 @@
             const name = playerNameInput.value.trim() || 'Anonymous';
             const dedication = dedicationInput.value.trim();
             
-            const scoreEntry = {
-                name: name,
-                score: score,
+            highScores.push({ 
+                name, 
+                score,
                 dedication: dedication || null
-            };
+            });
             
-            highScores.push(scoreEntry);
             highScores.sort((a, b) => b.score - a.score);
             highScores = highScores.slice(0, 3);
             localStorage.setItem('flappyHighScores', JSON.stringify(highScores));
@@ -395,10 +531,10 @@
             } else {
                 highScores.forEach((entry, index) => {
                     const li = document.createElement('li');
-                    li.innerHTML = `
-                        <strong>${index + 1}. ${entry.name}: ${entry.score}</strong>
-                        ${entry.dedication ? `<div class="dedication">For ${entry.dedication}</div>` : ''}
-                    `;
+                    li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
+                    if (entry.dedication) {
+                        li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
+                    }
                     highScoresList.appendChild(li.cloneNode(true));
                     gameOverHighScores.appendChild(li);
                 });
