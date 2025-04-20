@@ -33,7 +33,7 @@
             display: block;
             width: 100%;
             height: 100%;
-            max-height: -webkit-fill-available; /* For iOS Safari */
+            max-height: -webkit-fill-available;
         }
 
         #startScreen, #gameOverScreen, #nameInputScreen {
@@ -81,7 +81,7 @@
             z-index: 5;
         }
 
-        #highScoresList {
+        #highScoresList, #gameOverHighScores {
             list-style: none;
             padding: 0;
             text-align: left;
@@ -89,7 +89,7 @@
             overflow-y: auto;
         }
 
-        #highScoresList li {
+        #highScoresList li, #gameOverHighScores li {
             padding: 8px 12px;
             background: rgba(255,255,255,0.3);
             margin: 5px 0;
@@ -136,7 +136,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Landscape orientation */
         @media (orientation: landscape) {
             #gameContainer {
                 width: 100vh;
@@ -151,12 +150,11 @@
                 max-width: 300px;
             }
             
-            #highScoresList {
+            #highScoresList, #gameOverHighScores {
                 max-height: 100px;
             }
         }
 
-        /* Small mobile devices */
         @media (max-width: 400px) {
             #startScreen h1 {
                 font-size: 24px;
@@ -171,12 +169,12 @@
             #score {
                 font-size: 20px;
             }
-        }    
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-      <button id="soundToggle">🔊</button>
+        <button id="soundToggle">🔊</button>
         <div id="startScreen">
             <h1>Flappy Bird</h1>
             <button id="startBtn">Play</button>
@@ -201,14 +199,13 @@
         </div>
     </div>
 
-    <!-- Audio elements -->
     <audio id="flapSound" src="flap.mp3" preload="auto"></audio>
     <audio id="scoreSound" src="score.mp3" preload="auto"></audio>
     <audio id="hitSound" src="hit.mp3" preload="auto"></audio>
     <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
 
     <script>
-        // Firebase Configuration (Replace with your actual config)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDB3lFCiydUjrlPUA0OYC1B-ivPgKcXZ9A",
             authDomain: "flappy-bird-c3341.firebaseapp.com",
@@ -222,7 +219,7 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Original Game Variables
+        // Game elements
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startScreen = document.getElementById('startScreen');
@@ -246,9 +243,6 @@
         const hitSound = document.getElementById('hitSound');
         const bgMusic = document.getElementById('bgMusic');
         
-        // Sound control
-        let soundEnabled = true;
-        
         // Game variables
         let bird = {
             x: 50,
@@ -266,153 +260,10 @@
             hoverOffset: 0
         };
         
-        // Background elements
         let background = {
             clouds: [],
             trees: []
         };
-
-        // Input sanitization
-        function sanitizeInput(input) {
-            return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
-
-        // Modified score functions
-        async function loadHighScores() {
-            try {
-                const snapshot = await db.collection('scores')
-                    .orderBy('score', 'desc')
-                    .limit(10)
-                    .get();
-                
-                highScores = snapshot.docs.map(doc => doc.data());
-                updateHighScoresDisplay();
-                updateGameOverHighScores();
-            } catch (error) {
-                console.error("Error loading scores:", error);
-            }
-        }
-
-        async function checkHighScore(currentScore) {
-            try {
-                const snapshot = await db.collection('scores')
-                    .orderBy('score', 'asc')
-                    .limit(1)
-                    .get();
-
-                const lowestHighScore = snapshot.empty ? 0 : snapshot.docs[0].data().score;
-                
-                if (currentScore > lowestHighScore || highScores.length < 10) {
-                    newScoreDisplay.textContent = currentScore;
-                    nameInputScreen.style.display = 'block';
-                    playerNameInput.focus();
-                } else {
-                    gameOverScreen.style.display = 'block';
-                }
-            } catch (error) {
-                console.error("Error checking high score:", error);
-                gameOverScreen.style.display = 'block';
-            }
-        }
-
-        async function saveHighScore() {
-            const name = playerNameInput.value.trim() || 'Anonymous';
-            const dedication = dedicationInput.value.trim();
-
-            try {
-                await db.collection('scores').add({
-                    name: sanitizeInput(name.substring(0, 15)),
-                    score: score,
-                    dedication: sanitizeInput(dedication.substring(0, 100)) || null
-                });
-
-                await loadHighScores();
-                nameInputScreen.style.display = 'none';
-                gameOverScreen.style.display = 'block';
-                playerNameInput.value = '';
-                dedicationInput.value = '';
-            } catch (error) {
-                console.error("Error saving score:", error);
-                alert("Error saving score. Please try again.");
-            }
-        }
-
-        // Real-time updates
-        function setupRealTimeUpdates() {
-            db.collection('scores')
-                .orderBy('score', 'desc')
-                .limit(10)
-                .onSnapshot(snapshot => {
-                    highScores = snapshot.docs.map(doc => doc.data());
-                    updateHighScoresDisplay();
-                    updateGameOverHighScores();
-                });
-        }
-
-        function updateHighScoresDisplay() {
-            highScoresList.innerHTML = '';
-            highScores.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
-                if (entry.dedication) {
-                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
-                }
-                highScoresList.appendChild(li);
-            });
-        }
-
-        function updateGameOverHighScores() {
-            gameOverHighScores.innerHTML = '';
-            highScores.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
-                if (entry.dedication) {
-                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
-                }
-                gameOverHighScores.appendChild(li);
-            });
-        }
-
-        // Initialize real-time listener
-        setupRealTimeUpdates();
-
-        // Initialize canvas size
-        function resizeCanvas() {
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (isMobile) {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            } else {
-                canvas.width = 400;
-                canvas.height = 600;
-            }
-            bird.y = canvas.height / 3;
-        }
-        
-        // Create initial clouds
-        function initClouds() {
-            background.clouds = [];
-            for (let i = 0; i < 5; i++) {
-                background.clouds.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * 200,
-                    width: 60 + Math.random() * 40,
-                    speed: 0.2 + Math.random() * 0.3
-                });
-            }
-        }
-        
-        // Create initial trees
-        function initTrees() {
-            background.trees = [];
-            for (let i = 0; i < 3; i++) {
-                background.trees.push({
-                    x: Math.random() * canvas.width,
-                    width: 40 + Math.random() * 20,
-                    height: 80 + Math.random() * 40
-                });
-            }
-        }
         
         let pipes = [];
         let score = 0;
@@ -425,19 +276,17 @@
         let lastPipeTime = 0;
         let highScores = [];
         let userInteracted = false;
-        
+        let soundEnabled = true;
+
         // Initialize game
         resizeCanvas();
         initClouds();
         initTrees();
-        loadHighScores();
-        
+        setupRealTimeScores();
+
         // Event listeners
         window.addEventListener('resize', resizeCanvas);
-        startBtn.addEventListener('click', function() {
-            userInteracted = true;
-            startGame();
-        });
+        startBtn.addEventListener('click', startGame);
         restartBtn.addEventListener('click', startGame);
         saveScoreBtn.addEventListener('click', saveHighScore);
         document.addEventListener('keydown', handleKeyPress);
@@ -447,55 +296,125 @@
         
         // Prevent touch scrolling
         document.addEventListener('touchmove', function(e) {
-            if (gameRunning) {
-                e.preventDefault();
-            }
+            if (gameRunning) e.preventDefault();
         }, { passive: false });
+
+        // ======================
+        // Firebase Score System
+        // ======================
+        function setupRealTimeScores() {
+            db.collection("scores")
+                .orderBy("score", "desc")
+                .limit(10)
+                .onSnapshot((snapshot) => {
+                    highScores = snapshot.docs.map(doc => doc.data());
+                    updateAllScoreDisplays();
+                }, (error) => {
+                    console.error("Firestore error:", error);
+                });
+        }
+
+        async function saveHighScore() {
+            const name = playerNameInput.value.trim() || "Anonymous";
+            const dedication = dedicationInput.value.trim();
+
+            try {
+                await db.collection("scores").add({
+                    name: name.substring(0, 15),
+                    score: Number(score),
+                    dedication: dedication.substring(0, 100) || null
+                });
+                nameInputScreen.style.display = 'none';
+                gameOverScreen.style.display = 'block';
+            } catch (error) {
+                console.error("Error saving score:", error);
+                alert("Failed to save score. Please try again.");
+            }
+        }
+
+        function updateAllScoreDisplays() {
+            updateScoreDisplay(highScoresList);
+            updateScoreDisplay(gameOverHighScores);
+        }
+
+        function updateScoreDisplay(element) {
+            element.innerHTML = '';
+            highScores.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
+                if (entry.dedication) {
+                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
+                }
+                element.appendChild(li);
+            });
+        }
+
+        // ======================
+        // Game Core Functions
+        // ======================
+        function resizeCanvas() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            canvas.width = isMobile ? window.innerWidth : 400;
+            canvas.height = isMobile ? window.innerHeight : 600;
+            bird.y = canvas.height / 3;
+        }
         
+        function initClouds() {
+            background.clouds = [];
+            for (let i = 0; i < 5; i++) {
+                background.clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * 200,
+                    width: 60 + Math.random() * 40,
+                    speed: 0.2 + Math.random() * 0.3
+                });
+            }
+        }
+        
+        function initTrees() {
+            background.trees = [];
+            for (let i = 0; i < 3; i++) {
+                background.trees.push({
+                    x: Math.random() * canvas.width,
+                    width: 40 + Math.random() * 20,
+                    height: 80 + Math.random() * 40
+                });
+            }
+        }
+
         function toggleSound() {
             soundEnabled = !soundEnabled;
             soundToggle.textContent = soundEnabled ? "🔊" : "🔇";
-            
             if (soundEnabled && gameRunning) {
-                bgMusic.play().catch(e => console.log("Background music play failed:", e));
+                bgMusic.play().catch(e => console.log("Music play failed:", e));
             } else {
                 bgMusic.pause();
             }
         }
-        
+
         function handleKeyPress(e) {
-            if (!userInteracted) {
-                userInteracted = true;
-            }
-            
-            if (e.code === 'Space') {
+            if (!userInteracted) userInteracted = true;
+            if (e.code === 'Space' && gameRunning) {
                 e.preventDefault();
-                if (gameRunning) {
-                    birdJump();
-                }
-            }
-        }
-        
-        function handleJump(e) {
-            e.preventDefault();
-            if (!userInteracted) {
-                userInteracted = true;
-            }
-            
-            if (gameRunning) {
                 birdJump();
             }
         }
-        
+
+        function handleJump(e) {
+            e.preventDefault();
+            if (!userInteracted) userInteracted = true;
+            if (gameRunning) birdJump();
+        }
+
         function birdJump() {
             bird.velocity = bird.jump;
             bird.initialHover = false;
             if (soundEnabled) {
                 flapSound.currentTime = 0;
-                flapSound.play().catch(e => console.log("Flap sound play failed:", e));
+                flapSound.play().catch(e => console.log("Flap sound failed:", e));
             }
         }
-        
+
         function startGame() {
             // Reset game state
             bird.y = canvas.height / 3;
@@ -510,22 +429,20 @@
             scoreDisplay.textContent = score;
             gameRunning = true;
             
-            // Hide/show screens
+            // UI updates
             startScreen.style.display = 'none';
             gameOverScreen.style.display = 'none';
             nameInputScreen.style.display = 'none';
             scoreDisplay.style.display = 'block';
             
-            // Start background music
+            // Sound
             if (soundEnabled) {
                 bgMusic.currentTime = 0;
-                bgMusic.play().catch(e => console.log("Background music play failed:", e));
+                bgMusic.play().catch(e => console.log("Music play failed:", e));
             }
             
             // Start game loop
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
+            if (animationId) cancelAnimationFrame(animationId);
             lastPipeTime = performance.now();
             gameLoop();
         }
@@ -539,11 +456,11 @@
             // Draw background
             drawBackground();
             
-            // Draw green ground
+            // Draw ground
             ctx.fillStyle = '#5a8f3d';
             ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
             
-            // Draw grass details
+            // Draw grass
             ctx.fillStyle = '#4a7d34';
             for (let i = 0; i < canvas.width; i += 20) {
                 ctx.beginPath();
@@ -575,7 +492,7 @@
             
             animationId = requestAnimationFrame(gameLoop);
         }
-        
+
         function drawBackground() {
             // Sky gradient
             const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -601,7 +518,7 @@
                 ctx.fill();
             });
             
-            // Draw distant trees
+            // Draw trees
             ctx.fillStyle = '#2E8B57';
             background.trees.forEach(tree => {
                 tree.x -= 0.5;
@@ -617,24 +534,20 @@
                 ctx.fill();
             });
         }
-    
-    function updateBird() {
+
+        function updateBird() {
             if (bird.initialHover) {
-                // Enhanced hover animation before first jump
                 bird.hoverOffset = Math.sin(bird.wingTimer * bird.hoverSpeed) * bird.hoverAmplitude;
                 bird.y = canvas.height / 3 + bird.hoverOffset;
                 bird.wingTimer++;
                 
-                // Make wings flap during hover
                 if (bird.wingTimer % 10 === 0) {
                     bird.wingState = (bird.wingState + 1) % 3;
                 }
             } else {
-                // Normal physics after first jump
                 bird.velocity += bird.gravity;
                 bird.y += bird.velocity;
                 
-                // Update wing animation
                 bird.wingTimer++;
                 if (bird.wingTimer > 5) {
                     bird.wingTimer = 0;
@@ -642,13 +555,12 @@
                 }
             }
             
-            // Keep bird within canvas
             if (bird.y < 0) {
                 bird.y = 0;
                 bird.velocity = 0;
             }
         }
-        
+
         function drawBird() {
             // Draw body
             ctx.fillStyle = '#FFD700';
@@ -699,12 +611,11 @@
             ctx.arc(bird.x + 22, bird.y + 7, 3, 0, Math.PI * 2);
             ctx.fill();
         }
-        
+
         function createPipe() {
             const pipeWidth = 60;
             let currentGap = Math.max(minGap, pipeGap - (score * 2));
             
-            // Adjust gap for mobile
             if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
                 currentGap = Math.max(minGap * 1.3, currentGap * 1.3);
             }
@@ -720,7 +631,7 @@
                 passed: false
             });
         }
-        
+
         function updatePipes() {
             for (let i = pipes.length - 1; i >= 0; i--) {
                 pipes[i].x -= pipeSpeed;
@@ -731,7 +642,7 @@
                     scoreDisplay.textContent = score;
                     if (soundEnabled) {
                         scoreSound.currentTime = 0;
-                        scoreSound.play().catch(e => console.log("Score sound play failed:", e));
+                        scoreSound.play().catch(e => console.log("Score sound failed:", e));
                     }
                 }
                 
@@ -740,7 +651,7 @@
                 }
             }
         }
-        
+
         function drawPipes() {
             ctx.fillStyle = '#228B22';
             pipes.forEach(pipe => {
@@ -757,7 +668,7 @@
                 ctx.fillStyle = '#228B22';
             });
         }
-        
+
         function checkCollisions() {
             // Ground collision
             if (bird.y + bird.height > canvas.height - 50) {
@@ -777,94 +688,28 @@
             
             return false;
         }
-        
+
         function gameOver() {
             gameRunning = false;
             cancelAnimationFrame(animationId);
             finalScoreDisplay.textContent = `Score: ${score}`;
             
-            // Stop background music
+            // Sound
             bgMusic.pause();
-            
-            // Play hit sound if enabled
             if (soundEnabled) {
                 hitSound.currentTime = 0;
-                hitSound.play().catch(e => console.log("Hit sound play failed:", e));
+                hitSound.play().catch(e => console.log("Hit sound failed:", e));
             }
             
-            // Check if score is in top 10
-            checkHighScore(score);
-        }
-        
-        function loadHighScores() {
-            // For demo purposes - in a real game you'd use Firebase or localStorage
-            highScores = [
-                {name: "Player 1", score: 25, dedication: "For mom"},
-                {name: "Player 2", score: 18, dedication: null},
-                {name: "Player 3", score: 15, dedication: "First try!"}
-            ];
-            updateHighScoresDisplay();
-        }
-        
-        function checkHighScore(currentScore) {
-            // Always show top 10 scores
-            loadHighScores();
-            
-            // Check if score qualifies for top 10
-            if (highScores.length < 10 || currentScore > highScores[highScores.length - 1]?.score || 0) {
-                newScoreDisplay.textContent = currentScore;
+            // Check high score
+            if (highScores.length < 10 || score > highScores[highScores.length - 1]?.score || 0) {
+                newScoreDisplay.textContent = score;
                 nameInputScreen.style.display = 'block';
                 playerNameInput.focus();
             } else {
                 gameOverScreen.style.display = 'block';
             }
         }
-        
-        function saveHighScore() {
-            const name = playerNameInput.value.trim() || 'Anonymous';
-            const dedication = dedicationInput.value.trim();
-            
-            const newScore = { 
-                name, 
-                score,
-                dedication: dedication || null,
-                timestamp: new Date().toISOString()
-            };
-            
-            // Add to high scores
-            highScores.push(newScore);
-            highScores.sort((a, b) => b.score - a.score);
-            highScores = highScores.slice(0, 10);
-            
-            // In a real app, you would save to Firebase here
-            
-            nameInputScreen.style.display = 'none';
-            gameOverScreen.style.display = 'block';
-            playerNameInput.value = '';
-            dedicationInput.value = '';
-            updateHighScoresDisplay();
-        }
-        
-        function updateHighScoresDisplay() {
-            highScoresList.innerHTML = '';
-            gameOverHighScores.innerHTML = '';
-            
-            if (highScores.length === 0) {
-                highScoresList.innerHTML = '<li>No scores yet!</li>';
-                gameOverHighScores.innerHTML = '<li>No scores yet!</li>';
-            } else {
-                highScores.forEach((entry, index) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
-                    if (entry.dedication) {
-                        li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
-                    }
-                    highScoresList.appendChild(li.cloneNode(true));
-                    gameOverHighScores.appendChild(li);
-                });
-            }
-        }
     </script>
 </body>
 </html>
-   
