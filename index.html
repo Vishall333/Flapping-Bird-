@@ -3,7 +3,6 @@
 <head>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1861245675391318"
      crossorigin="anonymous"></script>
-    
     <title>Flappy Bird Contest</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -198,6 +197,50 @@
             background-color: #a8d0e6;
         }
 
+        /* Social Sharing Styles */
+        .social-share {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+            font-size: 20px;
+            color: white;
+        }
+
+        .social-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.facebook { background-color: #3b5998; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.instagram {
+            background: radial-gradient(circle at 30% 107%, 
+                        #fdf497 0%, #fdf497 5%, 
+                        #fd5949 45%, #d6249f 60%, 
+                        #285AEB 90%);
+            color: white;
+        }
+        .social-btn.copy { background-color: #6c757d; }
+
+        #shareText {
+            font-size: 14px;
+            margin: 10px 0;
+            color: #333;
+        }
+
         @media (orientation: landscape) {
             #gameContainer {
                 width: 100vh;
@@ -270,6 +313,30 @@
             
             <h3>Top Scores</h3>
             <ul id="gameOverHighScores"></ul>
+            
+            <!-- Social Sharing Section -->
+            <div id="shareText">Share your score:</div>
+            <div class="social-share">
+                <button class="social-btn twitter" title="Share on Twitter">🐦</button>
+                <button class="social-btn facebook" title="Share on Facebook">f</button>
+                <button class="social-btn whatsapp" title="Share on WhatsApp">📱</button>
+                <button class="social-btn instagram" title="Share on Instagram">📷</button>
+                <button class="social-btn copy" title="Copy link">⎘</button>
+            </div>
+            
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1861245675391318"
+     crossorigin="anonymous"></script>
+<!-- Flappy bird -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-1861245675391318"
+     data-ad-slot="9245427442"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+            
             <button id="restartBtn">Play Again</button>
         </div>
         <div id="nameInputScreen">
@@ -286,19 +353,6 @@
     <audio id="hitSound" src="hit.mp3" preload="auto"></audio>
     <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1861245675391318"
-     crossorigin="anonymous"></script>
-<!-- Flappy bird -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-1861245675391318"
-     data-ad-slot="9245427442"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -346,12 +400,12 @@
             height: 20,
             velocity: 0,
             gravity: 0.5,
-            jump: -9,
+            jump: -10,
             wingState: 0,
             wingTimer: 0,
             initialHover: true,
             hoverAmplitude: 5,
-            hoverSpeed: 0.02,
+            hoverSpeed: 0.05,
             hoverOffset: 0
         };
         
@@ -363,12 +417,13 @@
         // Pipe settings with tighter gaps
         let pipes = [];
         let score = 0;
+        let lastScore = 0;
         let gameRunning = false;
         let animationId;
-        let pipeSpeed = 2.1;
+        let pipeSpeed = 2.5;
         let pipeGap = 180;
         let minGap = 90;
-        let pipeFrequency = 1600;
+        let pipeFrequency = 1500;
         let lastPipeTime = 0;
         let highScores = [];
         let userInteracted = false;
@@ -521,6 +576,95 @@
         }
 
         // ======================
+        // SOCIAL SHARING SYSTEM
+        // ======================
+        function setupSocialSharing() {
+            const twitterBtn = document.querySelector('.twitter');
+            const facebookBtn = document.querySelector('.facebook');
+            const whatsappBtn = document.querySelector('.whatsapp');
+            const instagramBtn = document.querySelector('.instagram');
+            const copyBtn = document.querySelector('.copy');
+            
+            const shareUrl = window.location.href.split('?')[0];
+            const shareText = `I scored ${lastScore} in Flappy Bird! Can you beat me? 🐦 ${shareUrl}`;
+            const hashtags = "FlappyBird,Game,Challenge";
+            
+            // Twitter sharing
+            twitterBtn.addEventListener('click', () => {
+                const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&hashtags=${hashtags}`;
+                window.open(url, '_blank', 'width=550,height=420');
+            });
+            
+            // Facebook sharing
+            facebookBtn.addEventListener('click', () => {
+                const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+                window.open(url, '_blank', 'width=550,height=420');
+            });
+            
+            // WhatsApp sharing
+            whatsappBtn.addEventListener('click', () => {
+                const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+                window.open(url, '_blank');
+            });
+            
+            // Instagram sharing
+            instagramBtn.addEventListener('click', () => {
+                // Create a shareable image canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 1080;
+                canvas.height = 1080;
+                const ctx = canvas.getContext('2d');
+                
+                // Create Instagram-style image
+                ctx.fillStyle = '#f3f4f6';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Add game logo/text
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 80px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Flappy Bird', canvas.width/2, 200);
+                
+                // Add score
+                ctx.font = 'bold 120px Arial';
+                ctx.fillText(`Score: ${lastScore}`, canvas.width/2, canvas.height/2);
+                
+                // Add call to action
+                ctx.font = '40px Arial';
+                ctx.fillText('Can you beat me?', canvas.width/2, canvas.height - 200);
+                ctx.fillText('Play at: example.com', canvas.width/2, canvas.height - 100);
+                
+                // Convert to image and prompt download
+                canvas.toBlob(blob => {
+                    const file = new File([blob], 'flappy-score.png', { type: 'image/png' });
+                    const shareData = {
+                        files: [file],
+                        title: 'My Flappy Bird Score',
+                        text: shareText
+                    };
+                    
+                    if (navigator.canShare && navigator.canShare(shareData)) {
+                        navigator.share(shareData);
+                    } else {
+                        // Fallback: Download image
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = 'flappy-bird-score.png';
+                        a.click();
+                        alert('Image downloaded! Upload it to Instagram Stories');
+                    }
+                }, 'image/png');
+            });
+            
+            // Copy to clipboard
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Copied to clipboard!');
+                });
+            });
+        }
+
+        // ======================
         // GAME CORE FUNCTIONS
         // ======================
         function resizeCanvas() {
@@ -589,7 +733,7 @@
 
         function createPipe() {
             const pipeWidth = 60;
-            let currentGap = Math.max(minGap, pipeGap - (score * 1.5));
+            let currentGap = Math.max(minGap, pipeGap - (score * 1.3));
             
             if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
                 currentGap = Math.max(minGap * 1.15, currentGap * 1.15);
@@ -809,6 +953,7 @@
         }
 
         function gameOver() {
+            lastScore = score;
             gameRunning = false;
             cancelAnimationFrame(animationId);
             finalScoreDisplay.textContent = `Score: ${score}`;
