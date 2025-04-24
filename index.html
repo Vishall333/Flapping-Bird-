@@ -1,8 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1861245675391318" crossorigin="anonymous"></script>
     <title>Flappy Bird Contest</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <!-- Social Media Meta Tags -->
+    <meta property="og:title" content="Flappy Bird Contest">
+    <meta property="og:description" content="Play Flappy Bird and compete for prizes!">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Flappy+Bird+Contest">
+    <meta property="og:url" content="https://example.com/flappy-bird">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <style>
         html, body {
             margin: 0;
@@ -256,6 +270,86 @@
             z-index: 4;
             pointer-events: none;
         }
+  
+        #gameOverScreen .contest-info {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        #gameOverScreen .countdown {
+            font-size: 16px;
+        }
+
+        .theme-default { background-color: #70c5ce; }
+        .theme-night { background-color: #0a1128; }
+        .theme-sunset { background-color: #ff7e5f; }
+        .theme-forest { background-color: #3a7d44; }
+        .theme-ice { background-color: #a8d0e6; }
+
+        .social-share {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+            font-size: 20px;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .social-btn:hover, .social-btn:active { transform: scale(1.1); }
+        .social-btn.twitter { 
+            background-color: #1DA1F2;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 60%;
+        }
+        .social-btn.facebook { 
+            background-color: #3b5998;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 60%;
+        }
+        .social-btn.whatsapp { 
+            background-color: #25D366;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 60%;
+        }
+        .social-btn.instagram {
+            background: radial-gradient(circle at 30% 107%, 
+                        #fdf497 0%, #fdf497 5%, 
+                        #fd5949 45%, #d6249f 60%, 
+                        #285AEB 90%);
+        }
+        .social-btn.copy { background-color: #6c757d; }
+        #shareText {
+            font-size: 14px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .ad-container {
+            width: 100%;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+        }  
 
         @media (orientation: landscape) {
             #gameContainer {
@@ -295,7 +389,7 @@
         <div id="startScreen">
             <h1>Flappy Bird</h1>
             <div class="contest-info">
-                🏆 Win 1000 rs if you top the leaderboard!<br>
+                🏆 Win <span class="prize">₹1000</span> if you top the leaderboard!<br>
                 Contest ends: <span class="countdown">10 days 00:00:00</span>
             </div>
             <button id="startBtn">Play</button>
@@ -303,10 +397,17 @@
             <button id="birdSelectBtn">Select Bird</button>
             <h3>Top Scores</h3>
             <ul id="highScoresList"></ul>
-        </div>
-        
-        <canvas id="gameCanvas"></canvas>
-        
+          
+            <div class="ad-container">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-1861245675391318"
+                     data-ad-slot="9245427442"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+            </div>
+        </div>  
+        <canvas id="gameCanvas"></canvas>  
         <div id="gameOverScreen">
             <h2>Game Over</h2>
             <p id="finalScore">Score: 0</p>
@@ -316,9 +417,16 @@
             </div>
             <h3>Top Scores</h3>
             <ul id="gameOverHighScores"></ul>
-            <button id="restartBtn">Play Again</button>
+            <div id="shareText">Share your score:</div>
+            <div class="social-share">
+                <button class="social-btn twitter" title="Share on Twitter">🐦</button>
+                <button class="social-btn facebook" title="Share on Facebook">f</button>
+                <button class="social-btn whatsapp" title="Share on WhatsApp">📱</button>
+                <button class="social-btn instagram" title="Share on Instagram">📷</button>
+                <button class="social-btn copy" title="Copy link">⎘</button>
         </div>
-        
+            <button id="restartBtn">Play Again</button>          
+            <button id="startscreen">Main Menu</button>
         <div id="nameInputScreen">
             <h2>New High Score!</h2>
             <p>Your score: <span id="newScoreDisplay">0</span></p>
@@ -362,9 +470,10 @@
     <audio id="powerUpSound" src="powerup.mp3" preload="auto"></audio>
     <audio id="bossSound" src="https://assets.mixkit.co/sfx/preview/mixkit-monster-roar-7.mp3" preload="auto"></audio>
     <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
-    
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -507,16 +616,7 @@
                     bird.isShielded = false;
                 }
             },
-            magnet: {
-                color: 'rgba(255, 50, 50, 0.7)',
-                duration: 7000,
-                effect: function() {
-                    // Magnet effect would go here
-                },
-                endEffect: function() {
-                    // Clean up magnet effect
-                }
-            },
+            
             slowmo: {
                 color: 'rgba(0, 255, 0, 0.7)',
                 duration: 6000,
@@ -535,7 +635,7 @@
                 class: 'theme-default', 
                 pipeColor: '#228B22', 
                 pipeEdge: '#1E701E', 
-                ground: '#5a se8f3d', 
+                ground: '#5a8f3d', 
                 grass: '#4a7d34',
                 skyGradient: ['#87CEEB', '#E0F7FA']
             },
@@ -575,48 +675,271 @@
 
         let currentTheme = 0;
         let nextThemeAt = 12;
-
-        // Initialize game
-        function initGame() {
-            resizeCanvas();
-            initClouds();
-            initTrees();
-            setupRealTimeScores();
-            setupBirdSelection();
-            updateCountdown();
-            
-            // Event listeners
-            window.addEventListener('resize', resizeCanvas);
-            startBtn.addEventListener('click', startGame);
-            restartBtn.addEventListener('click', startGame);
-            saveScoreBtn.addEventListener('click', saveHighScore);
-            contestRulesBtn.addEventListener('click', showContestRules);
-            closeRulesBtn.addEventListener('click', hideContestRules);
-            birdSelectBtn.addEventListener('click', showBirdSelection);
-            closeBirdSelectBtn.addEventListener('click', hideBirdSelection);
-            document.addEventListener('keydown', handleKeyPress);
-            canvas.addEventListener('click', handleJump);
-            canvas.addEventListener('touchstart', handleJump, { passive: false });
-            soundToggle.addEventListener('click', toggleSound);
-            
-            // Prevent touch scrolling
-            document.addEventListener('touchmove', function(e) {
-                if (gameRunning) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            // Handle user interaction for audio
-            document.addEventListener('click', function() {
-                if (!userInteracted) {
-                    userInteracted = true;
-                    if (soundEnabled) {
-                        bgMusic.volume = 0.3;
-                        bgMusic.play().catch(e => console.log("Music play failed:", e));
-                    }
-                }
-            }, { once: true });
+        
+        function updateTheme() {
+            document.body.className = themes[currentTheme].class;
         }
+
+        function checkThemeChange() {
+            if (score >= nextThemeAt) {
+                currentTheme = (currentTheme + 1) % themes.length;
+                nextThemeAt += 12;
+                updateTheme();
+                
+                // Visual effect
+                document.body.style.transition = 'background-color 1s ease';
+                setTimeout(() => {
+                    document.body.style.transition = '';
+                }, 1000);
+            }
+        }
+
+        // Countdown Timer
+        function updateCountdown() {
+            const endDate = new Date("Apr 26, 2025 00:00:00").getTime();
+            const now = new Date().getTime();
+            const distance = endDate - now;
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            
+            // Update all countdown elements
+            document.querySelectorAll('.countdown').forEach(el => {
+                el.innerHTML = timeString;
+            });
+                
+            if (distance < 0) {
+                document.querySelectorAll('.contest-info').forEach(el => {
+                    el.innerHTML = "🏆 Contest ended! Final results above.";
+                });
+            }
+        }
+        
+        // Update every second
+        setInterval(updateCountdown, 1000);
+        updateCountdown(); // Initial call
+
+        // Firebase Score System
+        function setupRealTimeScores() {
+            db.collection("scores")
+                .orderBy("score", "desc")
+                .limit(10)
+                .onSnapshot((snapshot) => {
+                    highScores = snapshot.docs.map(doc => doc.data());
+                    updateAllScoreDisplays();
+                }, (error) => {
+                    console.error("Firestore error:", error);
+                });
+        }
+
+        async function saveHighScore() {
+            const name = playerNameInput.value.trim() || "Anonymous";
+            const dedication = dedicationInput.value.trim();
+
+            try {
+                await db.collection("scores").add({
+                    name: name.substring(0, 15),
+                    score: Number(score),
+                    dedication: dedication.substring(0, 100) || null
+                });
+                nameInputScreen.style.display = 'none';
+                gameOverScreen.style.display = 'block';
+            } catch (error) {
+                console.error("Error saving score:", error);
+                alert("Failed to save score. Please try again.");
+            }
+        }
+
+        function updateAllScoreDisplays() {
+            updateScoreDisplay(highScoresList);
+            updateScoreDisplay(gameOverHighScores);
+        }
+
+        function updateScoreDisplay(element) {
+            element.innerHTML = '';
+            highScores.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
+                if (entry.dedication) {
+                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
+                }
+                element.appendChild(li);
+            });
+        }   
+        
+        // Social Sharing System - IMPROVED VERSION
+        function setupSocialSharing() {
+            // Ensure we have a proper URL (fix for Facebook error)
+            let shareUrl;
+            try {
+                shareUrl = new URL(window.location.href).toString();
+            } catch (e) {
+                shareUrl = 'https://example.com/flappy-bird';
+            }
+            
+            const shareText = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
+
+            // Twitter - Using proper logo
+            document.querySelector('.twitter').onclick = (e) => {
+                e.preventDefault();
+                const popupWidth = 550;
+                const popupHeight = 420;
+                const left = (window.innerWidth - popupWidth) / 2;
+                const top = (window.innerHeight - popupHeight) / 2;
+                
+                window.open(
+                    `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+                    'twitter-share',
+                    `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
+                );
+                return false;
+            };
+
+            // Facebook - Fixed URL validation
+            document.querySelector('.facebook').onclick = (e) => {
+                e.preventDefault();
+                const popupWidth = 626;
+                const popupHeight = 436;
+                const left = (window.innerWidth - popupWidth) / 2;
+                const top = (window.innerHeight - popupHeight) / 2;
+                
+                window.open(
+                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                    'facebook-share',
+                    `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
+                );
+                return false;
+            };
+
+            // WhatsApp - COMPLETE FIX for both mobile and web
+            document.querySelector('.whatsapp').onclick = (e) => {
+                e.preventDefault();
+                const text = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
+                const encodedText = encodeURIComponent(text);
+                
+                // Detect Android and iOS devices
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    // For mobile devices
+                    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        // iOS devices
+                        window.location.href = `whatsapp://send?text=${encodedText}`;
+                    } else {
+                        // Android and other devices
+                        window.location.href = `https://wa.me/?text=${encodedText}`;
+                    }
+                } else {
+                    // For desktop browsers
+                    window.open(`https://web.whatsapp.com/send?text=${encodedText}`, '_blank');
+                    
+                    // Fallback in case web.whatsapp.com is blocked
+                    setTimeout(() => {
+                        if (!window.closed) {
+                            window.location.href = `https://api.whatsapp.com/send?text=${encodedText}`;
+                        }
+                    }, 1000);
+                }
+                return false;
+            };     
+
+            // Instagram - Using Web Share API with image fallback
+            document.querySelector('.instagram').onclick = async (e) => {
+                e.preventDefault();
+                try {
+                    // Create a canvas with the score
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1080;
+                    canvas.height = 1080;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw background
+                    ctx.fillStyle = '#70c5ce';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Add text
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 80px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('FLAPPY BIRD', canvas.width/2, 200);
+                    ctx.font = 'bold 120px Arial';
+                    ctx.fillText(`SCORE: ${lastScore}`, canvas.width/2, canvas.height/2);
+                    
+                    // Convert to image
+                    const image = canvas.toDataURL('image/jpeg');
+                    
+                    if (navigator.share) {
+                        // For mobile devices that support Web Share API
+                        const response = await fetch(image);
+                        const blob = await response.blob();
+                        const file = new File([blob], 'flappy-score.jpg', { type: 'image/jpeg' });
+                        
+                        await navigator.share({
+                            files: [file],
+                            title: 'My Flappy Bird Score',
+                            text: `I scored ${lastScore} points!`
+                        });
+                    } else {
+                        // Fallback for desktop and unsupported devices
+                        const link = document.createElement('a');
+                        link.href = image;
+                        link.download = 'flappy-score.jpg';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        alert('Image saved! You can now upload it to Instagram.');
+                    }
+                } catch (error) {
+                    console.error('Sharing failed:', error);
+                    alert('Sharing failed. Please try saving the image first.');
+                }
+                return false;
+            };
+
+            // Copy to Clipboard - Improved with visual feedback
+            document.querySelector('.copy').onclick = async (e) => {
+                e.preventDefault();
+                const text = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
+                
+                try {
+                    await navigator.clipboard.writeText(text);
+                    const copyBtn = e.target;
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '✓ Copied!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                } catch (err) {
+                    // Fallback for browsers without Clipboard API
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        alert('Copied to clipboard!');
+                    } catch (err) {
+                        prompt('Copy this text:', text);
+                    }
+                    document.body.removeChild(textarea);
+                }
+                return false;
+            };
+        }
+
+        // AdSense Initialization
+        function initializeAdSense() {
+            try {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                console.log('AdSense initialized');
+            } catch (e) {
+                console.error('AdSense error:', e);
+            }
+        }            
 
         // Game core functions
         function resizeCanvas() {
@@ -1389,55 +1712,54 @@ function checkCollisions() {
             animationId = requestAnimationFrame(gameLoop);
         }
 
-        // Firebase functions
-        function setupRealTimeScores() {
-            db.collection("scores")
-                .orderBy("score", "desc")
-                .limit(10)
-                .onSnapshot((snapshot) => {
-                    highScores = snapshot.docs.map(doc => doc.data());
-                    updateAllScoreDisplays();
-                }, (error) => {
-                    console.error("Firestore error:", error);
-                });
-        }
-
-        async function saveHighScore() {
-            const name = playerNameInput.value.trim() || "Anonymous";
-            const dedication = dedicationInput.value.trim();
-
-            try {
-                await db.collection("scores").add({
-                    name: name.substring(0, 15),
-                    score: Number(score),
-                    dedication: dedication.substring(0, 100) || null,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+        // Initialize game
+        function initGame() {
+            resizeCanvas();
+            initClouds();
+            initTrees();
+            setupRealTimeScores();
+            setupSocialSharing();
+            setupBirdSelection();
+            updateCountdown();
+            
+            // Event listeners
+            window.addEventListener('resize', resizeCanvas);
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', startGame);
+            saveScoreBtn.addEventListener('click', saveHighScore);
+            contestRulesBtn.addEventListener('click', showContestRules);
+            closeRulesBtn.addEventListener('click', hideContestRules);
+            birdSelectBtn.addEventListener('click', showBirdSelection);
+            closeBirdSelectBtn.addEventListener('click', hideBirdSelection);
+            document.addEventListener('keydown', handleKeyPress);
+            canvas.addEventListener('click', handleJump);
+            canvas.addEventListener('touchstart', handleJump, { passive: false });
+            soundToggle.addEventListener('click', toggleSound);
+            document.getElementById('startscreen').addEventListener('click', function() {
+                gameOverScreen.style.display = 'none';
                 nameInputScreen.style.display = 'none';
-                gameOverScreen.style.display = 'block';
-            } catch (error) {
-                console.error("Error saving score:", error);
-                showMessage("Failed to save score. Please try again.");
-            }
-        }
-
-        function updateAllScoreDisplays() {
-            updateScoreDisplay(highScoresList);
-            updateScoreDisplay(gameOverHighScores);
-        }
-
-        function updateScoreDisplay(element) {
-            element.innerHTML = '';
-            highScores.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
-                if (entry.dedication) {
-                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
-                }
-                element.appendChild(li);
+                startScreen.style.display = 'block';
             });
-        }
-
+            
+            // Prevent touch scrolling
+            document.addEventListener('touchmove', function(e) {
+                if (gameRunning) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Handle user interaction for audio
+            document.addEventListener('click', function() {
+                if (!userInteracted) {
+                    userInteracted = true;
+                    if (soundEnabled) {
+                        bgMusic.volume = 0.3;
+                        bgMusic.play().catch(e => console.log("Music play failed:", e));
+                    }
+                }
+            }, { once: true });
+        }             
+                   
         // Contest rules functions
         function showContestRules() {
             contestRulesScreen.style.display = 'block';
@@ -1453,8 +1775,7 @@ function checkCollisions() {
         }
 
         function updateBirdSelection() {
-            birdOptions.innerHTML = '';
-            
+            birdOptions.innerHTML = '';    
             Object.entries(birdTypes).forEach(([type, data]) => {
                 const option = document.createElement('div');
                 option.className = `bird-option ${type === bird.type ? 'selected' : ''} ${!data.unlocked ? 'locked' : ''}`;
@@ -1476,7 +1797,7 @@ function checkCollisions() {
                 birdOptions.appendChild(option);
             });
         }
-
+  
         function showBirdSelection() {
             birdSelectionScreen.style.display = 'block';
             updateBirdSelection();
@@ -1486,36 +1807,7 @@ function checkCollisions() {
             birdSelectionScreen.style.display = 'none';
         }
 
-        // Countdown Timer
-        function updateCountdown() {
-            const endDate = new Date("May 1, 2025 00:00:00").getTime();
-            const now = new Date().getTime();
-            const distance = endDate - now;
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            
-            // Update all countdown elements
-            document.querySelectorAll('.countdown').forEach(el => {
-                el.innerHTML = timeString;
-            });
-                
-            if (distance < 0) {
-                document.querySelectorAll('.contest-info').forEach(el => {
-                    el.innerHTML = "🏆 Contest ended! Final results above.";
-                });
-            }
-        }
         
-        // Social Sharing
-        function setupSocialSharing() {
-            // Implementation would go here
-        }
-
         // Initialize the game
         window.onload = initGame;
     </script>
