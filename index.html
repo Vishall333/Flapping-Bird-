@@ -46,7 +46,7 @@
             max-height: -webkit-fill-available;
         }
 
-        #startScreen, #gameOverScreen, #nameInputScreen, #contestRulesScreen, #birdSelectionScreen {
+        #startScreen, #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -61,7 +61,7 @@
             z-index: 10;
         }
 
-        #gameOverScreen, #nameInputScreen, #contestRulesScreen, #birdSelectionScreen {
+        #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
             display: none;
         }
 
@@ -97,40 +97,7 @@
             z-index: 5;
         }
 
-        #bossHealthBar {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 20px;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
-            z-index: 5;
-        }
-
-        #bossHealthFill {
-            height: 100%;
-            width: 100%;
-            background-color: #e91e63;
-            transition: width 0.3s;
-        }
-
-        #miniGameScore {
-            position: absolute;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 5;
-        }
-
-        #highScoresList, #gameOverHighScores {
+        #highScoresList, #gameOverHighScores, #winnersList {
             list-style: none;
             padding: 0;
             text-align: left;
@@ -139,7 +106,7 @@
             margin: 15px 0;
         }
 
-        #highScoresList li, #gameOverHighScores li {
+        #highScoresList li, #gameOverHighScores li, #winnersList li {
             padding: 8px 12px;
             background: rgba(255,255,255,0.3);
             margin: 5px 0;
@@ -148,18 +115,21 @@
         }
 
         #highScoresList li:first-child,
-        #gameOverHighScores li:first-child {
+        #gameOverHighScores li:first-child,
+        #winnersList li:first-child {
             background: linear-gradient(135deg, #FFD700 0%, #FFEC80 100%);
             font-weight: bold;
         }
         
         #highScoresList li:nth-child(2),
-        #gameOverHighScores li:nth-child(2) {
+        #gameOverHighScores li:nth-child(2),
+        #winnersList li:nth-child(2) {
             background: linear-gradient(135deg, #C0C0C0 0%, #E0E0E0 100%);
         }
         
         #highScoresList li:nth-child(3),
-        #gameOverHighScores li:nth-child(3) {
+        #gameOverHighScores li:nth-child(3),
+        #winnersList li:nth-child(3) {
             background: linear-gradient(135deg, #CD7F32 0%, #E6B17E 100%);
         }
 
@@ -227,32 +197,6 @@
             font-weight: bold;
         }
         
-        .bird-option {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 8px;
-            background-color: #f0f0f0;
-            cursor: pointer;
-        }
-        
-        .bird-option.selected {
-            background-color: #d4edda;
-        }
-        
-        .bird-option.locked {
-            opacity: 0.6;
-            background-color: #f8d7da;
-        }
-        
-        .bird-preview {
-            width: 40px;
-            height: 40px;
-            margin-right: 15px;
-            border-radius: 50%;
-        }
-        
         .power-up {
             position: absolute;
             width: 30px;
@@ -269,15 +213,6 @@
             border: 3px dashed rgba(0, 150, 255, 0.7);
             z-index: 4;
             pointer-events: none;
-        }
-  
-        #gameOverScreen .contest-info {
-            margin-top: 5px;
-            margin-bottom: 15px;
-            font-size: 13px;
-        }
-        #gameOverScreen .countdown {
-            font-size: 16px;
         }
 
         .theme-default { background-color: #70c5ce; }
@@ -326,7 +261,7 @@
         }
         .social-btn.whatsapp { 
             background-color: #25D366;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335 .157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: center;
             background-size: 60%;
@@ -360,10 +295,10 @@
                 transform: translate(-50%, -50%) rotate(90deg);
                 transform-origin: center center;
             }
-            #startScreen, #gameOverScreen, #nameInputScreen, #contestRulesScreen, #birdSelectionScreen {
+            #startScreen, #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
                 max-width: 300px;
             }
-            #highScoresList, #gameOverHighScores {
+            #highScoresList, #gameOverHighScores, #winnersList {
                 max-height: 100px;
             }
         }
@@ -381,20 +316,16 @@
     <div id="gameContainer">
         <button id="soundToggle">🔊</button>
         <div id="score">0</div>
-        <div id="bossHealthBar" style="display: none;">
-            <div id="bossHealthFill"></div>
-        </div>
-        <div id="miniGameScore" style="display: none;">Mini-Game: 0</div>
         
         <div id="startScreen">
             <h1>Flappy Bird</h1>
             <div class="contest-info">
-                🏆 Win <span class="prize">₹1000</span> if you top the leaderboard!<br>
-                Contest ends: <span class="countdown">10 days 00:00:00</span>
+                🏆 Win <span class="prize">₹2000</span> (1st), <span class="prize">₹1000</span> (2nd), <span class="prize">₹500</span> (3rd)<br>
+                Contest ends: <span class="countdown">0 days 00:01:00</span>
             </div>
             <button id="startBtn">Play</button>
             <button id="contestRulesBtn">Contest Rules</button>
-            <button id="birdSelectBtn">Select Bird</button>
+            <button id="viewWinnersBtn">View Previous Winners</button>
             <h3>Top Scores</h3>
             <ul id="highScoresList"></ul>
           
@@ -407,13 +338,26 @@
                      data-full-width-responsive="true"></ins>
             </div>
         </div>  
+        
+        <!-- Winners Modal -->
+        <div id="winnersModal">
+            <div style="background-color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <h2>🏆 Previous Winners 🏆</h2>
+                <ul id="winnersList">
+                    <li>1. Charitha: 1000 (19 Apr 2025) </li>
+                    <li>2. Charvi: 1000 (26 Apr 2025) </li>
+                </ul>
+                <button id="closeWinners">Close</button>
+            </div>
+        </div>
+        
         <canvas id="gameCanvas"></canvas>  
         <div id="gameOverScreen">
             <h2>Game Over</h2>
             <p id="finalScore">Score: 0</p>
             <div class="contest-info">
                 🏆 Current leaders win prizes!<br>
-                Time remaining: <span class="countdown">10 days 00:00:00</span>
+                Time remaining: <span class="countdown">7 days 00:00:00</span>
             </div>
             <h3>Top Scores</h3>
             <ul id="gameOverHighScores"></ul>
@@ -424,9 +368,11 @@
                 <button class="social-btn whatsapp" title="Share on WhatsApp"></button>
                 <button class="social-btn instagram" title="Share on Instagram">📷</button>
                 <button class="social-btn copy" title="Copy link">⎘</button>
-        </div>
+            </div>
             <button id="restartBtn">Play Again</button>          
             <button id="startscreen">Main Menu</button>
+        </div>
+        
         <div id="nameInputScreen">
             <h2>New High Score!</h2>
             <p>Your score: <span id="newScoreDisplay">0</span></p>
@@ -442,8 +388,8 @@
                 <ol style="padding-left: 20px;">
                     <li>Play & reach the top of the leaderboard</li>
                     <li>Register your score with a valid name</li>
-                    <li>Top players will be contacted after contest ends</li>
-                    <li>Prizes will be awarded as per contest terms</li>
+                    <li>Top 3 players win prizes after contest ends</li>
+                    <li>1st: ₹2000, 2nd: ₹1000, 3rd: ₹500</li>
                 </ol>
             </div>
             <div style="background-color: #f8f8f8; padding: 10px; border-radius: 8px; margin: 10px 0;">
@@ -456,19 +402,12 @@
             </div>
             <button id="closeRulesBtn">Close</button>
         </div>
-        
-        <div id="birdSelectionScreen">
-            <h2>Select Your Bird</h2>
-            <div id="birdOptions"></div>
-            <button id="closeBirdSelectBtn">Close</button>
-        </div>
     </div>
 
     <audio id="flapSound" src="flap.mp3" preload="auto"></audio>
     <audio id="scoreSound" src="score.mp3" preload="auto"></audio>
     <audio id="hitSound" src="hit.mp3" preload="auto"></audio>
     <audio id="powerUpSound" src="powerup.mp3" preload="auto"></audio>
-    <audio id="bossSound" src="https://assets.mixkit.co/sfx/preview/mixkit-monster-roar-7.mp3" preload="auto"></audio>
     <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -489,6 +428,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Set contest end date (0 days from now)
+        const contestEndDate = new Date();
+        contestEndDate.setDate(contestEndDate.getDate() + 7);
+
         // Game elements
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -496,14 +439,14 @@
         const gameOverScreen = document.getElementById('gameOverScreen');
         const nameInputScreen = document.getElementById('nameInputScreen');
         const contestRulesScreen = document.getElementById('contestRulesScreen');
-        const birdSelectionScreen = document.getElementById('birdSelectionScreen');
+        const winnersModal = document.getElementById('winnersModal');
         const startBtn = document.getElementById('startBtn');
         const restartBtn = document.getElementById('restartBtn');
         const saveScoreBtn = document.getElementById('saveScoreBtn');
         const contestRulesBtn = document.getElementById('contestRulesBtn');
         const closeRulesBtn = document.getElementById('closeRulesBtn');
-        const birdSelectBtn = document.getElementById('birdSelectBtn');
-        const closeBirdSelectBtn = document.getElementById('closeBirdSelectBtn');
+        const viewWinnersBtn = document.getElementById('viewWinnersBtn');
+        const closeWinners = document.getElementById('closeWinners');
         const scoreDisplay = document.getElementById('score');
         const finalScoreDisplay = document.getElementById('finalScore');
         const newScoreDisplay = document.getElementById('newScoreDisplay');
@@ -511,18 +454,14 @@
         const dedicationInput = document.getElementById('dedication');
         const highScoresList = document.getElementById('highScoresList');
         const gameOverHighScores = document.getElementById('gameOverHighScores');
+        const winnersList = document.getElementById('winnersList');
         const soundToggle = document.getElementById('soundToggle');
-        const bossHealthBar = document.getElementById('bossHealthBar');
-        const bossHealthFill = document.getElementById('bossHealthFill');
-        const miniGameScore = document.getElementById('miniGameScore');
-        const birdOptions = document.getElementById('birdOptions');
         
         // Sound elements
         const flapSound = document.getElementById('flapSound');
         const scoreSound = document.getElementById('scoreSound');
         const hitSound = document.getElementById('hitSound');
         const powerUpSound = document.getElementById('powerUpSound');
-        const bossSound = document.getElementById('bossSound');
         const bgMusic = document.getElementById('bgMusic');
         
         // Game variables
@@ -540,8 +479,7 @@
             hoverAmplitude: 5,
             hoverSpeed: 0.05,
             hoverOffset: 0,
-            isShielded: false,
-            type: 'default'
+            isShielded: false
         };
         
         let background = {
@@ -553,14 +491,6 @@
         let powerUps = [];
         let activePowerUp = null;
         let powerUpTimer = 0;
-        let boss = null;
-        let bossHealth = 0;
-        let miniGame = {
-            active: false,
-            targets: [],
-            score: 0,
-            timeLeft: 30
-        };
         let score = 0;
         let lastScore = 0;
         let gameRunning = false;
@@ -573,36 +503,6 @@
         let highScores = [];
         let userInteracted = false;
         let soundEnabled = true;
-
-        // Bird types
-        const birdTypes = {
-            default: { 
-                name: "Default Bird",
-                color: '#FFD700',
-                jump: -10,
-                width: 30,
-                height: 20,
-                unlocked: true
-            },
-            eagle: {
-                name: "Eagle",
-                color: '#B8860B',
-                jump: -12,
-                width: 35,
-                height: 25,
-                unlocked: false,
-                unlockAt: 20
-            },
-            penguin: {
-                name: "Penguin",
-                color: '#000000',
-                jump: -8,
-                width: 38,
-                height: 30,
-                unlocked: false,
-                unlockAt: 50
-            }
-        };
 
         // Power-up types
         const powerUpTypes = {
@@ -675,30 +575,77 @@
 
         let currentTheme = 0;
         let nextThemeAt = 12;
-        
-        function updateTheme() {
-            document.body.className = themes[currentTheme].class;
-        }
 
-        function checkThemeChange() {
-            if (score >= nextThemeAt) {
-                currentTheme = (currentTheme + 1) % themes.length;
-                nextThemeAt += 12;
-                updateTheme();
-                
-                // Visual effect
-                document.body.style.transition = 'background-color 1s ease';
-                setTimeout(() => {
-                    document.body.style.transition = '';
-                }, 1000);
-            }
+        // Update the checkContestStatus function in your script
+async function checkContestStatus() {
+    
+    // Get the stored contest end date from localStorage or use the default one
+    let storedEndDate = localStorage.getItem('contestEndDate');
+    let endDate;
+    
+    if (storedEndDate) {
+        endDate = new Date(storedEndDate);
+    } else {
+        // Set contest end date (30 days from now)
+        endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
+        localStorage.setItem('contestEndDate', endDate.toString());
+    }
+
+    const now = new Date();
+    
+    // If contest has ended
+    if (now > endDate) {
+        try {
+            // Get all scores
+            const snapshot = await db.collection("scores").get();
+            
+            // Archive the top 3 winners
+            const winners = snapshot.docs
+                .map(doc => doc.data())
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3);
+            
+            // Save to winners collection with prizes
+            const batch = db.batch();
+            winners.forEach((winner, index) => {
+                const prize = index === 0 ? 2000 : index === 1 ? 1000 : 500;
+                const winnerRef = db.collection("winners").doc();
+                batch.set(winnerRef, {
+                    ...winner,
+                    prize: prize,
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                });
+            });
+            
+            // Delete all scores
+            snapshot.docs.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            
+            await batch.commit();
+            console.log("Scores reset and winners archived");
+            
+            // Set new contest end date (30 days from now)
+            const newEndDate = new Date();
+            newEndDate.setDate(newEndDate.getDate() + 30);
+            localStorage.setItem('contestEndDate', newEndDate.toString());
+            
+            // Update the global contestEndDate variable
+            contestEndDate = newEndDate;
+        } catch (error) {
+            console.error("Error resetting scores:", error);
         }
+    } else {
+        // Contest is still running, update the global variable
+        contestEndDate = endDate;
+    }
+}
 
         // Countdown Timer
         function updateCountdown() {
-            const endDate = new Date("Apr 26, 2025 00:00:00").getTime();
-            const now = new Date().getTime();
-            const distance = endDate - now;
+            const now = new Date();
+            const distance = contestEndDate - now;
             
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -714,14 +661,10 @@
                 
             if (distance < 0) {
                 document.querySelectorAll('.contest-info').forEach(el => {
-                    el.innerHTML = "🏆 Contest ended! Final results above.";
+                    el.innerHTML = "🏆 Contest ended! Winners will be announced soon.";
                 });
             }
         }
-        
-        // Update every second
-        setInterval(updateCountdown, 1000);
-        updateCountdown(); // Initial call
 
         // Firebase Score System
         function setupRealTimeScores() {
@@ -734,6 +677,26 @@
                 }, (error) => {
                     console.error("Firestore error:", error);
                 });
+                
+            // Load previous winners
+            db.collection("winners")
+                .orderBy("score", "desc")
+                .limit(3)
+                .get()
+                .then((snapshot) => {
+                    const winners = snapshot.docs.map(doc => doc.data());
+                    updateWinnersList(winners);
+                });
+        }
+
+        function updateWinnersList(winners) {
+            winnersList.innerHTML = '';
+            winners.forEach((winner, index) => {
+                const prize = index === 0 ? 2000 : index === 1 ? 1000 : 500;
+                const li = document.createElement('li');
+                li.textContent = `${index + 1}. ${winner.name}: ${winner.score} (${winner.date}) - ₹${prize}`;
+                winnersList.appendChild(li);
+            });
         }
 
         async function saveHighScore() {
@@ -769,11 +732,10 @@
                 }
                 element.appendChild(li);
             });
-        }   
-        
-        // Social Sharing System - IMPROVED VERSION
+        }
+
+        // Social Sharing System
         function setupSocialSharing() {
-            // Ensure we have a proper URL (fix for Facebook error)
             let shareUrl;
             try {
                 shareUrl = new URL(window.location.href).toString();
@@ -783,7 +745,6 @@
             
             const shareText = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
 
-            // Twitter - Using proper logo
             document.querySelector('.twitter').onclick = (e) => {
                 e.preventDefault();
                 const popupWidth = 550;
@@ -799,7 +760,6 @@
                 return false;
             };
 
-            // Facebook - Fixed URL validation
             document.querySelector('.facebook').onclick = (e) => {
                 e.preventDefault();
                 const popupWidth = 626;
@@ -815,29 +775,22 @@
                 return false;
             };
 
-            // WhatsApp - COMPLETE FIX for both mobile and web
             document.querySelector('.whatsapp').onclick = (e) => {
                 e.preventDefault();
                 const text = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
                 const encodedText = encodeURIComponent(text);
                 
-                // Detect Android and iOS devices
                 const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent);
                 
                 if (isMobile) {
-                    // For mobile devices
                     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        // iOS devices
                         window.location.href = `whatsapp://send?text=${encodedText}`;
                     } else {
-                        // Android and other devices
                         window.location.href = `https://wa.me/?text=${encodedText}`;
                     }
                 } else {
-                    // For desktop browsers
                     window.open(`https://web.whatsapp.com/send?text=${encodedText}`, '_blank');
                     
-                    // Fallback in case web.whatsapp.com is blocked
                     setTimeout(() => {
                         if (!window.closed) {
                             window.location.href = `https://api.whatsapp.com/send?text=${encodedText}`;
@@ -847,21 +800,17 @@
                 return false;
             };     
 
-            // Instagram - Using Web Share API with image fallback
             document.querySelector('.instagram').onclick = async (e) => {
                 e.preventDefault();
                 try {
-                    // Create a canvas with the score
                     const canvas = document.createElement('canvas');
                     canvas.width = 1080;
                     canvas.height = 1080;
                     const ctx = canvas.getContext('2d');
                     
-                    // Draw background
                     ctx.fillStyle = '#70c5ce';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     
-                    // Add text
                     ctx.fillStyle = '#ffffff';
                     ctx.font = 'bold 80px Arial';
                     ctx.textAlign = 'center';
@@ -869,11 +818,9 @@
                     ctx.font = 'bold 120px Arial';
                     ctx.fillText(`SCORE: ${lastScore}`, canvas.width/2, canvas.height/2);
                     
-                    // Convert to image
                     const image = canvas.toDataURL('image/jpeg');
                     
                     if (navigator.share) {
-                        // For mobile devices that support Web Share API
                         const response = await fetch(image);
                         const blob = await response.blob();
                         const file = new File([blob], 'flappy-score.jpg', { type: 'image/jpeg' });
@@ -884,7 +831,6 @@
                             text: `I scored ${lastScore} points!`
                         });
                     } else {
-                        // Fallback for desktop and unsupported devices
                         const link = document.createElement('a');
                         link.href = image;
                         link.download = 'flappy-score.jpg';
@@ -900,7 +846,6 @@
                 return false;
             };
 
-            // Copy to Clipboard - Improved with visual feedback
             document.querySelector('.copy').onclick = async (e) => {
                 e.preventDefault();
                 const text = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
@@ -914,7 +859,6 @@
                         copyBtn.innerHTML = originalText;
                     }, 2000);
                 } catch (err) {
-                    // Fallback for browsers without Clipboard API
                     const textarea = document.createElement('textarea');
                     textarea.value = text;
                     document.body.appendChild(textarea);
@@ -930,16 +874,6 @@
                 return false;
             };
         }
-
-        // AdSense Initialization
-        function initializeAdSense() {
-            try {
-                (adsbygoogle = window.adsbygoogle || []).push({});
-                console.log('AdSense initialized');
-            } catch (e) {
-                console.error('AdSense error:', e);
-            }
-        }            
 
         // Game core functions
         function resizeCanvas() {
@@ -994,15 +928,13 @@
         function handleJump(e) {
             e.preventDefault();
             if (!userInteracted) userInteracted = true;
-            if (gameRunning && !miniGame.active) {
+            if (gameRunning) {
                 birdJump();
-            } else if (miniGame.active) {
-                handleMiniGameClick(e);
             }
         }
 
         function birdJump() {
-            bird.velocity = birdTypes[bird.type].jump;
+            bird.velocity = bird.jump;
             bird.initialHover = false;
             if (soundEnabled) {
                 flapSound.currentTime = 0;
@@ -1048,88 +980,6 @@
             });
         }
 
-        function spawnBoss() {
-            if (score === 50 && !boss) {
-                boss = {
-                    x: canvas.width,
-                    y: 100,
-                    width: 120,
-                    height: 80,
-                    speed: 1.5,
-                    attackPattern: 0,
-                    timer: 0
-                };
-                bossHealth = 3;
-                updateBossHealth();
-                bossHealthBar.style.display = 'block';
-                
-                if (soundEnabled) {
-                    bossSound.currentTime = 0;
-                    bossSound.play().catch(e => console.log("Boss sound failed:", e));
-                }
-                
-                showMessage("BOSS BATTLE: Giant Owl!");
-            }
-        }
-
-        function updateBossHealth() {
-            const healthPercent = (bossHealth / 3) * 100;
-            bossHealthFill.style.width = `${healthPercent}%`;
-        }
-
-        function startMiniGame() {
-            if (score > 0 && score % 70 === 0 && !miniGame.active) {
-                miniGame.active = true;
-                gameRunning = false;
-                miniGame.score = 0;
-                miniGame.timeLeft = 30;
-                miniGame.targets = [];
-                
-                // Create targets
-                for (let i = 0; i < 5; i++) {
-                    miniGame.targets.push({
-                        x: Math.random() * (canvas.width - 40),
-                        y: Math.random() * (canvas.height - 100),
-                        width: 40,
-                        hit: false
-                    });
-                }
-                
-                miniGameScore.textContent = `Mini-Game: ${miniGame.score}`;
-                miniGameScore.style.display = 'block';
-            }
-        }
-
-        function handleMiniGameClick(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            miniGame.targets.forEach(target => {
-                if (!target.hit && x > target.x && x < target.x + target.width && 
-                    y > target.y && y < target.y + target.width) {
-                    target.hit = true;
-                    miniGame.score += 10;
-                    miniGameScore.textContent = `Mini-Game: ${miniGame.score}`;
-                    
-                    if (soundEnabled) {
-                        scoreSound.currentTime = 0;
-                        scoreSound.play().catch(e => console.log("Score sound failed:", e));
-                    }
-                }
-            });
-            
-            // Check if all targets are hit
-            if (miniGame.targets.every(t => t.hit)) {
-                score += miniGame.score;
-                miniGame.active = false;
-                gameRunning = true;
-                miniGameScore.style.display = 'none';
-                
-                showMessage(`Mini-Game Complete! +${miniGame.score} points`);
-            }
-        }
-
         function drawPipes() {
             const theme = themes[currentTheme];
             ctx.fillStyle = theme.pipeColor;
@@ -1163,131 +1013,64 @@
                 
                 if (pu.type === 'shield') {
                     ctx.fillText('S', pu.x + pu.width/2, pu.y + pu.height/2);
-                } else if (pu.type === 'magnet') {
-                    ctx.fillText('M', pu.x + pu.width/2, pu.y + pu.height/2);
                 } else {
                     ctx.fillText('SL', pu.x + pu.width/2, pu.y + pu.height/2);
                 }
             });
         }
 
-        function drawBoss() {
-            if (!boss) return;
-            
-            // Draw boss body
-            ctx.fillStyle = '#8B4513';
-            ctx.beginPath();
-            ctx.ellipse(
-                boss.x + boss.width/2, 
-                boss.y + boss.height/2,
-                boss.width/2, 
-                boss.height/2, 
-                0, 0, Math.PI * 2
-            );
-            ctx.fill();
-            
-            // Draw eyes (weak point)
-            ctx.fillStyle = '#FFF';
-            ctx.beginPath();
-            ctx.arc(boss.x + 40, boss.y + 20, 10, 0, Math.PI * 2);
-            ctx.arc(boss.x + 80, boss.y + 20, 10, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(boss.x + 40, boss.y + 20, 5, 0, Math.PI * 2);
-            ctx.arc(boss.x + 80, boss.y + 20, 5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw beak
+        function drawBird() {
+            // Draw body
             ctx.fillStyle = '#FFD700';
             ctx.beginPath();
-            ctx.moveTo(boss.x + 60, boss.y + 30);
-            ctx.lineTo(boss.x + 80, boss.y + 40);
-            ctx.lineTo(boss.x + 60, boss.y + 50);
-            ctx.fill();
-        }
-
-        function drawMiniGame() {
-            if (!miniGame.active) return;
-            
-            // Draw background
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw instructions
-            ctx.fillStyle = '#FFF';
-            ctx.font = '20px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('TARGET PRACTICE!', canvas.width/2, 50);
-            ctx.font = '16px Arial';
-            ctx.fillText('Tap the red targets quickly!', canvas.width/2, 80);
-            
-            // Draw targets
-            miniGame.targets.forEach(target => {
-                if (!target.hit) {
-                    ctx.fillStyle = '#FF0000';
-                    ctx.beginPath();
-                    ctx.arc(target.x + target.width/2, target.y + target.width/2, target.width/2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            });
-        }
-
-        function drawBird() {
-            const birdType = birdTypes[bird.type];
-            
-            // Draw body
-            ctx.fillStyle = birdType.color;
-            ctx.beginPath();
             ctx.ellipse(
-                bird.x + birdType.width/2, 
-                bird.y + birdType.height/2,
-                birdType.width/2, 
-                birdType.height/2, 
+                bird.x + bird.width/2, 
+                bird.y + bird.height/2,
+                bird.width/2, 
+                bird.height/2, 
                 0, 0, Math.PI * 2
             );
             ctx.fill();
             
             // Draw wings
-            ctx.fillStyle = `rgba(${hexToRgb(birdType.color)}, 0.8)`;
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
             if (bird.wingState === 0) {
                 // Down flap
                 ctx.beginPath();
-                ctx.moveTo(bird.x, bird.y + birdType.height/2);
+                ctx.moveTo(bird.x, bird.y + bird.height/2);
                 ctx.quadraticCurveTo(
-                    bird.x - 15, bird.y + birdType.height/2 + 10,
-                    bird.x, bird.y + birdType.height
+                    bird.x - 15, bird.y + bird.height/2 + 10,
+                    bird.x, bird.y + bird.height
                 );
                 ctx.quadraticCurveTo(
-                    bird.x + 10, bird.y + birdType.height/2 + 5,
-                    bird.x, bird.y + birdType.height/2
+                    bird.x + 10, bird.y + bird.height/2 + 5,
+                    bird.x, bird.y + bird.height/2
                 );
                 ctx.fill();
             } else if (bird.wingState === 1) {
                 // Mid flap
                 ctx.beginPath();
-                ctx.moveTo(bird.x, bird.y + birdType.height/2);
+                ctx.moveTo(bird.x, bird.y + bird.height/2);
                 ctx.quadraticCurveTo(
-                    bird.x - 10, bird.y + birdType.height/2,
-                    bird.x, bird.y + birdType.height/2 + 10
+                    bird.x - 10, bird.y + bird.height/2,
+                    bird.x, bird.y + bird.height/2 + 10
                 );
                 ctx.quadraticCurveTo(
-                    bird.x + 10, bird.y + birdType.height/2,
-                    bird.x, bird.y + birdType.height/2
+                    bird.x + 10, bird.y + bird.height/2,
+                    bird.x, bird.y + bird.height/2
                 );
                 ctx.fill();
             } else {
                 // Up flap
                 ctx.beginPath();
-                ctx.moveTo(bird.x, bird.y + birdType.height/2);
+                ctx.moveTo(bird.x, bird.y + bird.height/2);
                 ctx.quadraticCurveTo(
-                    bird.x - 15, bird.y + birdType.height/2 - 10,
+                    bird.x - 15, bird.y + bird.height/2 - 10,
                     bird.x, bird.y
                 );
                 ctx.quadraticCurveTo(
-                    bird.x + 10, bird.y + birdType.height/2 - 5,
-                    bird.x, bird.y + birdType.height/2
+                    bird.x + 10, bird.y + bird.height/2 - 5,
+                    bird.x, bird.y + bird.height/2
                 );
                 ctx.fill();
             }
@@ -1295,15 +1078,15 @@
             // Draw beak
             ctx.fillStyle = '#FF8C00';
             ctx.beginPath();
-            ctx.moveTo(bird.x + birdType.width, bird.y + 10);
-            ctx.lineTo(bird.x + birdType.width + 10, bird.y + 10);
-            ctx.lineTo(bird.x + birdType.width, bird.y + 15);
+            ctx.moveTo(bird.x + bird.width, bird.y + 10);
+            ctx.lineTo(bird.x + bird.width + 10, bird.y + 10);
+            ctx.lineTo(bird.x + bird.width, bird.y + 15);
             ctx.fill();
             
             // Draw eye
             ctx.fillStyle = '#000';
             ctx.beginPath();
-            ctx.arc(bird.x + birdType.width - 8, bird.y + 7, 3, 0, Math.PI * 2);
+            ctx.arc(bird.x + bird.width - 8, bird.y + 7, 3, 0, Math.PI * 2);
             ctx.fill();
             
             // Draw shield effect if active
@@ -1312,87 +1095,75 @@
                 ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.arc(
-                    bird.x + birdType.width/2, 
-                    bird.y + birdType.height/2, 
-                    birdType.width/2 + 10, 
+                    bird.x + bird.width/2, 
+                    bird.y + bird.height/2, 
+                    bird.width/2 + 10, 
                     0, 
                     Math.PI * 2
-        );
-        ctx.stroke();
-    }
-}
-
-function hexToRgb(hex) {
-    // Remove # if present
-    hex = hex.replace('#', '');
-    
-    // Parse r, g, b values
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    
-    return `${r}, ${g}, ${b}`;
-}
-
-function drawBackground() {
-    const theme = themes[currentTheme];
-    
-    // Sky gradient
-    const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    skyGradient.addColorStop(0, theme.skyGradient[0]);
-    skyGradient.addColorStop(1, theme.skyGradient[1]);
-    ctx.fillStyle = skyGradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height - 50);
-    
-    // Draw clouds
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    background.clouds.forEach(cloud => {
-        cloud.x -= cloud.speed;
-        if (cloud.x + cloud.width < 0) {
-            cloud.x = canvas.width;
-            cloud.y = Math.random() * 200;
+                );
+                ctx.stroke();
+            }
         }
-        
-        ctx.beginPath();
-        ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
-        ctx.arc(cloud.x + cloud.width * 0.3, cloud.y - cloud.width * 0.1, cloud.width * 0.25, 0, Math.PI * 2);
-        ctx.arc(cloud.x + cloud.width * 0.6, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
-        ctx.arc(cloud.x + cloud.width * 0.3, cloud.y + cloud.width * 0.1, cloud.width * 0.2, 0, Math.PI * 2);
-        ctx.fill();
-    });
-    
-    // Draw distant trees
-    ctx.fillStyle = theme.grass;
-    background.trees.forEach(tree => {
-        tree.x -= 0.5;
-        if (tree.x + tree.width < 0) {
-            tree.x = canvas.width;
-            tree.height = 80 + Math.random() * 40;
-        }
-        
-        ctx.beginPath();
-        ctx.moveTo(tree.x, canvas.height - 50);
-        ctx.lineTo(tree.x + tree.width/2, canvas.height - 50 - tree.height);
-        ctx.lineTo(tree.x + tree.width, canvas.height - 50);
-        ctx.fill();
-    });
-    
-    // Draw ground
-    ctx.fillStyle = theme.ground;
-    ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-    
-    // Draw grass details
-    ctx.fillStyle = theme.grass;
-    for (let i = 0; i < canvas.width; i += 20) {
-        ctx.beginPath();
-        ctx.moveTo(i, canvas.height - 50);
-        ctx.lineTo(i + 10, canvas.height - 70);
-        ctx.lineTo(i + 20, canvas.height - 50);
-        ctx.fill();
-    }
-}
 
-function updateBird() {
+        function drawBackground() {
+            const theme = themes[currentTheme];
+            
+            // Sky gradient
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGradient.addColorStop(0, theme.skyGradient[0]);
+            skyGradient.addColorStop(1, theme.skyGradient[1]);
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height - 50);
+            
+            // Draw clouds
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            background.clouds.forEach(cloud => {
+                cloud.x -= cloud.speed;
+                if (cloud.x + cloud.width < 0) {
+                    cloud.x = canvas.width;
+                    cloud.y = Math.random() * 200;
+                }
+                
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width * 0.3, cloud.y - cloud.width * 0.1, cloud.width * 0.25, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width * 0.6, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width * 0.3, cloud.y + cloud.width * 0.1, cloud.width * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw distant trees
+            ctx.fillStyle = theme.grass;
+            background.trees.forEach(tree => {
+                tree.x -= 0.5;
+                if (tree.x + tree.width < 0) {
+                    tree.x = canvas.width;
+                    tree.height = 80 + Math.random() * 40;
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(tree.x, canvas.height - 50);
+                ctx.lineTo(tree.x + tree.width/2, canvas.height - 50 - tree.height);
+                ctx.lineTo(tree.x + tree.width, canvas.height - 50);
+                ctx.fill();
+            });
+            
+            // Draw ground
+            ctx.fillStyle = theme.ground;
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            
+            // Draw grass details
+            ctx.fillStyle = theme.grass;
+            for (let i = 0; i < canvas.width; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i, canvas.height - 50);
+                ctx.lineTo(i + 10, canvas.height - 70);
+                ctx.lineTo(i + 20, canvas.height - 50);
+                ctx.fill();
+            }
+        }
+
+        function updateBird() {
             if (bird.initialHover) {
                 bird.hoverOffset = Math.sin(bird.wingTimer * bird.hoverSpeed) * bird.hoverAmplitude;
                 bird.y = canvas.height / 3 + bird.hoverOffset;
@@ -1427,7 +1198,6 @@ function updateBird() {
                     pipes[i].passed = true;
                     score++;
                     scoreDisplay.textContent = score;
-                    checkUnlocks();
                     checkThemeChange();
                     if (soundEnabled) {
                         scoreSound.currentTime = 0;
@@ -1463,94 +1233,33 @@ function updateBird() {
             }
         }
 
-        function updateBoss() {
-            if (!boss) return;
-            
-            boss.x -= boss.speed;
-            boss.timer++;
-            
-            // Attack patterns
-            if (boss.timer % 120 === 0) { // Every 2 seconds
-                boss.attackPattern = (boss.attackPattern + 1) % 3;
-            }
-            
-            // Check if boss is defeated
-            if (boss.x + boss.width < 0) {
-                boss = null;
-                bossHealthBar.style.display = 'none';
-                showMessage("BOSS DEFEATED! +100 points");
-                score += 100;
-                scoreDisplay.textContent = score;
-            }
-        }
-
-        function activatePowerUp(type) {
-            activePowerUp = { type, timer: powerUpTypes[type].duration / (1000/60) }; // Convert ms to frames
-            powerUpTypes[type].effect();
-            
-            if (soundEnabled) {
-                powerUpSound.currentTime = 0;
-                powerUpSound.play().catch(e => console.log("Power-up sound failed:", e));
-            }
-            
-            showMessage(`POWER-UP: ${type.toUpperCase()}!`);
-        }
-
         function isColliding(obj1, obj2) {
             return obj1.x < obj2.x + obj2.width &&
-                   obj1.x + birdTypes[bird.type].width > obj2.x &&
+                   obj1.x + bird.width > obj2.x &&
                    obj1.y < obj2.y + obj2.height &&
-                   obj1.y + birdTypes[bird.type].height > obj2.y;
+                   obj1.y + bird.height > obj2.y;
         }
 
         function checkCollisions() {
             // Ground collision
-            if (bird.y + birdTypes[bird.type].height > canvas.height - 50) {
+            if (bird.y + bird.height > canvas.height - 50) {
                 return true;
             }
-            
-            // Collision detection skips if shielded
-function checkCollisions() {
-    if (!bird.isShielded) { // Only check collisions when not shielded
-        // Normal collision detection here
-    }
-    return false;
-}
             
             // Pipe collisions (ignore if shielded)
             if (!bird.isShielded) {
                 for (const pipe of pipes) {
                     if (
-                        bird.x + birdTypes[bird.type].width > pipe.x &&
+                        bird.x + bird.width > pipe.x &&
                         bird.x < pipe.x + pipe.width &&
-                        (bird.y < pipe.topHeight || bird.y + birdTypes[bird.type].height > canvas.height - pipe.bottomHeight - 50)
+                        (bird.y < pipe.topHeight || bird.y + bird.height > canvas.height - pipe.bottomHeight - 50)
                     ) {
-                        return true;
-                    }
-                }
-                
-                // Boss collision (only with body, not weak points)
-                if (boss) {
-                    if (bird.x + birdTypes[bird.type].width > boss.x &&
-                        bird.x < boss.x + boss.width &&
-                        bird.y + birdTypes[bird.type].height > boss.y + 30 && // Below eyes
-                        bird.y < boss.y + boss.height) {
                         return true;
                     }
                 }
             }
             
             return false;
-        }
-
-        function checkUnlocks() {
-            Object.entries(birdTypes).forEach(([type, data]) => {
-                if (data.unlockAt && score >= data.unlockAt && !data.unlocked) {
-                    data.unlocked = true;
-                    showMessage(`UNLOCKED: ${data.name}!`);
-                    updateBirdSelection();
-                }
-            });
         }
 
         function checkThemeChange() {
@@ -1585,7 +1294,20 @@ function checkCollisions() {
                 msg.remove();
             }, 2000);
         }
-    function gameOver() {
+
+        function activatePowerUp(type) {
+            activePowerUp = { type, timer: powerUpTypes[type].duration / (1000/60) }; // Convert ms to frames
+            powerUpTypes[type].effect();
+            
+            if (soundEnabled) {
+                powerUpSound.currentTime = 0;
+                powerUpSound.play().catch(e => console.log("Power-up sound failed:", e));
+            }
+            
+            showMessage(`POWER-UP: ${type.toUpperCase()}!`);
+        }
+
+        function gameOver() {
             lastScore = score;
             gameRunning = false;
             cancelAnimationFrame(animationId);
@@ -1622,10 +1344,6 @@ function checkCollisions() {
             pipes = [];
             powerUps = [];
             activePowerUp = null;
-            boss = null;
-            bossHealthBar.style.display = 'none';
-            miniGame.active = false;
-            miniGameScore.style.display = 'none';
             score = 0;
             pipeSpeed = 2.5;
             pipeGap = 180;
@@ -1672,17 +1390,10 @@ function checkCollisions() {
             // Draw power-ups
             drawPowerUps();
             
-            // Draw boss
-            drawBoss();
-            
-            // Draw mini-game if active
-            drawMiniGame();
-            
             // Update game elements
             updateBird();
             updatePipes();
             updatePowerUps();
-            updateBoss();
             
             // Draw bird (on top of everything)
             drawBird();
@@ -1691,16 +1402,6 @@ function checkCollisions() {
             if (timestamp - lastPipeTime > pipeFrequency) {
                 createPipe();
                 lastPipeTime = timestamp;
-            }
-            
-            // Check for boss spawn
-            if (score === 50 && !boss) {
-                spawnBoss();
-            }
-            
-            // Check for mini-game
-            if (score > 0 && score % 25 === 0 && !miniGame.active) {
-                startMiniGame();
             }
             
             // Check collisions
@@ -1717,10 +1418,19 @@ function checkCollisions() {
             resizeCanvas();
             initClouds();
             initTrees();
+            
+            // Check contest status and reset if needed
+            checkContestStatus();
+            
+            // Setup real-time scores and winners
             setupRealTimeScores();
+            
+            // Setup social sharing
             setupSocialSharing();
-            setupBirdSelection();
+            
+            // Update countdown timer
             updateCountdown();
+            setInterval(updateCountdown, 1000);
             
             // Event listeners
             window.addEventListener('resize', resizeCanvas);
@@ -1729,8 +1439,8 @@ function checkCollisions() {
             saveScoreBtn.addEventListener('click', saveHighScore);
             contestRulesBtn.addEventListener('click', showContestRules);
             closeRulesBtn.addEventListener('click', hideContestRules);
-            birdSelectBtn.addEventListener('click', showBirdSelection);
-            closeBirdSelectBtn.addEventListener('click', hideBirdSelection);
+            viewWinnersBtn.addEventListener('click', showWinners);
+            closeWinners.addEventListener('click', hideWinners);
             document.addEventListener('keydown', handleKeyPress);
             canvas.addEventListener('click', handleJump);
             canvas.addEventListener('touchstart', handleJump, { passive: false });
@@ -1758,9 +1468,11 @@ function checkCollisions() {
                     }
                 }
             }, { once: true });
-        }             
-                   
-        // Contest rules functions
+            
+            // Initialize AdSense
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        }
+
         function showContestRules() {
             contestRulesScreen.style.display = 'block';
         }
@@ -1769,46 +1481,15 @@ function checkCollisions() {
             contestRulesScreen.style.display = 'none';
         }
 
-        // Bird selection functions
-        function setupBirdSelection() {
-            updateBirdSelection();
+        function showWinners() {
+            winnersModal.style.display = 'block';
         }
 
-        function updateBirdSelection() {
-            birdOptions.innerHTML = '';    
-            Object.entries(birdTypes).forEach(([type, data]) => {
-                const option = document.createElement('div');
-                option.className = `bird-option ${type === bird.type ? 'selected' : ''} ${!data.unlocked ? 'locked' : ''}`;
-                option.innerHTML = `
-                    <div class="bird-preview" style="background-color: ${data.color}"></div>
-                    <div>
-                        <strong>${data.name}</strong>
-                        ${!data.unlocked ? `<div style="font-size:12px;">Unlock at ${data.unlockAt} points</div>` : ''}
-                    </div>
-                `;
-                
-                if (data.unlocked) {
-                    option.addEventListener('click', () => {
-                        bird.type = type;
-                        hideBirdSelection();
-                    });
-                }
-                
-                birdOptions.appendChild(option);
-            });
-        }
-  
-        function showBirdSelection() {
-            birdSelectionScreen.style.display = 'block';
-            updateBirdSelection();
+        function hideWinners() {
+            winnersModal.style.display = 'none';
         }
 
-        function hideBirdSelection() {
-            birdSelectionScreen.style.display = 'none';
-        }
-
-        
-        // Initialize the game
+        // Start the game
         window.onload = initGame;
     </script>
 </body>
