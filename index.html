@@ -397,7 +397,7 @@
             <h1>Flappy Bird</h1>
             <div class="contest-info">
                 🏆 Win <span class="prize">₹2000</span> (1st), <span class="prize">₹1000</span> (2nd), <span class="prize">₹500</span> (3rd)<br>
-                Contest ends: <span class="countdown">5 days 00:00:00</span>
+                Contest ends: <span class="countdown"> 05 May 2025 00:00:00</span>
             </div>
             <button id="startBtn">Play</button>
             <button id="contestRulesBtn">Contest Rules</button>
@@ -433,7 +433,7 @@
             <p id="finalScore">Score: 0</p>
             <div class="contest-info">
                 🏆 Current leaders win prizes!<br>
-                Time remaining: <span class="countdown">5 days 00:00:00</span>
+                Time remaining: <span class="countdown"> 05 May 2025 00:00:00</span>
             </div>
             <h3>Top Scores</h3>
             <ul id="gameOverHighScores"></ul>
@@ -469,7 +469,7 @@
                 </ol>
             </div>
             <div style="background-color: #f8f8f8; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                <h4 style="margin-top: 0;">📌 Submit Proof (If Required):</h4>
+                <h4 style="margin-top: 0;">📌 Submit Proof :</h4>
                 <p>Email screenshot to: <strong>flyingbirdsgame@gmail.com</strong></p>
                 <p>Subject: <em>"Contest Entry - [Your Name]"</em></p>
             </div>
@@ -664,7 +664,7 @@ async function checkContestStatus() {
     } else {
         // Set contest end date (30 days from now)
         endDate = new Date();
-        endDate.setDate(endDate.getDate() + 30);
+        endDate.setDate(endDate.getDate() + 7);
         localStorage.setItem('contestEndDate', endDate.toString());
     }
 
@@ -704,7 +704,7 @@ async function checkContestStatus() {
             
             // Set new contest end date (30 days from now)
             const newEndDate = new Date();
-            newEndDate.setDate(newEndDate.getDate() + 30);
+            newEndDate.setDate(newEndDate.getDate() + 7);
             localStorage.setItem('contestEndDate', newEndDate.toString());
             
             // Update the global contestEndDate variable
