@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <!-- Social Media Meta Tags -->
     <meta property="og:title" content="Flappy Bird Contest">
     <meta property="og:description" content="Play Flappy Bird and compete for prizes!">
     <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Flappy+Bird+Contest">
@@ -26,7 +24,7 @@
             overflow: hidden;
             touch-action: none;
             -webkit-tap-highlight-color: transparent;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
         }
 
         #gameContainer {
@@ -47,72 +45,79 @@
         }
 
         #winnerCelebration {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-    flex-direction: column;
-    color: white;
-    text-align: center;
-    animation: fadeIn 0.5s;
-}
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-.winner-content {
-    background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
-    padding: 30px;
-    border-radius: 20px;
-    max-width: 90%;
-    width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    border: 3px solid gold;
-    position: relative;
-}
+        .winner-content {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 3px solid gold;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
 
-.winner-content h2 {
-    color: #fff;
-    font-size: 28px;
-    margin-bottom: 15px;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-}
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
 
-.winner-content p {
-    font-size: 18px;
-    margin-bottom: 20px;
-    color: #fff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-}
-    
-.confetti {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: #f00;
-    opacity: 0.7;
-    animation: confettiFall 5s linear infinite;
-}
+        .winner-content h2 {
+            color: #fff;
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
 
-@keyframes confettiFall {
-    0% {
-        transform: translateY(-100px) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
-    }
-}
-    
+        .winner-content p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0.7;
+            animation: confettiFall 5s linear infinite;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
         #startScreen, #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
             position: absolute;
             top: 50%;
@@ -126,6 +131,12 @@
             width: 85%;
             max-width: 350px;
             z-index: 10;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, -60%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
         }
 
         #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
@@ -144,12 +155,48 @@
             width: 80%;
             max-width: 200px;
             box-shadow: 0 3px 5px rgba(0,0,0,0.2);
-            transition: transform 0.2s, background-color 0.2s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 8px rgba(0,0,0,0.3);
         }
 
         button:active {
             transform: scale(0.95);
             background-color: #3e8e41;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        button:focus:not(:active)::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
         }
 
         #score {
@@ -162,6 +209,15 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             display: none;
             z-index: 5;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            animation: scorePulse 1s infinite alternate;
+        }
+
+        @keyframes scorePulse {
+            from { transform: translateX(-50%) scale(1); }
+            to { transform: translateX(-50%) scale(1.1); }
         }
 
         #highScoresList, #gameOverHighScores, #winnersList {
@@ -171,6 +227,28 @@
             max-height: 150px;
             overflow-y: auto;
             margin: 15px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #4CAF50 rgba(0,0,0,0.1);
+        }
+
+        #highScoresList::-webkit-scrollbar, 
+        #gameOverHighScores::-webkit-scrollbar,
+        #winnersList::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #highScoresList::-webkit-scrollbar-track, 
+        #gameOverHighScores::-webkit-scrollbar-track,
+        #winnersList::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        #highScoresList::-webkit-scrollbar-thumb, 
+        #gameOverHighScores::-webkit-scrollbar-thumb,
+        #winnersList::-webkit-scrollbar-thumb {
+            background-color: #4CAF50;
+            border-radius: 10px;
         }
 
         #highScoresList li, #gameOverHighScores li, #winnersList li {
@@ -179,6 +257,14 @@
             margin: 5px 0;
             border-radius: 5px;
             font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        #highScoresList li:hover, 
+        #gameOverHighScores li:hover,
+        #winnersList li:hover {
+            transform: translateX(5px);
+            background: rgba(255,255,255,0.5);
         }
 
         #highScoresList li:first-child,
@@ -207,6 +293,14 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
 
         textarea {
@@ -237,7 +331,11 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            transition: all 0.3s;
+        }
+
+        #soundToggle:hover {
+            transform: scale(1.1);
         }
 
         #soundToggle:active {
@@ -251,17 +349,26 @@
             margin: 15px 0;
             font-size: 14px;
             border: 2px dashed #4CAF50;
+            animation: borderPulse 2s infinite;
+        }
+
+        @keyframes borderPulse {
+            0% { border-color: #4CAF50; }
+            50% { border-color: #8BC34A; }
+            100% { border-color: #4CAF50; }
         }
         
         .countdown {
             font-weight: bold;
             color: #e91e63;
             font-size: 18px;
+            text-shadow: 0 0 5px rgba(233, 30, 99, 0.3);
         }
         
         .prize {
             color: #ff5722;
             font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 87, 34, 0.3);
         }
         
         .power-up {
@@ -270,6 +377,12 @@
             height: 30px;
             border-radius: 50%;
             z-index: 3;
+            animation: float 3s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
         
         .shield-effect {
@@ -280,6 +393,13 @@
             border: 3px dashed rgba(0, 150, 255, 0.7);
             z-index: 4;
             pointer-events: none;
+            animation: shieldPulse 2s infinite;
+        }
+
+        @keyframes shieldPulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 0.7; }
         }
 
         .theme-default { background-color: #70c5ce; }
@@ -303,15 +423,20 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
             border: none;
             font-size: 20px;
             color: white;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .social-btn:hover, .social-btn:active { transform: scale(1.1); }
+        .social-btn:hover, .social-btn:active { 
+            transform: scale(1.1); 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+        
         .social-btn.twitter { 
             background-color: #1DA1F2;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z'/%3E%3C/svg%3E");
@@ -319,6 +444,7 @@
             background-position: center;
             background-size: 60%;
         }
+        
         .social-btn.facebook { 
             background-color: #3b5998;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z'/%3E%3C/svg%3E");
@@ -326,6 +452,7 @@
             background-position: center;
             background-size: 60%;
         }
+        
         .social-btn.whatsapp { 
             background-color: #25D366;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335 .157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E");
@@ -333,13 +460,19 @@
             background-position: center;
             background-size: 60%;
         }
+        
         .social-btn.instagram {
             background: radial-gradient(circle at 30% 107%, 
                         #fdf497 0%, #fdf497 5%, 
                         #fd5949 45%, #d6249f 60%, 
                         #285AEB 90%);
         }
-        .social-btn.copy { background-color: #6c757d; }
+        
+        .social-btn.copy { 
+            background-color: #6c757d;
+            font-size: 16px;
+        }
+        
         #shareText {
             font-size: 14px;
             margin: 10px 0;
@@ -352,6 +485,28 @@
             display: flex;
             justify-content: center;
         }  
+
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .score-popup {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            animation: scorePopup 1s forwards;
+            z-index: 6;
+        }
+
+        @keyframes scorePopup {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
 
         @media (orientation: landscape) {
             #gameContainer {
@@ -385,19 +540,19 @@
         <div id="score">0</div>
         
         <div id="winnerCelebration" style="display: none;">
-    <div class="winner-content">
-        <h2>🎉 Congratulations Charvi! 🎉</h2>
-        <p>We're thrilled to announce that Charvi has won ₹1000 in our Flappy Bird Contest on 26 Apr 2025!</p>
-        <p>Keep playing for your chance to be our next winner!</p>
-        <button id="closeCelebration" style="background-color: #d4237a; margin-top: 15px;">Continue to Game</button>
-    </div>
-</div>
+            <div class="winner-content">
+                <h2>🎉 Congratulations Charvi! 🎉</h2>
+                <p>We're thrilled to announce that Charvi has won ₹1000 in our Flappy Bird Contest on 26 Apr 2025!</p>
+                <p>Keep playing for your chance to be our next winner!</p>
+                <button id="closeCelebration" style="background-color: #d4237a; margin-top: 15px;">Continue to Game</button>
+            </div>
+        </div>
         
         <div id="startScreen">
-            <h1>Flappy Bird</h1>
+            <h1 style="color: #4CAF50; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Flappy Bird</h1>
             <div class="contest-info">
                 🏆 Win <span class="prize">₹2000</span> (1st), <span class="prize">₹1000</span> (2nd), <span class="prize">₹500</span> (3rd)<br>
-                Contest ends: <span class="countdown"> 05 May 2025 00:00:00</span>
+                Contest ends: <span class="countdown">05 days 00:00:00</span>
             </div>
             <button id="startBtn">Play</button>
             <button id="contestRulesBtn">Contest Rules</button>
@@ -433,7 +588,7 @@
             <p id="finalScore">Score: 0</p>
             <div class="contest-info">
                 🏆 Current leaders win prizes!<br>
-                Time remaining: <span class="countdown"> 05 May 2025 00:00:00</span>
+                Time remaining: <span class="countdown">7 days 00:00:00</span>
             </div>
             <h3>Top Scores</h3>
             <ul id="gameOverHighScores"></ul>
@@ -469,7 +624,7 @@
                 </ol>
             </div>
             <div style="background-color: #f8f8f8; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                <h4 style="margin-top: 0;">📌 Submit Proof :</h4>
+                <h4 style="margin-top: 0;">📌 Submit Proof (If Required):</h4>
                 <p>Email screenshot to: <strong>flyingbirdsgame@gmail.com</strong></p>
                 <p>Subject: <em>"Contest Entry - [Your Name]"</em></p>
             </div>
@@ -480,11 +635,11 @@
         </div>
     </div>
 
-    <audio id="flapSound" src="flap.mp3" preload="auto"></audio>
-    <audio id="scoreSound" src="score.mp3" preload="auto"></audio>
-    <audio id="hitSound" src="hit.mp3" preload="auto"></audio>
-    <audio id="powerUpSound" src="powerup.mp3" preload="auto"></audio>
-    <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
+    <audio id="flapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bird-flapping-1486.mp3" preload="auto"></audio>
+    <audio id="scoreSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
+    <audio id="hitSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3" preload="auto"></audio>
+    <audio id="powerUpSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
+    <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-668.mp3" preload="auto" loop></audio>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -504,9 +659,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Set contest end date (0 days from now)
-        const contestEndDate = new Date();
-        contestEndDate.setDate(contestEndDate.getDate() + 7);
+        // Contest end date (will be set in initGame)
+        let contestEndDate;
 
         // Game elements
         const canvas = document.getElementById('gameCanvas');
@@ -532,6 +686,7 @@
         const gameOverHighScores = document.getElementById('gameOverHighScores');
         const winnersList = document.getElementById('winnersList');
         const soundToggle = document.getElementById('soundToggle');
+        const closeCelebration = document.getElementById('closeCelebration');
         
         // Sound elements
         const flapSound = document.getElementById('flapSound');
@@ -579,6 +734,8 @@
         let highScores = [];
         let userInteracted = false;
         let soundEnabled = true;
+        let particles = [];
+        let scorePopups = [];
 
         // Power-up types
         const powerUpTypes = {
@@ -587,9 +744,11 @@
                 duration: 5000,
                 effect: function() {
                     bird.isShielded = true;
+                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 20, '#00a8ff');
                 },
                 endEffect: function() {
                     bird.isShielded = false;
+                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 15, '#00a8ff');
                 }
             },
             
@@ -598,9 +757,11 @@
                 duration: 6000,
                 effect: function() {
                     pipeSpeed *= 0.5;
+                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 20, '#00ff00');
                 },
                 endEffect: function() {
                     pipeSpeed *= 2;
+                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 15, '#00ff00');
                 }
             }
         };
@@ -652,133 +813,192 @@
         let currentTheme = 0;
         let nextThemeAt = 12;
 
-        // Update the checkContestStatus function in your script
-async function checkContestStatus() {
-    
-    // Get the stored contest end date from localStorage or use the default one
-    let storedEndDate = localStorage.getItem('contestEndDate');
-    let endDate;
-    
-    if (storedEndDate) {
-        endDate = new Date(storedEndDate);
-    } else {
-        // Set contest end date (30 days from now)
-        endDate = new Date();
-        endDate.setDate(endDate.getDate() + 7);
-        localStorage.setItem('contestEndDate', endDate.toString());
-    }
-
-    const now = new Date();
-    
-    // If contest has ended
-    if (now > endDate) {
-        try {
-            // Get all scores
-            const snapshot = await db.collection("scores").get();
-            
-            // Archive the top 3 winners
-            const winners = snapshot.docs
-                .map(doc => doc.data())
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 3);
-            
-            // Save to winners collection with prizes
-            const batch = db.batch();
-            winners.forEach((winner, index) => {
-                const prize = index === 0 ? 2000 : index === 1 ? 1000 : 500;
-                const winnerRef = db.collection("winners").doc();
-                batch.set(winnerRef, {
-                    ...winner,
-                    prize: prize,
-                    date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        // Particle System
+        function createParticles(x, y, count, color) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 5 + 2,
+                    color: color || `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    speedX: Math.random() * 6 - 3,
+                    speedY: Math.random() * 6 - 3,
+                    life: 30 + Math.random() * 20
                 });
-            });
-            
-            // Delete all scores
-            snapshot.docs.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-            
-            await batch.commit();
-            console.log("Scores reset and winners archived");
-            
-            // Set new contest end date (30 days from now)
-            const newEndDate = new Date();
-            newEndDate.setDate(newEndDate.getDate() + 7);
-            localStorage.setItem('contestEndDate', newEndDate.toString());
-            
-            // Update the global contestEndDate variable
-            contestEndDate = newEndDate;
-        } catch (error) {
-            console.error("Error resetting scores:", error);
+            }
         }
-    } else {
-        // Contest is still running, update the global variable
-        contestEndDate = endDate;
-    }
-}
 
-        // Countdown Timer
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].x += particles[i].speedX;
+                particles[i].y += particles[i].speedY;
+                particles[i].life--;
+                
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life / 50;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        // Score Popups
+        function createScorePopup(x, y, text) {
+            scorePopups.push({
+                x: x,
+                y: y,
+                text: text,
+                life: 60
+            });
+        }
+
+        function updateScorePopups() {
+            for (let i = scorePopups.length - 1; i >= 0; i--) {
+                scorePopups[i].y -= 1;
+                scorePopups[i].life--;
+                
+                if (scorePopups[i].life <= 0) {
+                    scorePopups.splice(i, 1);
+                }
+            }
+        }
+
+        function drawScorePopups() {
+            scorePopups.forEach(popup => {
+                ctx.globalAlpha = popup.life / 60;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(popup.text, popup.x, popup.y);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        // Contest Functions
+        async function checkContestStatus() {
+            // Get the stored contest end date from localStorage or use the default one
+            let storedEndDate = localStorage.getItem('contestEndDate');
+            let endDate;
+            
+            if (storedEndDate) {
+                endDate = new Date(storedEndDate);
+                // Check if the stored date is in the past
+                if (new Date() > endDate) {
+                    // Contest has ended, set a new end date
+                    endDate = new Date();
+                    endDate.setDate(endDate.getDate() + 5);
+                    localStorage.setItem('contestEndDate', endDate.toString());
+                    
+                    try {
+                        // Get all scores
+                        const snapshot = await db.collection("scores").get();
+                        
+                        // Archive the top 3 winners
+                        const winners = snapshot.docs
+                            .map(doc => doc.data())
+                            .sort((a, b) => b.score - a.score)
+                            .slice(0, 3);
+                        
+                        // Save to winners collection with prizes
+                        const batch = db.batch();
+                        winners.forEach((winner, index) => {
+                            const prize = index === 0 ? 2000 : index === 1 ? 1000 : 500;
+                            const winnerRef = db.collection("winners").doc();
+                            batch.set(winnerRef, {
+                                ...winner,
+                                prize: prize,
+                                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            });
+                        });
+                        
+                        // Delete all scores
+                        snapshot.docs.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        
+                        await batch.commit();
+                        console.log("Scores reset and winners archived");
+                    } catch (error) {
+                        console.error("Error resetting scores:", error);
+                    }
+                }
+            } else {
+                // No stored date, set a new one
+                endDate = new Date();
+                endDate.setDate(endDate.getDate() + 5);
+                localStorage.setItem('contestEndDate', endDate.toString());
+            }
+            
+            return endDate;
+        }
+
         function updateCountdown() {
+            if (!contestEndDate) return;
+            
             const now = new Date();
             const distance = contestEndDate - now;
             
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            
-            // Update all countdown elements
-            document.querySelectorAll('.countdown').forEach(el => {
-                el.innerHTML = timeString;
-            });
+            // Only update if contest is still running
+            if (distance > 0) {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 
-            if (distance < 0) {
+                const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                
+                // Update all countdown elements
+                document.querySelectorAll('.countdown').forEach(el => {
+                    el.textContent = timeString;
+                });
+            } else {
                 document.querySelectorAll('.contest-info').forEach(el => {
                     el.innerHTML = "🏆 Contest ended! Winners will be announced soon.";
                 });
             }
         }
 
-         // Create confetti effect
-function createConfetti() {
-    const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
-    const celebration = document.getElementById('winnerCelebration');
-    
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + '%';
-        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.width = Math.random() * 10 + 5 + 'px';
-        confetti.style.height = Math.random() * 10 + 5 + 'px';
-        confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-        confetti.style.animationDelay = Math.random() * 2 + 's';
-        celebration.appendChild(confetti);
-    }
-}
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+            const celebration = document.getElementById('winnerCelebration');
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                celebration.appendChild(confetti);
+            }
+        }
 
-// Show winner celebration
-function showWinnerCelebration() {
-    const celebration = document.getElementById('winnerCelebration');
-    celebration.style.display = 'flex';
-    createConfetti();
-    
-    // Play celebration sound if available
-    if (soundEnabled) {
-        const celebrationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3');
-        celebrationSound.volume = 0.3;
-        celebrationSound.play().catch(e => console.log("Celebration sound failed:", e));
-    }
-}
+        // Show winner celebration
+        function showWinnerCelebration() {
+            const celebration = document.getElementById('winnerCelebration');
+            celebration.style.display = 'flex';
+            createConfetti();
+            
+            // Play celebration sound if available
+            if (soundEnabled) {
+                const celebrationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3');
+                celebrationSound.volume = 0.3;
+                celebrationSound.play().catch(e => console.log("Celebration sound failed:", e));
+            }
+        }
 
-// Close celebration
-document.getElementById('closeCelebration').addEventListener('click', function() {
-    document.getElementById('winnerCelebration').style.display = 'none';
-});
-  
         // Firebase Score System
         function setupRealTimeScores() {
             db.collection("scores")
@@ -1049,6 +1269,7 @@ document.getElementById('closeCelebration').addEventListener('click', function()
         function birdJump() {
             bird.velocity = bird.jump;
             bird.initialHover = false;
+            createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 10, '#FFD700');
             if (soundEnabled) {
                 flapSound.currentTime = 0;
                 flapSound.play().catch(e => console.log("Flap sound failed:", e));
@@ -1311,6 +1532,7 @@ document.getElementById('closeCelebration').addEventListener('click', function()
                     pipes[i].passed = true;
                     score++;
                     scoreDisplay.textContent = score;
+                    createScorePopup(bird.x, bird.y, `+1`);
                     checkThemeChange();
                     if (soundEnabled) {
                         scoreSound.currentTime = 0;
@@ -1330,6 +1552,7 @@ document.getElementById('closeCelebration').addEventListener('click', function()
                 
                 if (isColliding(bird, powerUps[i])) {
                     activatePowerUp(powerUps[i].type);
+                    createScorePopup(bird.x, bird.y, `POWER UP!`);
                     powerUps.splice(i, 1);
                 } else if (powerUps[i].x + powerUps[i].width < 0) {
                     powerUps.splice(i, 1);
@@ -1356,6 +1579,7 @@ document.getElementById('closeCelebration').addEventListener('click', function()
         function checkCollisions() {
             // Ground collision
             if (bird.y + bird.height > canvas.height - 50) {
+                createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 30, '#ff0000');
                 return true;
             }
             
@@ -1367,6 +1591,7 @@ document.getElementById('closeCelebration').addEventListener('click', function()
                         bird.x < pipe.x + pipe.width &&
                         (bird.y < pipe.topHeight || bird.y + bird.height > canvas.height - pipe.bottomHeight - 50)
                     ) {
+                        createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 30, '#ff0000');
                         return true;
                     }
                 }
@@ -1379,6 +1604,7 @@ document.getElementById('closeCelebration').addEventListener('click', function()
             if (score >= nextThemeAt) {
                 currentTheme = (currentTheme + 1) % themes.length;
                 nextThemeAt += 12;
+                createParticles(canvas.width/2, canvas.height/2, 50, '#ffffff');
                 updateTheme();
             }
         }
@@ -1446,8 +1672,8 @@ document.getElementById('closeCelebration').addEventListener('click', function()
         }
 
         function startGame() {
-                // Hide celebration popup if visible
-    document.getElementById('winnerCelebration').style.display = 'none';
+            // Hide celebration popup if visible
+            document.getElementById('winnerCelebration').style.display = 'none';
 
             // Reset game state
             bird.y = canvas.height / 3;
@@ -1465,6 +1691,8 @@ document.getElementById('closeCelebration').addEventListener('click', function()
             pipeGap = 180;
             scoreDisplay.textContent = score;
             gameRunning = true;
+            particles = [];
+            scorePopups = [];
             
             // Reset to default theme
             currentTheme = 0;
@@ -1510,6 +1738,14 @@ document.getElementById('closeCelebration').addEventListener('click', function()
             updateBird();
             updatePipes();
             updatePowerUps();
+            updateParticles();
+            updateScorePopups();
+            
+            // Draw particles
+            drawParticles();
+            
+            // Draw score popups
+            drawScorePopups();
             
             // Draw bird (on top of everything)
             drawBird();
@@ -1535,8 +1771,12 @@ document.getElementById('closeCelebration').addEventListener('click', function()
             initClouds();
             initTrees();
             
-            // Check contest status and reset if needed
-            checkContestStatus();
+            // Check contest status and set up the timer
+            checkContestStatus().then(endDate => {
+                contestEndDate = endDate;
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            });
             
             // Setup real-time scores and winners
             setupRealTimeScores();
@@ -1544,22 +1784,18 @@ document.getElementById('closeCelebration').addEventListener('click', function()
             // Setup social sharing
             setupSocialSharing();
             
-            // Update countdown timer
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
-            
             // Event listeners
             window.addEventListener('resize', resizeCanvas);
             startBtn.addEventListener('click', startGame);
-            restartBtn.addEventListener('click', function() {
-            document.getElementById('winnerCelebration').style.display = 'none';
-            startGame();
-            });
+            restartBtn.addEventListener('click', startGame);
             saveScoreBtn.addEventListener('click', saveHighScore);
             contestRulesBtn.addEventListener('click', showContestRules);
             closeRulesBtn.addEventListener('click', hideContestRules);
             viewWinnersBtn.addEventListener('click', showWinners);
             closeWinners.addEventListener('click', hideWinners);
+            closeCelebration.addEventListener('click', function() {
+                document.getElementById('winnerCelebration').style.display = 'none';
+            });
             document.addEventListener('keydown', handleKeyPress);
             canvas.addEventListener('click', handleJump);
             canvas.addEventListener('touchstart', handleJump, { passive: false });
@@ -1570,9 +1806,8 @@ document.getElementById('closeCelebration').addEventListener('click', function()
                 startScreen.style.display = 'block';
             });
             
-            // In your initGame function, add this at the end:
-// Show celebration every time the game loads
-setTimeout(showWinnerCelebration, 1000);
+            // Show celebration every time the game loads
+            setTimeout(showWinnerCelebration, 1000);
             
             // Prevent touch scrolling
             document.addEventListener('touchmove', function(e) {
