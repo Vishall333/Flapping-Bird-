@@ -552,7 +552,8 @@
             <h1 style="color: #4CAF50; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Flappy Bird</h1>
             <div class="contest-info">
                 🏆 Win <span class="prize">₹2000</span> (1st), <span class="prize">₹1000</span> (2nd), <span class="prize">₹500</span> (3rd)<br>
-                Contest ends: <span class="countdown">05 days 00:00:00</span>
+                Contest ends: <span class="countdown">10 days 00:00:00</span> <br>
+                winners are declared every saturday at 12pm
             </div>
             <button id="startBtn">Play</button>
             <button id="contestRulesBtn">Contest Rules</button>
@@ -620,12 +621,11 @@
                     <li>Play & reach the top of the leaderboard</li>
                     <li>Register your score with a valid name</li>
                     <li>Top 3 players win prizes after contest ends</li>
-                    <li>Winners are announced every sunday</li>
                     <li>1st: ₹2000, 2nd: ₹1000, 3rd: ₹500</li>
                 </ol>
             </div>
             <div style="background-color: #f8f8f8; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                <h4 style="margin-top: 0;">📌 Submit Proof:</h4>
+                <h4 style="margin-top: 0;">📌 Submit Proof (If Required):</h4>
                 <p>Email screenshot to: <strong>flyingbirdsgame@gmail.com</strong></p>
                 <p>Subject: <em>"Contest Entry - [Your Name]"</em></p>
             </div>
@@ -637,10 +637,10 @@
     </div>
 
     <audio id="flapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bird-flapping-1486.mp3" preload="auto"></audio>
-    <audio id="scoreSound" src="score.mp3" preload="auto"></audio>
-    <audio id="hitSound" src="hit.mp3" preload="auto"></audio>
+    <audio id="scoreSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
+    <audio id="hitSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3" preload="auto"></audio>
     <audio id="powerUpSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
-    <audio id="bgMusic" src="background.mp3" preload="auto" loop></audio>
+    <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-668.mp3" preload="auto" loop></audio>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -1004,7 +1004,7 @@
         function setupRealTimeScores() {
             db.collection("scores")
                 .orderBy("score", "desc")
-                .limit(10)
+                .limit(15)
                 .onSnapshot((snapshot) => {
                     highScores = snapshot.docs.map(doc => doc.data());
                     updateAllScoreDisplays();
