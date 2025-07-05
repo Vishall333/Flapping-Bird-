@@ -1,1861 +1,1924 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1861245675391318" crossorigin="anonymous"></script>
-    <title>Flappy Bird Contest</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta property="og:title" content="Flappy Bird Contest">
-    <meta property="og:description" content="Play Flappy Bird and compete for prizes!">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Flappy+Bird+Contest">
-    <meta property="og:url" content="https://example.com/flappy-bird">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flapping Bird - Your Complete Travel Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <!-- Firebase SDK v9 -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+    
     <style>
-        html, body {
+        :root {
+            --primary-blue: #003580;
+            --secondary-blue: #0071c2;
+            --accent-orange: #ff8c00;
+            --light-blue: #e7f0ff;
+            --text-dark: #1a1a1a;
+            --text-light: #666666;
+            --white: #ffffff;
+            --gray-50: #f8f9fa;
+            --gray-100: #e9ecef;
+            --gray-200: #dee2e6;
+            --gray-300: #ced4da;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --border-radius: 8px;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            touch-action: none;
-            -webkit-tap-highlight-color: transparent;
-            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            box-sizing: border-box;
         }
 
-        #gameContainer {
-            position: fixed;
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--gray-50);
+        }
+
+        /* Header Styles */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            touch-action: none;
+            z-index: 1000;
+            box-shadow: var(--shadow);
         }
 
-        #gameCanvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            max-height: -webkit-fill-available;
-        }
-
-        #winnerCelebration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            z-index: 100;
-            flex-direction: column;
-            color: white;
-            text-align: center;
-            animation: fadeIn 0.5s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .winner-content {
-            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 90%;
-            width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            border: 3px solid gold;
-            position: relative;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .winner-content h2 {
-            color: #fff;
-            font-size: 28px;
-            margin-bottom: 15px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-        }
-
-        .winner-content p {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #fff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-        
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            opacity: 0.7;
-            animation: confettiFall 5s linear infinite;
-        }
-
-        @keyframes confettiFall {
-            0% {
-                transform: translateY(-100px) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        #startScreen, #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            width: 85%;
-            max-width: 350px;
-            z-index: 10;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { transform: translate(-50%, -60%); opacity: 0; }
-            to { transform: translate(-50%, -50%); opacity: 1; }
-        }
-
-        #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
-            display: none;
-        }
-
-        button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 12px 25px;
-            margin: 10px;
-            cursor: pointer;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 80%;
-            max-width: 200px;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 8px rgba(0,0,0,0.3);
-        }
-
-        button:active {
-            transform: scale(0.95);
-            background-color: #3e8e41;
-        }
-
-        button::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-
-        button:focus:not(:active)::after {
-            animation: ripple 0.6s ease-out;
-        }
-
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
-                opacity: 0;
-            }
-        }
-
-        #score {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 5;
-            background: rgba(0,0,0,0.3);
-            padding: 5px 15px;
-            border-radius: 20px;
-            animation: scorePulse 1s infinite alternate;
-        }
-
-        @keyframes scorePulse {
-            from { transform: translateX(-50%) scale(1); }
-            to { transform: translateX(-50%) scale(1.1); }
-        }
-
-        #highScoresList, #gameOverHighScores, #winnersList {
-            list-style: none;
-            padding: 0;
-            text-align: left;
-            max-height: 150px;
-            overflow-y: auto;
-            margin: 15px 0;
-            scrollbar-width: thin;
-            scrollbar-color: #4CAF50 rgba(0,0,0,0.1);
-        }
-
-        #highScoresList::-webkit-scrollbar, 
-        #gameOverHighScores::-webkit-scrollbar,
-        #winnersList::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        #highScoresList::-webkit-scrollbar-track, 
-        #gameOverHighScores::-webkit-scrollbar-track,
-        #winnersList::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.1);
-            border-radius: 10px;
-        }
-
-        #highScoresList::-webkit-scrollbar-thumb, 
-        #gameOverHighScores::-webkit-scrollbar-thumb,
-        #winnersList::-webkit-scrollbar-thumb {
-            background-color: #4CAF50;
-            border-radius: 10px;
-        }
-
-        #highScoresList li, #gameOverHighScores li, #winnersList li {
-            padding: 8px 12px;
-            background: rgba(255,255,255,0.3);
-            margin: 5px 0;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        #highScoresList li:hover, 
-        #gameOverHighScores li:hover,
-        #winnersList li:hover {
-            transform: translateX(5px);
-            background: rgba(255,255,255,0.5);
-        }
-
-        #highScoresList li:first-child,
-        #gameOverHighScores li:first-child,
-        #winnersList li:first-child {
-            background: linear-gradient(135deg, #FFD700 0%, #FFEC80 100%);
-            font-weight: bold;
-        }
-        
-        #highScoresList li:nth-child(2),
-        #gameOverHighScores li:nth-child(2),
-        #winnersList li:nth-child(2) {
-            background: linear-gradient(135deg, #C0C0C0 0%, #E0E0E0 100%);
-        }
-        
-        #highScoresList li:nth-child(3),
-        #gameOverHighScores li:nth-child(3),
-        #winnersList li:nth-child(3) {
-            background: linear-gradient(135deg, #CD7F32 0%, #E6B17E 100%);
-        }
-
-        input, textarea {
-            padding: 10px;
-            margin: 10px 0;
-            width: 85%;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-        }
-
-        textarea {
             height: 70px;
-            resize: none;
         }
 
-        .dedication {
-            font-style: italic;
-            font-size: 12px;
-            color: #555;
-            margin-top: 3px;
-        }
-
-        #soundToggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255,255,255,0.7);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            z-index: 20;
-            font-size: 20px;
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-blue);
+            text-decoration: none;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: all 0.3s;
-        }
-
-        #soundToggle:hover {
-            transform: scale(1.1);
-        }
-
-        #soundToggle:active {
-            transform: scale(0.9);
-        }
-
-        .contest-info {
-            background: rgba(255,255,255,0.8);
-            padding: 10px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-size: 14px;
-            border: 2px dashed #4CAF50;
-            animation: borderPulse 2s infinite;
-        }
-
-        @keyframes borderPulse {
-            0% { border-color: #4CAF50; }
-            50% { border-color: #8BC34A; }
-            100% { border-color: #4CAF50; }
-        }
-        
-        .countdown {
-            font-weight: bold;
-            color: #e91e63;
-            font-size: 18px;
-            text-shadow: 0 0 5px rgba(233, 30, 99, 0.3);
-        }
-        
-        .prize {
-            color: #ff5722;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(255, 87, 34, 0.3);
-        }
-        
-        .power-up {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            z-index: 3;
-            animation: float 3s infinite ease-in-out;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .shield-effect {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 3px dashed rgba(0, 150, 255, 0.7);
-            z-index: 4;
-            pointer-events: none;
-            animation: shieldPulse 2s infinite;
-        }
-
-        @keyframes shieldPulse {
-            0% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 0.9; }
-            100% { transform: scale(1); opacity: 0.7; }
-        }
-
-        .theme-default { background-color: #70c5ce; }
-        .theme-night { background-color: #0a1128; }
-        .theme-sunset { background-color: #ff7e5f; }
-        .theme-forest { background-color: #3a7d44; }
-        .theme-ice { background-color: #a8d0e6; }
-
-        .social-share {
-            display: flex;
-            justify-content: center;
             gap: 10px;
-            margin: 15px 0;
         }
 
-        .social-btn {
-            width: 40px;
-            height: 40px;
+        .logo i {
+            color: var(--accent-orange);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            padding: 10px 0;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--secondary-blue);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: var(--light-blue);
+            border-radius: var(--border-radius);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--secondary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .currency-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .currency-btn {
+            padding: 8px 12px;
+            border: 2px solid var(--gray-200);
+            background: var(--white);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .currency-btn.active {
+            border-color: var(--secondary-blue);
+            background: var(--secondary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary {
+            background: var(--secondary-blue);
+            color: var(--white);
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--secondary-blue);
+            padding: 12px 24px;
+            border: 2px solid var(--secondary-blue);
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-blue);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            color: var(--white);
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        /* Auth Section */
+        .auth-section {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-top: -50px;
+            position: relative;
+            z-index: 10;
+            box-shadow: var(--shadow-lg);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        .auth-section h3 {
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .auth-input {
+            padding: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+        }
+
+        /* Booking Tabs */
+        .booking-tabs {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-top: 50px;
+            box-shadow: var(--shadow-lg);
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .tab-button.active {
+            color: var(--secondary-blue);
+            border-bottom-color: var(--secondary-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-input {
+            padding: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+        }
+
+        .btn-search {
+            background: var(--accent-orange);
+            color: var(--white);
+            padding: 15px 30px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-search:hover {
+            background: #e67e00;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            margin-bottom: 80px;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .service-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--light-blue);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-            font-size: 20px;
-            color: white;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            margin: 0 auto 20px;
+            font-size: 36px;
+            color: var(--secondary-blue);
         }
 
-        .social-btn:hover, .social-btn:active { 
-            transform: scale(1.1); 
-            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-        }
-        
-        .social-btn.twitter { 
-            background-color: #1DA1F2;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 60%;
-        }
-        
-        .social-btn.facebook { 
-            background-color: #3b5998;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 60%;
-        }
-        
-        .social-btn.whatsapp { 
-            background-color: #25D366;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335 .157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 60%;
-        }
-        
-        .social-btn.instagram {
-            background: radial-gradient(circle at 30% 107%, 
-                        #fdf497 0%, #fdf497 5%, 
-                        #fd5949 45%, #d6249f 60%, 
-                        #285AEB 90%);
-        }
-        
-        .social-btn.copy { 
-            background-color: #6c757d;
-            font-size: 16px;
-        }
-        
-        #shareText {
-            font-size: 14px;
-            margin: 10px 0;
-            color: #333;
+        .service-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-dark);
         }
 
-        .ad-container {
+        .service-description {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Products Section */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-image {
             width: 100%;
-            margin: 15px 0;
+            height: 200px;
+            background: var(--gray-200);
             display: flex;
+            align-items: center;
             justify-content: center;
-        }  
+            font-size: 48px;
+            color: var(--text-light);
+            overflow: hidden;
+        }
 
-        .particle {
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-orange);
+            margin-bottom: 15px;
+        }
+
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .stars {
+            color: var(--warning);
+        }
+
+        .btn-add-cart {
+            width: 100%;
+            background: var(--secondary-blue);
+            color: var(--white);
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-cart:hover {
+            background: var(--primary-blue);
+        }
+
+        /* Shopping Cart */
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cart-count {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.7);
+            top: -8px;
+            right: -8px;
+            background: var(--accent-orange);
+            color: var(--white);
             border-radius: 50%;
-            pointer-events: none;
-            z-index: 5;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
         }
 
-        .score-popup {
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
             position: absolute;
-            color: white;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
             font-weight: bold;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-            animation: scorePopup 1s forwards;
-            z-index: 6;
+            cursor: pointer;
+            color: var(--text-light);
         }
 
-        @keyframes scorePopup {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-50px); opacity: 0; }
+        .close:hover {
+            color: var(--text-dark);
         }
 
-        @media (orientation: landscape) {
-            #gameContainer {
-                width: 100vh;
-                height: 100vw;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%) rotate(90deg);
-                transform-origin: center center;
-            }
-            #startScreen, #gameOverScreen, #nameInputScreen, #contestRulesScreen, #winnersModal {
-                max-width: 300px;
-            }
-            #highScoresList, #gameOverHighScores, #winnersList {
-                max-height: 100px;
-            }
+        /* Payment Integration Styles */
+        .payment-section {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
         }
 
-        @media (max-width: 400px) {
-            #startScreen h1 { font-size: 24px; }
-            button { padding: 10px 20px; font-size: 15px; }
-            #score { font-size: 20px; }
-            .contest-info { font-size: 12px; padding: 8px; }
-            .countdown { font-size: 16px; }
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .payment-method {
+            padding: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: var(--secondary-blue);
+        }
+
+        .payment-method.selected {
+            border-color: var(--secondary-blue);
+            background: var(--light-blue);
+        }
+
+        .payment-method i {
+            font-size: 24px;
+            color: var(--secondary-blue);
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Success Message */
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 60px 0 30px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--white);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: var(--gray-300);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--white);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #333;
+            color: var(--gray-300);
+        }
+
+        /* User Menu Styles */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-menu-btn {
+            background: var(--secondary-blue);
+            color: var(--white);
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .user-menu-btn:hover {
+            background: var(--primary-blue);
+        }
+
+        .user-menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .user-menu-dropdown.show {
+            display: block;
+        }
+
+        .user-menu-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background 0.3s ease;
+        }
+
+        .user-menu-item:hover {
+            background: var(--gray-50);
+        }
+
+        .user-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .auth-section {
+                margin: -30px 20px 0;
+                padding: 20px;
+            }
+
+            .booking-tabs {
+                margin: 20px 20px 0;
+                padding: 20px;
+            }
+
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-buttons {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                min-width: 100px;
+                padding: 12px 16px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .currency-selector {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
-<body class="theme-default">
-    <div id="gameContainer">
-        <button id="soundToggle">🔊</button>
-        <div id="score">0</div>
-        
-        <div id="winnerCelebration" style="display: none;">
-            <div class="winner-content">
-                <h2>🎉 Congratulations to Ashwadh , Nikki & Munna 🎉</h2>
-                <p>We're thrilled to announce the winners who won cash prize in our Flappy Bird Contest on 03 May 2025!</p>
-                <p>Provide your screenshots to claim the prizes </p>
-                <p>Keep playing for your chance to be our next winner!</p>
-                <button id="closeCelebration" style="background-color: #d4237a; margin-top: 15px;">Continue to Game</button>
-            </div>
-        </div>
-        
-        <div id="startScreen">
-            <h1 style="color: #4CAF50; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Flappy Bird</h1>
-            <div class="contest-info">
-                🏆 Contest-4 🏆 <br>
-                🏆 Win <span class="prize">₹2000</span> (1st), <span class="prize">₹1000</span> (2nd), <span class="prize">₹500</span> (3rd)<br>
-                Contest ends: <span class="countdown">10 days 00:00:00</span> <br>
-                winners are declared every saturday at 12pm
-            </div>
-            <button id="startBtn">Play</button>
-            <button id="contestRulesBtn">Contest Rules</button>
-            <button id="viewWinnersBtn">View Previous Winners</button>
-            <h3>Top Scores</h3>
-            <ul id="highScoresList"></ul>
-          
-            <div class="ad-container">
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-1861245675391318"
-                     data-ad-slot="9245427442"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-            </div>
-        </div>  
-        
-        <!-- Winners Modal -->
-        <div id="winnersModal">
-            <div style="background-color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                <h2>🏆 Previous Winners 🏆</h2>
-                <ul id="winnersList">
-                    <li> Charitha: 1000 (19 Apr 2025) </li>
-                    <li> Charvi: 1000 (26 Apr 2025) </li>
-                    <li> Ashwadh: 2000 (03 May 2025) 1st </li>
-                    <li> Nikki: 1000 (03 May 2025) 2nd </li>
-                    <li> Munna: 500 (03 May 2025) 3rd </li>
-
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="logo">
+                <i class="fas fa-dove"></i>
+                Flapping Bird
+            </a>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#" class="nav-link">Flights</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">Hotels</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">Yachts</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">Cars</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">Bikes</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">Shop</a></li>
                 </ul>
-                <button id="closeWinners">Close</button>
+            </nav>
+            <div class="header-actions">
+                <div class="currency-selector">
+                    <button class="currency-btn active" onclick="setCurrency('INR')">₹ INR</button>
+                    <button class="currency-btn" onclick="setCurrency('USD')">$ USD</button>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-menu-btn" onclick="toggleUserMenu()">
+                        <div class="user-avatar" id="userAvatar"></div>
+                        <span id="userName"></span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-menu-dropdown" id="userMenuDropdown">
+                        <div class="user-menu-item" onclick="toggleCart()">
+                            <i class="fas fa-shopping-cart"></i> Cart (<span id="cartCount">0</span>)
+                        </div>
+                        <div class="user-menu-item" onclick="signOut()">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <canvas id="gameCanvas"></canvas>  
-        <div id="gameOverScreen">
-            <h2>Game Over</h2>
-            <p id="finalScore">Score: 0</p>
-            <div class="contest-info">
-                🏆 Current leaders win prizes!<br>
-                Time remaining: <span class="countdown">7 days 00:00:00</span>
-            </div>
-            <h3>Top Scores</h3>
-            <ul id="gameOverHighScores"></ul>
-            <div id="shareText">Share your score:</div>
-            <div class="social-share">
-                <button class="social-btn twitter" title="Share on Twitter"></button>
-                <button class="social-btn facebook" title="Share on Facebook"></button>
-                <button class="social-btn whatsapp" title="Share on WhatsApp"></button>
-                <button class="social-btn instagram" title="Share on Instagram">📷</button>
-                <button class="social-btn copy" title="Copy link">⎘</button>
-            </div>
-            <button id="restartBtn">Play Again</button>          
-            <button id="startscreen">Main Menu</button>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1>Explore the World with Confidence</h1>
+            <p>Book flights, hotels, yachts, bikes and find everything you need for your perfect journey</p>
         </div>
         
-        <div id="nameInputScreen">
-            <h2>New High Score!</h2>
-            <p>Your score: <span id="newScoreDisplay">0</span></p>
-            <input type="text" id="playerName" placeholder="Enter your name" maxlength="15">
-            <textarea id="dedication" placeholder="Dedicate this score to someone special (optional)" maxlength="100"></textarea>
-            <button id="saveScoreBtn">Save</button>
+        <!-- Booking Tabs (always visible for anonymous browsing) -->
+        <div class="booking-tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('flights')">
+                    <i class="fas fa-plane"></i> Flights
+                </button>
+                <button class="tab-button" onclick="switchTab('hotels')">
+                    <i class="fas fa-bed"></i> Hotels
+                </button>
+                <button class="tab-button" onclick="switchTab('yachts')">
+                    <i class="fas fa-ship"></i> Yachts
+                </button>
+                <button class="tab-button" onclick="switchTab('cars')">
+                    <i class="fas fa-car"></i> Cars
+                </button>
+                <button class="tab-button" onclick="switchTab('bikes')">
+                    <i class="fas fa-motorcycle"></i> Bikes
+                </button>
+                <button class="tab-button" onclick="switchTab('shop')">
+                    <i class="fas fa-shopping-bag"></i> Shop
+                </button>
+            </div>
+
+            <!-- Flight Search -->
+            <div id="flights" class="tab-content active">
+                <form class="search-form" onsubmit="handleSearch(event, 'flights')">
+                    <div class="form-group">
+                        <label class="form-label">From</label>
+                        <input type="text" class="form-input" placeholder="Departure city" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">To</label>
+                        <input type="text" class="form-input" placeholder="Destination city" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Departure</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Return</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Passengers</label>
+                        <select class="form-input" required>
+                            <option>1 Passenger</option>
+                            <option>2 Passengers</option>
+                            <option>3 Passengers</option>
+                            <option>4+ Passengers</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-search">Search Flights</button>
+                </form>
+            </div>
+
+            <!-- Hotel Search -->
+            <div id="hotels" class="tab-content">
+                <form class="search-form" onsubmit="handleSearch(event, 'hotels')">
+                    <div class="form-group">
+                        <label class="form-label">Destination</label>
+                        <input type="text" class="form-input" placeholder="City or hotel name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Check-in</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Check-out</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Guests</label>
+                        <select class="form-input" required>
+                            <option>1 Guest</option>
+                            <option>2 Guests</option>
+                            <option>3 Guests</option>
+                            <option>4+ Guests</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-search">Search Hotels</button>
+                </form>
+            </div>
+
+            <!-- Yacht Search -->
+            <div id="yachts" class="tab-content">
+                <form class="search-form" onsubmit="handleSearch(event, 'yachts')">
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" placeholder="Marina or destination" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Guests</label>
+                        <select class="form-input" required>
+                            <option>2-4 Guests</option>
+                            <option>5-8 Guests</option>
+                            <option>9-12 Guests</option>
+                            <option>12+ Guests</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-search">Search Yachts</button>
+                </form>
+            </div>
+
+            <!-- Car Rental Search -->
+            <div id="cars" class="tab-content">
+                <form class="search-form" onsubmit="handleSearch(event, 'cars')">
+                    <div class="form-group">
+                        <label class="form-label">Pick-up Location</label>
+                        <input type="text" class="form-input" placeholder="City or airport" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pick-up Date</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Return Date</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Car Type</label>
+                        <select class="form-input" required>
+                            <option>Economy</option>
+                            <option>Compact</option>
+                            <option>Mid-size</option>
+                            <option>Full-size</option>
+                            <option>Luxury</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-search">Search Cars</button>
+                </form>
+            </div>
+
+            <!-- Bike Rental Search -->
+            <div id="bikes" class="tab-content">
+                <form class="search-form" onsubmit="handleSearch(event, 'bikes')">
+                    <div class="form-group">
+                        <label class="form-label">Pick-up Location</label>
+                        <input type="text" class="form-input" placeholder="City or station" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pick-up Date</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Return Date</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bike Type</label>
+                        <select class="form-input" required>
+                            <option>Standard Bike</option>
+                            <option>Electric Bike</option>
+                            <option>Mountain Bike</option>
+                            <option>Road Bike</option>
+                            <option>Scooter</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-search">Search Bikes</button>
+                </form>
+            </div>
+
+            <!-- Shop Tab -->
+            <div id="shop" class="tab-content">
+                <div style="text-align: center; padding: 40px;">
+                    <h3>Travel Essentials Shop</h3>
+                    <p>Browse our collection of travel products below or explore by category</p>
+                    <div style="margin-top: 30px;">
+                        <button class="btn-primary" onclick="scrollToProducts()">Browse Products</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div id="contestRulesScreen">
-            <h2>🏆 Contest Rules 🏆</h2>
-            <div style="margin: 15px 0;">
-                <h3 style="color: #4CAF50;">How to Win:</h3>
-                <ol style="padding-left: 20px;">
-                    <li>Play & reach the top of the leaderboard</li>
-                    <li>Register your score with a valid name</li>
-                    <li>Top 3 players win prizes after contest ends</li>
-                    <li>1st: ₹2000, 2nd: ₹1000, 3rd: ₹500</li>
-                </ol>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Services Section -->
+        <section class="section">
+            <h2 class="section-title">Our Travel Services</h2>
+            <p class="section-subtitle">Everything you need for your perfect journey in one place</p>
+            
+            <div class="services-grid">
+                <div class="service-card" onclick="redirectToFlights()">
+                    <div class="service-icon">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <h3 class="service-title">Flight Booking</h3>
+                    <p class="service-description">Compare and book flights from hundreds of airlines worldwide. Get the best deals and flexible booking options.</p>
+                </div>
+                
+                <div class="service-card" onclick="redirectToHotels()">
+                    <div class="service-icon">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <h3 class="service-title">Hotel Reservations</h3>
+                    <p class="service-description">Find and book the perfect accommodation from budget hotels to luxury resorts worldwide.</p>
+                </div>
+                
+                <div class="service-card" onclick="redirectToYachts()">
+                    <div class="service-icon">
+                        <i class="fas fa-ship"></i>
+                    </div>
+                    <h3 class="service-title">Yacht Charter</h3>
+                    <p class="service-description">Luxury yacht rentals for unforgettable experiences. Explore coastlines and islands in style.</p>
+                </div>
+                
+                <div class="service-card" onclick="redirectToCars()">
+                    <div class="service-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <h3 class="service-title">Car Rental</h3>
+                    <p class="service-description">Rent a car for your destination. Choose from economy to luxury vehicles with flexible terms.</p>
+                </div>
+
+                <div class="service-card" onclick="redirectToBikes()">
+                    <div class="service-icon">
+                        <i class="fas fa-motorcycle"></i>
+                    </div>
+                    <h3 class="service-title">Bike Rental</h3>
+                    <p class="service-description">Explore your destination on two wheels. Choose from city bikes, e-bikes, scooters and more.</p>
+                </div>
             </div>
-            <div style="background-color: #f8f8f8; padding: 10px; border-radius: 8px; margin: 10px 0;">
-                <h4 style="margin-top: 0;">📌 Submit Proof (If Required):</h4>
-                <p>Email screenshot to: <strong>flyingbirdsgame@gmail.com</strong></p>
-                <p>Subject: <em>"Contest Entry - [Your Name]"</em></p>
+        </section>
+
+        <!-- Travel Products Section -->
+        <section class="section" id="productsSection">
+            <h2 class="section-title">Travel Essentials</h2>
+            <p class="section-subtitle">Shop for everything you need for your travels</p>
+            
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be populated by JavaScript -->
             </div>
-            <div style="font-size: 12px; color: #666; margin-top: 15px;">
-                <p>By participating, you agree to our full Terms & Conditions.</p>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>Flapping Bird</h3>
+                    <p>Your complete travel companion for flights, hotels, yachts, car rentals, bike rentals, and travel essentials.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Flight Booking</a></li>
+                        <li><a href="#">Hotel Reservations</a></li>
+                        <li><a href="#">Yacht Charter</a></li>
+                        <li><a href="#">Car Rental</a></li>
+                        <li><a href="#">Bike Rental</a></li>
+                        <li><a href="#">Travel Insurance</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Shop</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Luggage</a></li>
+                        <li><a href="#">Travel Accessories</a></li>
+                        <li><a href="#">Electronics</a></li>
+                        <li><a href="#">Clothing</a></li>
+                        <li><a href="#">Health & Safety</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cancellation Policy</a></li>
+                    </ul>
+                </div>
             </div>
-            <button id="closeRulesBtn">Close</button>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Flapping Bird. All rights reserved. | Affiliate Partner of Travel Payouts</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAuthModal()">&times;</span>
+            <div id="authContent">
+                <h2 id="authTitle">Sign In</h2>
+                <p style="margin-bottom: 20px; color: var(--text-light);">Please sign in to make purchases and manage your bookings</p>
+                <div id="authMessages"></div>
+                <div class="auth-form">
+                    <input type="email" id="authEmail" class="auth-input" placeholder="Email" required>
+                    <input type="password" id="authPassword" class="auth-input" placeholder="Password" required>
+                    <button class="btn-primary" onclick="handleAuth()">Sign In</button>
+                    <button class="btn-secondary" onclick="toggleAuthMode()">Switch to Register</button>
+                </div>
+                <div class="loading" id="authLoading">
+                    <i class="fas fa-spinner fa-spin"></i> Processing...
+                </div>
+            </div>
         </div>
     </div>
 
-    <audio id="flapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bird-flapping-1486.mp3" preload="auto"></audio>
-    <audio id="scoreSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
-    <audio id="hitSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3" preload="auto"></audio>
-    <audio id="powerUpSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
-    <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-668.mp3" preload="auto" loop></audio>
+    <!-- Shopping Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleCart()">&times;</span>
+            <h2>Shopping Cart</h2>
+            <div id="cartItems"></div>
+            <div id="cartTotal"></div>
+            <div class="payment-section" id="paymentSection" style="display: none;">
+                <h3>Payment Method</h3>
+                <div class="payment-methods">
+                    <div class="payment-method selected" data-method="razorpay">
+                        <i class="fas fa-credit-card"></i>
+                        <div>Razorpay</div>
+                    </div>
+                    <div class="payment-method" data-method="stripe">
+                        <i class="fab fa-stripe"></i>
+                        <div>Stripe</div>
+                    </div>
+                    <div class="payment-method" data-method="paypal">
+                        <i class="fab fa-paypal"></i>
+                        <div>PayPal</div>
+                    </div>
+                    <div class="payment-method" data-method="upi">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div>UPI</div>
+                    </div>
+                </div>
+                <button class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="processPayment()">
+                    Proceed to Payment
+                </button>
+            </div>
+            <button class="btn-primary" id="checkoutBtn" style="width: 100%; margin-top: 20px;" onclick="showPaymentSection()">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDB3lFCiydUjrlPUA0OYC1B-ivPgKcXZ9A",
-            authDomain: "flappy-bird-c3341.firebaseapp.com",
-            projectId: "flappy-bird-c3341",
-            storageBucket: "flappy-bird-c3341.appspot.com",
-            messagingSenderId: "625544046566",
-            appId: "1:625544046566:web:487e29b7796976b8c01827"
+            apiKey: "AIzaSyBXeD8SMXHnqhNDg01Rlm4fC1t05Eb4NFs",
+            authDomain: "flapping-bird-f9921.firebaseapp.com",
+            projectId: "flapping-bird-f9921",
+            storageBucket: "flapping-bird-f9921.firebasestorage.app",
+            messagingSenderId: "1038545058004",
+            appId: "1:1038545058004:web:65b29c57eda2939f18e341",
+            measurementId: "G-SH9Y19ZE74"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Contest end date (will be set in initGame)
-        let contestEndDate;
-
-        // Game elements
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const startScreen = document.getElementById('startScreen');
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const nameInputScreen = document.getElementById('nameInputScreen');
-        const contestRulesScreen = document.getElementById('contestRulesScreen');
-        const winnersModal = document.getElementById('winnersModal');
-        const startBtn = document.getElementById('startBtn');
-        const restartBtn = document.getElementById('restartBtn');
-        const saveScoreBtn = document.getElementById('saveScoreBtn');
-        const contestRulesBtn = document.getElementById('contestRulesBtn');
-        const closeRulesBtn = document.getElementById('closeRulesBtn');
-        const viewWinnersBtn = document.getElementById('viewWinnersBtn');
-        const closeWinners = document.getElementById('closeWinners');
-        const scoreDisplay = document.getElementById('score');
-        const finalScoreDisplay = document.getElementById('finalScore');
-        const newScoreDisplay = document.getElementById('newScoreDisplay');
-        const playerNameInput = document.getElementById('playerName');
-        const dedicationInput = document.getElementById('dedication');
-        const highScoresList = document.getElementById('highScoresList');
-        const gameOverHighScores = document.getElementById('gameOverHighScores');
-        const winnersList = document.getElementById('winnersList');
-        const soundToggle = document.getElementById('soundToggle');
-        const closeCelebration = document.getElementById('closeCelebration');
-        
-        // Sound elements
-        const flapSound = document.getElementById('flapSound');
-        const scoreSound = document.getElementById('scoreSound');
-        const hitSound = document.getElementById('hitSound');
-        const powerUpSound = document.getElementById('powerUpSound');
-        const bgMusic = document.getElementById('bgMusic');
-        
-        // Game variables
-        let bird = {
-            x: 50,
-            y: 150,
-            width: 30,
-            height: 20,
-            velocity: 0,
-            gravity: 0.5,
-            jump: -10,
-            wingState: 0,
-            wingTimer: 0,
-            initialHover: true,
-            hoverAmplitude: 5,
-            hoverSpeed: 0.05,
-            hoverOffset: 0,
-            isShielded: false
-        };
-        
-        let background = {
-            clouds: [],
-            trees: []
-        };
-        
-        let pipes = [];
-        let powerUps = [];
-        let activePowerUp = null;
-        let powerUpTimer = 0;
-        let score = 0;
-        let lastScore = 0;
-        let gameRunning = false;
-        let animationId;
-        let pipeSpeed = 2.5;
-        let pipeGap = 180;
-        let minGap = 90;
-        let pipeFrequency = 1500;
-        let lastPipeTime = 0;
-        let highScores = [];
-        let userInteracted = false;
-        let soundEnabled = true;
-        let particles = [];
-        let scorePopups = [];
-
-        // Power-up types
-        const powerUpTypes = {
-            shield: {
-                color: 'rgba(0, 150, 255, 0.7)',
-                duration: 5000,
-                effect: function() {
-                    bird.isShielded = true;
-                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 20, '#00a8ff');
-                },
-                endEffect: function() {
-                    bird.isShielded = false;
-                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 15, '#00a8ff');
-                }
-            },
-            
-            slowmo: {
-                color: 'rgba(0, 255, 0, 0.7)',
-                duration: 6000,
-                effect: function() {
-                    pipeSpeed *= 0.5;
-                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 20, '#00ff00');
-                },
-                endEffect: function() {
-                    pipeSpeed *= 2;
-                    createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 15, '#00ff00');
-                }
-            }
+        // Travel Payouts API Configuration
+        const TRAVEL_PAYOUTS_CONFIG = {
+            partnerId: '232377',
+            apiToken: 'a9465ce2914a4f99c7e0f79cfdbf3ba37f9',
+            baseUrl: 'https://api.travelpayouts.com/v1',
+            affiliateUrl: 'https://search.avs.io/hotels',
+            flightSearchUrl: 'https://aviasales.com',
+            bikeBookingUrl: 'https://bikesbooking.tpx.lu/40fmM6sd'
         };
 
-        // Theme System
-        const themes = [
-            { 
-                class: 'theme-default', 
-                pipeColor: '#228B22', 
-                pipeEdge: '#1E701E', 
-                ground: '#5a8f3d', 
-                grass: '#4a7d34',
-                skyGradient: ['#87CEEB', '#E0F7FA']
+        // Initialize Firebase with error handling
+        let auth, db, storage;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            storage = firebase.storage();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            showMessage('Firebase connection error. Some features may not work.', 'error');
+        }
+
+        // Global variables
+        let currentUser = null;
+        let currentCurrency = 'INR';
+        let cart = [];
+        let cartTotal = 0;
+        let authMode = 'signin';
+        let selectedPaymentMethod = 'razorpay';
+
+        // Updated product data with better images matching descriptions
+        const products = [
+            {
+                id: 1,
+                name: 'Premium Travel Luggage Set',
+                prices: { INR: 12999, USD: 159.99 },
+                rating: 4.8,
+                icon: 'fas fa-suitcase-rolling',
+                image: 'https://images.unsplash.com/photo-1564194282-a0ffc7f8fd8c?w=300&h=200&fit=crop'
             },
-            { 
-                class: 'theme-night', 
-                pipeColor: '#4a6fa5', 
-                pipeEdge: '#2e4a6b', 
-                ground: '#2d3e50', 
-                grass: '#1f2d3a',
-                skyGradient: ['#0a1128', '#1a2a4a']
+            {
+                id: 2,
+                name: 'Travel Document Organizer',
+                prices: { INR: 1999, USD: 24.99 },
+                rating: 4.3,
+                icon: 'fas fa-passport',
+                image: 'https://images.unsplash.com/photo-1543248939-4e9b2c7d0d04?w=300&h=200&fit=crop'
             },
-            { 
-                class: 'theme-sunset', 
-                pipeColor: '#e76f51', 
-                pipeEdge: '#d45d3f', 
-                ground: '#e9c46a', 
-                grass: '#d4a373',
-                skyGradient: ['#ff7e5f', '#feb47b']
+            {
+                id: 3,
+                name: 'Noise Cancelling Headphones',
+                prices: { INR: 15999, USD: 199.99 },
+                rating: 4.9,
+                icon: 'fas fa-headphones',
+                image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop'
             },
-            { 
-                class: 'theme-forest', 
-                pipeColor: '#588157', 
-                pipeEdge: '#3a5a40', 
-                ground: '#344e41', 
-                grass: '#2d3e2f',
-                skyGradient: ['#3a7d44', '#6a9c78']
+            {
+                id: 4,
+                name: 'Travel Camera Kit',
+                prices: { INR: 27999, USD: 349.99 },
+                rating: 4.7,
+                icon: 'fas fa-camera',
+                image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=300&h=200&fit=crop'
             },
-            { 
-                class: 'theme-ice', 
-                pipeColor: '#457b9d', 
-                pipeEdge: '#1d3557', 
-                ground: '#a8dadc', 
-                grass: '#8ecae6',
-                skyGradient: ['#a8d0e6', '#d9edf7']
+            {
+                id: 5,
+                name: 'Quick-Dry Travel Clothing',
+                prices: { INR: 2999, USD: 39.99 },
+                rating: 4.4,
+                icon: 'fas fa-tshirt',
+                image: 'https://images.unsplash.com/photo-1523359346063-d879354c0ea5?w=300&h=200&fit=crop'
+            },
+            {
+                id: 6,
+                name: 'Universal Travel Adapter',
+                prices: { INR: 2399, USD: 29.99 },
+                rating: 4.6,
+                icon: 'fas fa-plug',
+                image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop'
+            },
+            {
+                id: 7,
+                name: 'Travel First Aid Kit',
+                prices: { INR: 1599, USD: 19.99 },
+                rating: 4.2,
+                icon: 'fas fa-medkit',
+                image: 'https://images.unsplash.com/photo-1603398938430-f96f4e4fbf5d?w=300&h=200&fit=crop'
+            },
+            {
+                id: 8,
+                name: 'Portable Power Bank 20000mAh',
+                prices: { INR: 3999, USD: 49.99 },
+                rating: 4.8,
+                icon: 'fas fa-battery-full',
+                image: 'https://images.unsplash.com/photo-1609592935274-b7f3f1e25100?w=300&h=200&fit=crop'
+            },
+            {
+                id: 9,
+                name: 'Travel Pillow & Blanket Set',
+                prices: { INR: 2499, USD: 32.99 },
+                rating: 4.5,
+                icon: 'fas fa-bed',
+                image: 'https://images.unsplash.com/photo-1631049035182-249067d7618e?w=300&h=200&fit=crop'
+            },
+            {
+                id: 10,
+                name: 'Waterproof Travel Backpack',
+                prices: { INR: 8999, USD: 119.99 },
+                rating: 4.7,
+                icon: 'fas fa-backpack',
+                image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=200&fit=crop'
+            },
+            {
+                id: 11,
+                name: 'Travel Security Money Belt',
+                prices: { INR: 1299, USD: 16.99 },
+                rating: 4.3,
+                icon: 'fas fa-money-bill-wave',
+                image: 'https://images.unsplash.com/photo-1607473129811-82c8b04ad7a8?w=300&h=200&fit=crop'
+            },
+            {
+                id: 12,
+                name: 'Portable Water Purifier',
+                prices: { INR: 4999, USD: 65.99 },
+                rating: 4.6,
+                icon: 'fas fa-tint',
+                image: 'https://images.unsplash.com/photo-1581889470536-467718b4d5b2?w=300&h=200&fit=crop'
             }
         ];
 
-        let currentTheme = 0;
-        let nextThemeAt = 12;
-
-        // Particle System
-        function createParticles(x, y, count, color) {
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    size: Math.random() * 5 + 2,
-                    color: color || `hsl(${Math.random() * 360}, 100%, 50%)`,
-                    speedX: Math.random() * 6 - 3,
-                    speedY: Math.random() * 6 - 3,
-                    life: 30 + Math.random() * 20
-                });
-            }
-        }
-
-        function updateParticles() {
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].x += particles[i].speedX;
-                particles[i].y += particles[i].speedY;
-                particles[i].life--;
-                
-                if (particles[i].life <= 0) {
-                    particles.splice(i, 1);
-                }
-            }
-        }
-
-        function drawParticles() {
-            particles.forEach(p => {
-                ctx.globalAlpha = p.life / 50;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            ctx.globalAlpha = 1;
-        }
-
-        // Score Popups
-        function createScorePopup(x, y, text) {
-            scorePopups.push({
-                x: x,
-                y: y,
-                text: text,
-                life: 60
-            });
-        }
-
-        function updateScorePopups() {
-            for (let i = scorePopups.length - 1; i >= 0; i--) {
-                scorePopups[i].y -= 1;
-                scorePopups[i].life--;
-                
-                if (scorePopups[i].life <= 0) {
-                    scorePopups.splice(i, 1);
-                }
-            }
-        }
-
-        function drawScorePopups() {
-            scorePopups.forEach(popup => {
-                ctx.globalAlpha = popup.life / 60;
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 20px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(popup.text, popup.x, popup.y);
-            });
-            ctx.globalAlpha = 1;
-        }
-
-        // Contest Functions
-        async function checkContestStatus() {
-            // Get the stored contest end date from localStorage or use the default one
-            let storedEndDate = localStorage.getItem('contestEndDate');
-            let endDate;
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            setupPaymentMethods();
             
-            if (storedEndDate) {
-                endDate = new Date(storedEndDate);
-                // Check if the stored date is in the past
-                if (new Date() > endDate) {
-                    // Contest has ended, set a new end date
-                    endDate = new Date();
-                    endDate.setDate(endDate.getDate() + 5);
-                    localStorage.setItem('contestEndDate', endDate.toString());
-                    
-                    try {
-                        // Get all scores
-                        const snapshot = await db.collection("scores").get();
-                        
-                        // Archive the top 3 winners
-                        const winners = snapshot.docs
-                            .map(doc => doc.data())
-                            .sort((a, b) => b.score - a.score)
-                            .slice(0, 3);
-                        
-                        // Save to winners collection with prizes
-                        const batch = db.batch();
-                        winners.forEach((winner, index) => {
-                            const prize = index === 0 ? 2000 : index === 1 ? 1000 : 500;
-                            const winnerRef = db.collection("winners").doc();
-                            batch.set(winnerRef, {
-                                ...winner,
-                                prize: prize,
-                                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                            });
-                        });
-                        
-                        // Delete all scores
-                        snapshot.docs.forEach(doc => {
-                            batch.delete(doc.ref);
-                        });
-                        
-                        await batch.commit();
-                        console.log("Scores reset and winners archived");
-                    } catch (error) {
-                        console.error("Error resetting scores:", error);
-                    }
-                }
-            } else {
-                // No stored date, set a new one
-                endDate = new Date();
-                endDate.setDate(endDate.getDate() + 5);
-                localStorage.setItem('contestEndDate', endDate.toString());
-            }
-            
-            return endDate;
-        }
-
-        function updateCountdown() {
-            if (!contestEndDate) return;
-            
-            const now = new Date();
-            const distance = contestEndDate - now;
-            
-            // Only update if contest is still running
-            if (distance > 0) {
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                
-                const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-                
-                // Update all countdown elements
-                document.querySelectorAll('.countdown').forEach(el => {
-                    el.textContent = timeString;
-                });
-            } else {
-                document.querySelectorAll('.contest-info').forEach(el => {
-                    el.innerHTML = "🏆 Contest ended! Winners will be announced soon.";
-                });
-            }
-        }
-
-        // Create confetti effect
-        function createConfetti() {
-            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
-            const celebration = document.getElementById('winnerCelebration');
-            
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = Math.random() * 10 + 5 + 'px';
-                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-                confetti.style.animationDelay = Math.random() * 2 + 's';
-                celebration.appendChild(confetti);
-            }
-        }
-
-        // Show winner celebration
-        function showWinnerCelebration() {
-            const celebration = document.getElementById('winnerCelebration');
-            celebration.style.display = 'flex';
-            createConfetti();
-            
-            // Play celebration sound if available
-            if (soundEnabled) {
-                const celebrationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3');
-                celebrationSound.volume = 0.3;
-                celebrationSound.play().catch(e => console.log("Celebration sound failed:", e));
-            }
-        }
-
-        // Firebase Score System
-        function setupRealTimeScores() {
-            db.collection("scores")
-                .orderBy("score", "desc")
-                .limit(15)
-                .onSnapshot((snapshot) => {
-                    highScores = snapshot.docs.map(doc => doc.data());
-                    updateAllScoreDisplays();
-                }, (error) => {
-                    console.error("Firestore error:", error);
-                });
-                
-            // Load previous winners
-            db.collection("winners")
-                .orderBy("score", "desc")
-                .limit(3)
-                .get()
-                .then((snapshot) => {
-                    const winners = snapshot.docs.map(doc => doc.data());
-                    updateWinnersList(winners);
-                });
-        }
-
-        function updateWinnersList(winners) {
-            winnersList.innerHTML = '';
-            winners.forEach((winner, index) => {
-                const prize = index === 0 ? 2000 : index === 1 ? 1000 : 500;
-                const li = document.createElement('li');
-                li.textContent = `${index + 1}. ${winner.name}: ${winner.score} (${winner.date}) - ₹${prize}`;
-                winnersList.appendChild(li);
-            });
-        }
-
-        async function saveHighScore() {
-            const name = playerNameInput.value.trim() || "Anonymous";
-            const dedication = dedicationInput.value.trim();
-
-            try {
-                await db.collection("scores").add({
-                    name: name.substring(0, 15),
-                    score: Number(score),
-                    dedication: dedication.substring(0, 100) || null
-                });
-                nameInputScreen.style.display = 'none';
-                gameOverScreen.style.display = 'block';
-            } catch (error) {
-                console.error("Error saving score:", error);
-                alert("Failed to save score. Please try again.");
-            }
-        }
-
-        function updateAllScoreDisplays() {
-            updateScoreDisplay(highScoresList);
-            updateScoreDisplay(gameOverHighScores);
-        }
-
-        function updateScoreDisplay(element) {
-            element.innerHTML = '';
-            highScores.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `${index + 1}. ${entry.name}: ${entry.score}`;
-                if (entry.dedication) {
-                    li.innerHTML += `<div class="dedication">"${entry.dedication}"</div>`;
-                }
-                element.appendChild(li);
-            });
-        }
-
-        // Social Sharing System
-        function setupSocialSharing() {
-            let shareUrl;
-            try {
-                shareUrl = new URL(window.location.href).toString();
-            } catch (e) {
-                shareUrl = 'https://example.com/flappy-bird';
-            }
-            
-            const shareText = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
-
-            document.querySelector('.twitter').onclick = (e) => {
-                e.preventDefault();
-                const popupWidth = 550;
-                const popupHeight = 420;
-                const left = (window.innerWidth - popupWidth) / 2;
-                const top = (window.innerHeight - popupHeight) / 2;
-                
-                window.open(
-                    `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
-                    'twitter-share',
-                    `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
-                );
-                return false;
-            };
-
-            document.querySelector('.facebook').onclick = (e) => {
-                e.preventDefault();
-                const popupWidth = 626;
-                const popupHeight = 436;
-                const left = (window.innerWidth - popupWidth) / 2;
-                const top = (window.innerHeight - popupHeight) / 2;
-                
-                window.open(
-                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-                    'facebook-share',
-                    `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
-                );
-                return false;
-            };
-
-            document.querySelector('.whatsapp').onclick = (e) => {
-                e.preventDefault();
-                const text = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
-                const encodedText = encodeURIComponent(text);
-                
-                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent);
-                
-                if (isMobile) {
-                    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        window.location.href = `whatsapp://send?text=${encodedText}`;
+            // Firebase auth state observer with error handling
+            if (auth) {
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        currentUser = user;
+                        updateUIForLoggedInUser();
+                        saveUserData(user);
+                        loadUserCart();
                     } else {
-                        window.location.href = `https://wa.me/?text=${encodedText}`;
+                        currentUser = null;
+                        updateUIForLoggedOutUser();
                     }
-                } else {
-                    window.open(`https://web.whatsapp.com/send?text=${encodedText}`, '_blank');
-                    
+                });
+            }
+
+            // Close user menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const userMenu = document.getElementById('userMenu');
+                const userMenuDropdown = document.getElementById('userMenuDropdown');
+                
+                if (userMenu && !userMenu.contains(event.target)) {
+                    userMenuDropdown.classList.remove('show');
+                }
+            });
+        });
+
+        // Helper function to show messages
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+            
+            const authMessages = document.getElementById('authMessages');
+            if (authMessages) {
+                authMessages.innerHTML = '';
+                authMessages.appendChild(messageDiv);
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 5000);
+            } else {
+                // Fallback to alert if modal is not open
+                alert(message);
+            }
+        }
+
+        // Authentication functions with improved error handling
+        function showAuthModal(mode = 'signin') {
+            authMode = mode;
+            document.getElementById('authModal').style.display = 'block';
+            updateAuthModal();
+            clearAuthMessages();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+            clearAuthMessages();
+        }
+
+        function clearAuthMessages() {
+            const authMessages = document.getElementById('authMessages');
+            if (authMessages) {
+                authMessages.innerHTML = '';
+            }
+        }
+
+        function updateAuthModal() {
+            const title = document.getElementById('authTitle');
+            const button = document.querySelector('#authContent .btn-primary');
+            const toggle = document.querySelector('#authContent .btn-secondary');
+            
+            if (authMode === 'signin') {
+                title.textContent = 'Sign In';
+                button.textContent = 'Sign In';
+                toggle.textContent = 'Switch to Register';
+            } else {
+                title.textContent = 'Register';
+                button.textContent = 'Register';
+                toggle.textContent = 'Switch to Sign In';
+            }
+        }
+
+        function toggleAuthMode() {
+            authMode = authMode === 'signin' ? 'register' : 'signin';
+            updateAuthModal();
+            clearAuthMessages();
+        }
+
+        function handleAuth() {
+            if (!auth) {
+                showMessage('Authentication service unavailable. Please try again later.', 'error');
+                return;
+            }
+
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const loading = document.getElementById('authLoading');
+            
+            if (!email || !password) {
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters long', 'error');
+                return;
+            }
+
+            loading.classList.add('show');
+            
+            const authPromise = authMode === 'signin' 
+                ? auth.signInWithEmailAndPassword(email, password)
+                : auth.createUserWithEmailAndPassword(email, password);
+            
+            authPromise
+                .then((userCredential) => {
+                    loading.classList.remove('show');
+                    showMessage(`${authMode === 'signin' ? 'Sign in' : 'Registration'} successful!`, 'success');
                     setTimeout(() => {
-                        if (!window.closed) {
-                            window.location.href = `https://api.whatsapp.com/send?text=${encodedText}`;
+                        closeAuthModal();
+                    }, 1500);
+                })
+                .catch(error => {
+                    loading.classList.remove('show');
+                    let errorMessage = 'Authentication failed. ';
+                    
+                    switch (error.code) {
+                        case 'auth/user-not-found':
+                            errorMessage += 'No account found with this email.';
+                            break;
+                        case 'auth/wrong-password':
+                            errorMessage += 'Incorrect password.';
+                            break;
+                        case 'auth/email-already-in-use':
+                            errorMessage += 'An account with this email already exists.';
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage += 'Password is too weak.';
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage += 'Invalid email address.';
+                            break;
+                        case 'auth/network-request-failed':
+                            errorMessage += 'Network error. Please check your connection.';
+                            break;
+                        default:
+                            errorMessage += error.message;
+                    }
+                    
+                    showMessage(errorMessage, 'error');
+                });
+        }
+
+        function signOut() {
+            if (auth) {
+                auth.signOut().then(() => {
+                    cart = [];
+                    updateCartDisplay();
+                    showMessage('Signed out successfully', 'success');
+                }).catch(error => {
+                    console.error('Sign out error:', error);
+                });
+            }
+        }
+
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userMenuDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function updateUIForLoggedInUser() {
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.style.display = 'block';
+                
+                if (currentUser) {
+                    document.getElementById('userName').textContent = currentUser.email.split('@')[0];
+                    document.getElementById('userAvatar').textContent = currentUser.email.charAt(0).toUpperCase();
+                }
+            }
+        }
+
+        function updateUIForLoggedOutUser() {
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.style.display = 'none';
+            }
+        }
+
+        function saveUserData(user) {
+            if (!db) return;
+            
+            const userData = {
+                uid: user.uid,
+                email: user.email,
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                currency: currentCurrency
+            };
+            
+            db.collection('users').doc(user.uid).set(userData, { merge: true })
+                .catch(error => console.error('Error saving user data:', error));
+        }
+
+        function loadUserCart() {
+            if (!currentUser || !db) return;
+            
+            db.collection('users').doc(currentUser.uid).get()
+                .then(doc => {
+                    if (doc.exists && doc.data().cart) {
+                        cart = doc.data().cart;
+                        updateCartDisplay();
+                    }
+                })
+                .catch(error => console.error('Error loading cart:', error));
+        }
+
+        // Currency functions
+        function setCurrency(currency) {
+            currentCurrency = currency;
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadProducts();
+            updateCartDisplay();
+            
+            // Save currency preference for logged-in users
+            if (currentUser && db) {
+                db.collection('users').doc(currentUser.uid).update({
+                    currency: currency
+                }).catch(error => console.error('Error saving currency:', error));
+            }
+        }
+
+        function formatPrice(price) {
+            if (currentCurrency === 'INR') {
+                return '₹' + price.toLocaleString('en-IN');
+            } else {
+                return '$' + price.toFixed(2);
+            }
+        }
+
+        // Product functions
+        function loadProducts() {
+            const grid = document.getElementById('productsGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            products.forEach(product => {
+                const price = product.prices[currentCurrency];
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        ${product.image ? 
+                            `<img src="${product.image}" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                             <i class="${product.icon}" style="display:none;"></i>` : 
+                            `<i class="${product.icon}"></i>`
                         }
-                    }, 1000);
-                }
-                return false;
-            };     
-
-            document.querySelector('.instagram').onclick = async (e) => {
-                e.preventDefault();
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 1080;
-                    canvas.height = 1080;
-                    const ctx = canvas.getContext('2d');
-                    
-                    ctx.fillStyle = '#70c5ce';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 80px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('FLAPPY BIRD', canvas.width/2, 200);
-                    ctx.font = 'bold 120px Arial';
-                    ctx.fillText(`SCORE: ${lastScore}`, canvas.width/2, canvas.height/2);
-                    
-                    const image = canvas.toDataURL('image/jpeg');
-                    
-                    if (navigator.share) {
-                        const response = await fetch(image);
-                        const blob = await response.blob();
-                        const file = new File([blob], 'flappy-score.jpg', { type: 'image/jpeg' });
-                        
-                        await navigator.share({
-                            files: [file],
-                            title: 'My Flappy Bird Score',
-                            text: `I scored ${lastScore} points!`
-                        });
-                    } else {
-                        const link = document.createElement('a');
-                        link.href = image;
-                        link.download = 'flappy-score.jpg';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        alert('Image saved! You can now upload it to Instagram.');
-                    }
-                } catch (error) {
-                    console.error('Sharing failed:', error);
-                    alert('Sharing failed. Please try saving the image first.');
-                }
-                return false;
-            };
-
-            document.querySelector('.copy').onclick = async (e) => {
-                e.preventDefault();
-                const text = `I scored ${lastScore} in Flappy Bird! 🐦 Can you beat me? ${shareUrl}`;
-                
-                try {
-                    await navigator.clipboard.writeText(text);
-                    const copyBtn = e.target;
-                    const originalText = copyBtn.innerHTML;
-                    copyBtn.innerHTML = '✓ Copied!';
-                    setTimeout(() => {
-                        copyBtn.innerHTML = originalText;
-                    }, 2000);
-                } catch (err) {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = text;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    try {
-                        document.execCommand('copy');
-                        alert('Copied to clipboard!');
-                    } catch (err) {
-                        prompt('Copy this text:', text);
-                    }
-                    document.body.removeChild(textarea);
-                }
-                return false;
-            };
-        }
-
-        // Game core functions
-        function resizeCanvas() {
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            canvas.width = isMobile ? window.innerWidth : 400;
-            canvas.height = isMobile ? window.innerHeight : 600;
-            bird.y = canvas.height / 3;
-        }
-        
-        function initClouds() {
-            background.clouds = [];
-            for (let i = 0; i < 5; i++) {
-                background.clouds.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * 200,
-                    width: 60 + Math.random() * 40,
-                    speed: 0.2 + Math.random() * 0.3
-                });
-            }
-        }
-        
-        function initTrees() {
-            background.trees = [];
-            for (let i = 0; i < 3; i++) {
-                background.trees.push({
-                    x: Math.random() * canvas.width,
-                    width: 40 + Math.random() * 20,
-                    height: 80 + Math.random() * 40
-                });
-            }
-        }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            soundToggle.textContent = soundEnabled ? "🔊" : "🔇";
-            if (soundEnabled && gameRunning) {
-                bgMusic.currentTime = 0;
-                bgMusic.play().catch(e => console.log("Music play failed:", e));
-            } else {
-                bgMusic.pause();
-            }
-        }
-
-        function handleKeyPress(e) {
-            if (!userInteracted) userInteracted = true;
-            if (e.code === 'Space' && gameRunning) {
-                e.preventDefault();
-                birdJump();
-            }
-        }
-
-        function handleJump(e) {
-            e.preventDefault();
-            if (!userInteracted) userInteracted = true;
-            if (gameRunning) {
-                birdJump();
-            }
-        }
-
-        function birdJump() {
-            bird.velocity = bird.jump;
-            bird.initialHover = false;
-            createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 10, '#FFD700');
-            if (soundEnabled) {
-                flapSound.currentTime = 0;
-                flapSound.play().catch(e => console.log("Flap sound failed:", e));
-            }
-        }
-
-        function createPipe() {
-            const pipeWidth = 60;
-            let currentGap = Math.max(minGap, pipeGap - (score * 1.3));
-            
-            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                currentGap = Math.max(minGap * 1.15, currentGap * 1.15);
-            }
-            
-            const maxTopHeight = canvas.height - currentGap - 150;
-            const topHeight = Math.random() * maxTopHeight + 50;
-            
-            pipes.push({
-                x: canvas.width,
-                width: pipeWidth,
-                topHeight: topHeight,
-                bottomHeight: canvas.height - topHeight - currentGap - 50,
-                passed: false
-            });
-            
-            // Chance to spawn power-up with each new pipe
-            if (Math.random() < 0.3) { // 30% chance
-                spawnPowerUp(pipes[pipes.length - 1]);
-            }
-        }
-
-        function spawnPowerUp(pipe) {
-            const types = Object.keys(powerUpTypes);
-            const type = types[Math.floor(Math.random() * types.length)];
-            
-            powerUps.push({
-                x: pipe.x + pipe.width / 2 - 15,
-                y: pipe.topHeight + pipeGap / 2 - 15,
-                width: 30,
-                height: 30,
-                type: type
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${product.name}</h3>
+                        <div class="product-price">${formatPrice(price)}</div>
+                        <div class="product-rating">
+                            <div class="stars">
+                                ${generateStars(product.rating)}
+                            </div>
+                            <span>(${product.rating})</span>
+                        </div>
+                        <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                    </div>
+                `;
+                grid.appendChild(productCard);
             });
         }
 
-        function drawPipes() {
-            const theme = themes[currentTheme];
-            ctx.fillStyle = theme.pipeColor;
-            pipes.forEach(pipe => {
-                // Top pipe
-                ctx.fillRect(pipe.x, 0, pipe.width, pipe.topHeight);
-                
-                // Bottom pipe
-                ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight - 50, pipe.width, pipe.bottomHeight);
-                
-                // Pipe edges
-                ctx.fillStyle = theme.pipeEdge;
-                ctx.fillRect(pipe.x - 5, pipe.topHeight - 20, pipe.width + 10, 20);
-                ctx.fillRect(pipe.x - 5, canvas.height - pipe.bottomHeight - 70, pipe.width + 10, 20);
-                ctx.fillStyle = theme.pipeColor;
-            });
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 !== 0;
+            let stars = '';
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="fas fa-star"></i>';
+            }
+            
+            if (hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt"></i>';
+            }
+            
+            const emptyStars = 5 - Math.ceil(rating);
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '<i class="far fa-star"></i>';
+            }
+            
+            return stars;
         }
 
-        function drawPowerUps() {
-            powerUps.forEach(pu => {
-                ctx.fillStyle = powerUpTypes[pu.type].color;
-                ctx.beginPath();
-                ctx.arc(pu.x + pu.width/2, pu.y + pu.height/2, pu.width/2, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Add icon based on type
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 16px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                if (pu.type === 'shield') {
-                    ctx.fillText('S', pu.x + pu.width/2, pu.y + pu.height/2);
-                } else {
-                    ctx.fillText('SL', pu.x + pu.width/2, pu.y + pu.height/2);
-                }
-            });
-        }
-
-        function drawBird() {
-            // Draw body
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.ellipse(
-                bird.x + bird.width/2, 
-                bird.y + bird.height/2,
-                bird.width/2, 
-                bird.height/2, 
-                0, 0, Math.PI * 2
-            );
-            ctx.fill();
-            
-            // Draw wings
-            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
-            if (bird.wingState === 0) {
-                // Down flap
-                ctx.beginPath();
-                ctx.moveTo(bird.x, bird.y + bird.height/2);
-                ctx.quadraticCurveTo(
-                    bird.x - 15, bird.y + bird.height/2 + 10,
-                    bird.x, bird.y + bird.height
-                );
-                ctx.quadraticCurveTo(
-                    bird.x + 10, bird.y + bird.height/2 + 5,
-                    bird.x, bird.y + bird.height/2
-                );
-                ctx.fill();
-            } else if (bird.wingState === 1) {
-                // Mid flap
-                ctx.beginPath();
-                ctx.moveTo(bird.x, bird.y + bird.height/2);
-                ctx.quadraticCurveTo(
-                    bird.x - 10, bird.y + bird.height/2,
-                    bird.x, bird.y + bird.height/2 + 10
-                );
-                ctx.quadraticCurveTo(
-                    bird.x + 10, bird.y + bird.height/2,
-                    bird.x, bird.y + bird.height/2
-                );
-                ctx.fill();
-            } else {
-                // Up flap
-                ctx.beginPath();
-                ctx.moveTo(bird.x, bird.y + bird.height/2);
-                ctx.quadraticCurveTo(
-                    bird.x - 15, bird.y + bird.height/2 - 10,
-                    bird.x, bird.y
-                );
-                ctx.quadraticCurveTo(
-                    bird.x + 10, bird.y + bird.height/2 - 5,
-                    bird.x, bird.y + bird.height/2
-                );
-                ctx.fill();
-            }
-            
-            // Draw beak
-            ctx.fillStyle = '#FF8C00';
-            ctx.beginPath();
-            ctx.moveTo(bird.x + bird.width, bird.y + 10);
-            ctx.lineTo(bird.x + bird.width + 10, bird.y + 10);
-            ctx.lineTo(bird.x + bird.width, bird.y + 15);
-            ctx.fill();
-            
-            // Draw eye
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(bird.x + bird.width - 8, bird.y + 7, 3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw shield effect if active
-            if (bird.isShielded) {
-                ctx.strokeStyle = 'rgba(0, 150, 255, 0.7)';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(
-                    bird.x + bird.width/2, 
-                    bird.y + bird.height/2, 
-                    bird.width/2 + 10, 
-                    0, 
-                    Math.PI * 2
-                );
-                ctx.stroke();
-            }
-        }
-
-        function drawBackground() {
-            const theme = themes[currentTheme];
-            
-            // Sky gradient
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            skyGradient.addColorStop(0, theme.skyGradient[0]);
-            skyGradient.addColorStop(1, theme.skyGradient[1]);
-            ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height - 50);
-            
-            // Draw clouds
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            background.clouds.forEach(cloud => {
-                cloud.x -= cloud.speed;
-                if (cloud.x + cloud.width < 0) {
-                    cloud.x = canvas.width;
-                    cloud.y = Math.random() * 200;
-                }
-                
-                ctx.beginPath();
-                ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width * 0.3, cloud.y - cloud.width * 0.1, cloud.width * 0.25, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width * 0.6, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width * 0.3, cloud.y + cloud.width * 0.1, cloud.width * 0.2, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            
-            // Draw distant trees
-            ctx.fillStyle = theme.grass;
-            background.trees.forEach(tree => {
-                tree.x -= 0.5;
-                if (tree.x + tree.width < 0) {
-                    tree.x = canvas.width;
-                    tree.height = 80 + Math.random() * 40;
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(tree.x, canvas.height - 50);
-                ctx.lineTo(tree.x + tree.width/2, canvas.height - 50 - tree.height);
-                ctx.lineTo(tree.x + tree.width, canvas.height - 50);
-                ctx.fill();
-            });
-            
-            // Draw ground
-            ctx.fillStyle = theme.ground;
-            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-            
-            // Draw grass details
-            ctx.fillStyle = theme.grass;
-            for (let i = 0; i < canvas.width; i += 20) {
-                ctx.beginPath();
-                ctx.moveTo(i, canvas.height - 50);
-                ctx.lineTo(i + 10, canvas.height - 70);
-                ctx.lineTo(i + 20, canvas.height - 50);
-                ctx.fill();
-            }
-        }
-
-        function updateBird() {
-            if (bird.initialHover) {
-                bird.hoverOffset = Math.sin(bird.wingTimer * bird.hoverSpeed) * bird.hoverAmplitude;
-                bird.y = canvas.height / 3 + bird.hoverOffset;
-                bird.wingTimer++;
-                
-                if (bird.wingTimer % 10 === 0) {
-                    bird.wingState = (bird.wingState + 1) % 3;
-                }
-            } else {
-                bird.velocity += bird.gravity;
-                bird.y += bird.velocity;
-                
-                bird.wingTimer++;
-                if (bird.wingTimer > 5) {
-                    bird.wingTimer = 0;
-                    bird.wingState = (bird.wingState + 1) % 3;
-                }
-            }
-            
-            // Keep bird within canvas
-            if (bird.y < 0) {
-                bird.y = 0;
-                bird.velocity = 0;
-            }
-        }
-
-        function updatePipes() {
-            for (let i = pipes.length - 1; i >= 0; i--) {
-                pipes[i].x -= pipeSpeed;
-                
-                if (!pipes[i].passed && pipes[i].x + pipes[i].width < bird.x) {
-                    pipes[i].passed = true;
-                    score++;
-                    scoreDisplay.textContent = score;
-                    createScorePopup(bird.x, bird.y, `+1`);
-                    checkThemeChange();
-                    if (soundEnabled) {
-                        scoreSound.currentTime = 0;
-                        scoreSound.play().catch(e => console.log("Score sound failed:", e));
-                    }
-                }
-                
-                if (pipes[i].x + pipes[i].width < 0) {
-                    pipes.splice(i, 1);
-                }
-            }
-        }
-
-        function updatePowerUps() {
-            for (let i = powerUps.length - 1; i >= 0; i--) {
-                powerUps[i].x -= pipeSpeed;
-                
-                if (isColliding(bird, powerUps[i])) {
-                    activatePowerUp(powerUps[i].type);
-                    createScorePopup(bird.x, bird.y, `POWER UP!`);
-                    powerUps.splice(i, 1);
-                } else if (powerUps[i].x + powerUps[i].width < 0) {
-                    powerUps.splice(i, 1);
-                }
-            }
-            
-            // Update active power-up timer
-            if (activePowerUp) {
-                powerUpTimer--;
-                if (powerUpTimer <= 0) {
-                    powerUpTypes[activePowerUp.type].endEffect();
-                    activePowerUp = null;
-                }
-            }
-        }
-
-        function isColliding(obj1, obj2) {
-            return obj1.x < obj2.x + obj2.width &&
-                   obj1.x + bird.width > obj2.x &&
-                   obj1.y < obj2.y + obj2.height &&
-                   obj1.y + bird.height > obj2.y;
-        }
-
-        function checkCollisions() {
-            // Ground collision
-            if (bird.y + bird.height > canvas.height - 50) {
-                createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 30, '#ff0000');
-                return true;
-            }
-            
-            // Pipe collisions (ignore if shielded)
-            if (!bird.isShielded) {
-                for (const pipe of pipes) {
-                    if (
-                        bird.x + bird.width > pipe.x &&
-                        bird.x < pipe.x + pipe.width &&
-                        (bird.y < pipe.topHeight || bird.y + bird.height > canvas.height - pipe.bottomHeight - 50)
-                    ) {
-                        createParticles(bird.x + bird.width/2, bird.y + bird.height/2, 30, '#ff0000');
-                        return true;
-                    }
-                }
-            }
-            
-            return false;
-        }
-
-        function checkThemeChange() {
-            if (score >= nextThemeAt) {
-                currentTheme = (currentTheme + 1) % themes.length;
-                nextThemeAt += 12;
-                createParticles(canvas.width/2, canvas.height/2, 50, '#ffffff');
-                updateTheme();
-            }
-        }
-
-        function updateTheme() {
-            document.body.className = themes[currentTheme].class;
-        }
-
-        function showMessage(text) {
-            const msg = document.createElement('div');
-            msg.textContent = text;
-            msg.style.position = 'absolute';
-            msg.style.top = '30%';
-            msg.style.left = '50%';
-            msg.style.transform = 'translateX(-50%)';
-            msg.style.backgroundColor = 'rgba(0,0,0,0.7)';
-            msg.style.color = 'white';
-            msg.style.padding = '10px 20px';
-            msg.style.borderRadius = '20px';
-            msg.style.zIndex = '100';
-            msg.style.animation = 'fadeOut 2s forwards';
-            
-            document.getElementById('gameContainer').appendChild(msg);
-            
-            setTimeout(() => {
-                msg.remove();
-            }, 2000);
-        }
-
-        function activatePowerUp(type) {
-            activePowerUp = { type, timer: powerUpTypes[type].duration / (1000/60) }; // Convert ms to frames
-            powerUpTypes[type].effect();
-            
-            if (soundEnabled) {
-                powerUpSound.currentTime = 0;
-                powerUpSound.play().catch(e => console.log("Power-up sound failed:", e));
-            }
-            
-            showMessage(`POWER-UP: ${type.toUpperCase()}!`);
-        }
-
-        function gameOver() {
-            lastScore = score;
-            gameRunning = false;
-            cancelAnimationFrame(animationId);
-            finalScoreDisplay.textContent = `Score: ${score}`;
-            
-            // Stop background music
-            bgMusic.pause();
-            
-            // Play hit sound if enabled
-            if (soundEnabled && !bird.isShielded) {
-                hitSound.currentTime = 0;
-                hitSound.play().catch(e => console.log("Hit sound failed:", e));
-            }
-            
-            // Check if score is in top 10
-            if (highScores.length < 10 || score > highScores[highScores.length - 1]?.score || 0) {
-                newScoreDisplay.textContent = score;
-                nameInputScreen.style.display = 'block';
-                playerNameInput.focus();
-            } else {
-                gameOverScreen.style.display = 'block';
-            }
-        }
-
-        function startGame() {
-            // Hide celebration popup if visible
-            document.getElementById('winnerCelebration').style.display = 'none';
-
-            // Reset game state
-            bird.y = canvas.height / 3;
-            bird.velocity = 0;
-            bird.wingState = 0;
-            bird.wingTimer = 0;
-            bird.initialHover = true;
-            bird.hoverOffset = 0;
-            bird.isShielded = false;
-            pipes = [];
-            powerUps = [];
-            activePowerUp = null;
-            score = 0;
-            pipeSpeed = 2.5;
-            pipeGap = 180;
-            scoreDisplay.textContent = score;
-            gameRunning = true;
-            particles = [];
-            scorePopups = [];
-            
-            // Reset to default theme
-            currentTheme = 0;
-            nextThemeAt = 12;
-            updateTheme();
-            
-            // Hide/show screens
-            startScreen.style.display = 'none';
-            gameOverScreen.style.display = 'none';
-            nameInputScreen.style.display = 'none';
-            scoreDisplay.style.display = 'block';
-            
-            // Start background music
-            if (soundEnabled) {
-                bgMusic.currentTime = 0;
-                bgMusic.play().catch(e => console.log("Music play failed:", e));
-            }
-            
-            // Start game loop
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
-            lastPipeTime = performance.now();
-            gameLoop();
-        }
-        
-        function gameLoop(timestamp) {
-            if (!gameRunning) return;
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw background
-            drawBackground();
-            
-            // Draw pipes
-            drawPipes();
-            
-            // Draw power-ups
-            drawPowerUps();
-            
-            // Update game elements
-            updateBird();
-            updatePipes();
-            updatePowerUps();
-            updateParticles();
-            updateScorePopups();
-            
-            // Draw particles
-            drawParticles();
-            
-            // Draw score popups
-            drawScorePopups();
-            
-            // Draw bird (on top of everything)
-            drawBird();
-            
-            // Generate new pipes
-            if (timestamp - lastPipeTime > pipeFrequency) {
-                createPipe();
-                lastPipeTime = timestamp;
-            }
-            
-            // Check collisions
-            if (checkCollisions()) {
-                gameOver();
+        // Cart functions - require login for purchases
+        function addToCart(productId) {
+            if (!currentUser) {
+                showAuthModal();
                 return;
             }
             
-            animationId = requestAnimationFrame(gameLoop);
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                cart.push({
+                    id: productId,
+                    name: product.name,
+                    price: product.prices[currentCurrency],
+                    currency: currentCurrency
+                });
+                updateCartDisplay();
+                saveCartToFirebase();
+                alert(`${product.name} added to cart!`);
+            }
         }
 
-        // Initialize game
-        function initGame() {
-            resizeCanvas();
-            initClouds();
-            initTrees();
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartDisplay();
+            saveCartToFirebase();
+        }
+
+        function updateCartDisplay() {
+            const cartCount = document.getElementById('cartCount');
+            if (cartCount) cartCount.textContent = cart.length;
             
-            // Check contest status and set up the timer
-            checkContestStatus().then(endDate => {
-                contestEndDate = endDate;
-                updateCountdown();
-                setInterval(updateCountdown, 1000);
+            const cartItems = document.getElementById('cartItems');
+            if (!cartItems) return;
+            
+            cartItems.innerHTML = '';
+            cartTotal = 0;
+            
+            cart.forEach((item, index) => {
+                cartTotal += item.price;
+                cartItems.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gray-200);">
+                        <span>${item.name}</span>
+                        <div>
+                            <span>${formatPrice(item.price)}</span>
+                            <button onclick="removeFromCart(${index})" style="margin-left: 10px; background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Remove</button>
+                        </div>
+                    </div>
+                `;
             });
             
-            // Setup real-time scores and winners
-            setupRealTimeScores();
+            const cartTotalElement = document.getElementById('cartTotal');
+            if (cartTotalElement) {
+                cartTotalElement.innerHTML = `
+                    <div style="font-size: 18px; font-weight: bold; margin-top: 20px; text-align: right;">
+                        Total: ${formatPrice(cartTotal)}
+                    </div>
+                `;
+            }
             
-            // Setup social sharing
-            setupSocialSharing();
+            // Show/hide payment section based on cart contents
+            const paymentSection = document.getElementById('paymentSection');
+            const checkoutBtn = document.getElementById('checkoutBtn');
             
-            // Event listeners
-            window.addEventListener('resize', resizeCanvas);
-            startBtn.addEventListener('click', startGame);
-            restartBtn.addEventListener('click', startGame);
-            saveScoreBtn.addEventListener('click', saveHighScore);
-            contestRulesBtn.addEventListener('click', showContestRules);
-            closeRulesBtn.addEventListener('click', hideContestRules);
-            viewWinnersBtn.addEventListener('click', showWinners);
-            closeWinners.addEventListener('click', hideWinners);
-            closeCelebration.addEventListener('click', function() {
-                document.getElementById('winnerCelebration').style.display = 'none';
+            if (cart.length > 0) {
+                if (checkoutBtn) checkoutBtn.style.display = 'block';
+            } else {
+                if (checkoutBtn) checkoutBtn.style.display = 'none';
+                if (paymentSection) paymentSection.style.display = 'none';
+            }
+        }
+
+        function saveCartToFirebase() {
+            if (currentUser && db) {
+                db.collection('users').doc(currentUser.uid).update({
+                    cart: cart
+                }).catch(error => console.error('Error saving cart:', error));
+            }
+        }
+
+        function toggleCart() {
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
+            
+            const modal = document.getElementById('cartModal');
+            if (modal) {
+                modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        function showPaymentSection() {
+            const paymentSection = document.getElementById('paymentSection');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (paymentSection) paymentSection.style.display = 'block';
+            if (checkoutBtn) checkoutBtn.style.display = 'none';
+        }
+
+        // Payment functions
+        function setupPaymentMethods() {
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedPaymentMethod = this.dataset.method;
+                });
             });
-            document.addEventListener('keydown', handleKeyPress);
-            canvas.addEventListener('click', handleJump);
-            canvas.addEventListener('touchstart', handleJump, { passive: false });
-            soundToggle.addEventListener('click', toggleSound);
-            document.getElementById('startscreen').addEventListener('click', function() {
-                gameOverScreen.style.display = 'none';
-                nameInputScreen.style.display = 'none';
-                startScreen.style.display = 'block';
-            });
+        }
+
+        function processPayment() {
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
             
-            // Show celebration every time the game loads
-            setTimeout(showWinnerCelebration, 1000);
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
             
-            // Prevent touch scrolling
-            document.addEventListener('touchmove', function(e) {
-                if (gameRunning) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
+            const paymentData = {
+                userId: currentUser.uid,
+                userEmail: currentUser.email,
+                items: cart,
+                total: cartTotal,
+                currency: currentCurrency,
+                paymentMethod: selectedPaymentMethod,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'pending'
+            };
             
-            // Handle user interaction for audio
-            document.addEventListener('click', function() {
-                if (!userInteracted) {
-                    userInteracted = true;
-                    if (soundEnabled) {
-                        bgMusic.volume = 0.3;
-                        bgMusic.play().catch(e => console.log("Music play failed:", e));
-                    }
-                }
-            }, { once: true });
+            // Save order to Firebase
+            if (db) {
+                db.collection('orders').add(paymentData)
+                    .then((docRef) => {
+                        alert(`Order placed successfully! Order ID: ${docRef.id}\nPayment integration will be completed here.`);
+                        
+                        // Clear cart
+                        cart = [];
+                        updateCartDisplay();
+                        toggleCart();
+                        
+                        // Clear cart from Firebase
+                        db.collection('users').doc(currentUser.uid).update({
+                            cart: []
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error placing order:', error);
+                        alert('Order placement failed. Please try again.');
+                    });
+            } else {
+                alert('Payment service unavailable. Please try again later.');
+            }
+        }
+
+        // Tab and form functions
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
             
-            // Initialize AdSense
-            (adsbygoogle = window.adsbygoogle || []).push({});
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
         }
 
-        function showContestRules() {
-            contestRulesScreen.style.display = 'block';
+        function scrollToProducts() {
+            document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function hideContestRules() {
-            contestRulesScreen.style.display = 'none';
+        // Travel service redirect functions - allow anonymous browsing
+        function redirectToFlights() {
+            const flightUrl = `${TRAVEL_PAYOUTS_CONFIG.flightSearchUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
+            window.open(flightUrl, '_blank');
         }
 
-        function showWinners() {
-            winnersModal.style.display = 'block';
+        function redirectToHotels() {
+            const hotelUrl = `${TRAVEL_PAYOUTS_CONFIG.affiliateUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
+            window.open(hotelUrl, '_blank');
         }
 
-        function hideWinners() {
-            winnersModal.style.display = 'none';
+        function redirectToYachts() {
+            const yachtUrl = 'https://searadar.tpx.lu/EECgzks';
+            window.open(yachtUrl, '_blank');
         }
 
-        // Start the game
-        window.onload = initGame;
+        function redirectToCars() {
+            const carUrl = 'https://bikesbooking.tpx.lu/40fmM6sd';
+            window.open(carUrl, '_blank');
+        }
+
+        function redirectToBikes() {
+            const bikeUrl = TRAVEL_PAYOUTS_CONFIG.bikeBookingUrl;
+            window.open(bikeUrl, '_blank');
+        }
+
+        // Allow anonymous form searches, but save data only for logged in users
+        function handleSearch(event, type) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            
+            // For logged in users, save search data
+            if (currentUser && db) {
+                const searchData = {
+                    type: type,
+                    userId: currentUser.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    data: Object.fromEntries(formData)
+                };
+                
+                db.collection('searches').add(searchData)
+                    .catch(error => console.error('Error saving search:', error));
+            }
+            
+            // Redirect to appropriate booking platform for all users
+            let redirectUrl;
+            switch(type) {
+                case 'flights':
+                    redirectUrl = `${TRAVEL_PAYOUTS_CONFIG.flightSearchUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
+                    break;
+                case 'hotels':
+                    redirectUrl = `${TRAVEL_PAYOUTS_CONFIG.affiliateUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
+                    break;
+                case 'yachts':
+                    redirectUrl = 'https://searadar.tpx.lu/EECgzks';
+                    break;
+                case 'cars':
+                    redirectUrl = 'https://bikesbooking.tpx.lu/40fmM6sd';
+                    break;
+                case 'bikes':
+                    redirectUrl = TRAVEL_PAYOUTS_CONFIG.bikeBookingUrl;
+                    break;
+                default:
+                    alert('Redirecting to booking platform...');
+                    return;
+            }
+            window.open(redirectUrl, '_blank');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const authModal = document.getElementById('authModal');
+            const cartModal = document.getElementById('cartModal');
+            
+            if (event.target === authModal) {
+                closeAuthModal();
+            }
+            
+            if (event.target === cartModal) {
+                toggleCart();
+            }
+        }
     </script>
 </body>
 </html>
