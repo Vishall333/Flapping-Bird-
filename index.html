@@ -1062,15 +1062,15 @@
                 <h2>Trusted by Millions Across India</h2>
                 <div class="trust-stats">
                     <div class="stat-item">
-                        <div class="stat-number">₹250+ Cr</div>
+                        <div class="stat-number">₹6+ Cr</div>
                         <div class="stat-label">Funds Raised</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">1.2L+</div>
+                        <div class="stat-number">1K+</div>
                         <div class="stat-label">Successful Campaigns</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">15L+</div>
+                        <div class="stat-number">1L+</div>
                         <div class="stat-label">Happy Donors</div>
                     </div>
                     <div class="stat-item">
@@ -1952,9 +1952,75 @@
         let campaignImages = [];
         let userVerificationStatus = 'unverified'; // unverified, pending, verified
 
+        // Load data from localStorage on page load
+        function loadDataFromStorage() {
+            const storedCampaigns = localStorage.getItem('campaigns');
+            const storedAllCampaigns = localStorage.getItem('allCampaigns');
+            const storedUser = localStorage.getItem('currentUser');
+            const storedVerification = localStorage.getItem('userVerificationStatus');
+
+            if (storedCampaigns) {
+                campaigns = JSON.parse(storedCampaigns).map(c => ({
+                    ...c,
+                    created: new Date(c.created)
+                }));
+            }
+            
+            if (storedAllCampaigns) {
+                allCampaigns = JSON.parse(storedAllCampaigns).map(c => ({
+                    ...c,
+                    created: new Date(c.created)
+                }));
+            }
+            
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
+                updateAuthUI();
+            }
+            
+            if (storedVerification) {
+                userVerificationStatus = storedVerification;
+            }
+        }
+
+        // Save data to localStorage
+        function saveDataToStorage() {
+            localStorage.setItem('campaigns', JSON.stringify(campaigns));
+            localStorage.setItem('allCampaigns', JSON.stringify(allCampaigns));
+            if (currentUser) {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            localStorage.setItem('userVerificationStatus', userVerificationStatus);
+        }
+
+        // Save profile picture to localStorage
+        function saveProfilePicture(imageDataUrl) {
+            if (currentUser) {
+                localStorage.setItem(`profilePicture_${currentUser.uid}`, imageDataUrl);
+            }
+        }
+
+        // Load profile picture from localStorage
+        function loadProfilePicture() {
+            if (currentUser) {
+                const savedPicture = localStorage.getItem(`profilePicture_${currentUser.uid}`);
+                if (savedPicture) {
+                    const avatarElements = document.querySelectorAll('#profileAvatar, #userAvatarNav');
+                    avatarElements.forEach(avatar => {
+                        avatar.innerHTML = `<img src="${savedPicture}" alt="Profile Picture">`;
+                    });
+                }
+            }
+        }
+
         // Initialize with sample campaigns
         function initializeSampleCampaigns() {
-            campaigns = [
+            // Load data from storage first
+            loadDataFromStorage();
+            
+            // Only initialize sample campaigns if no data exists
+            if (campaigns.length === 0 && allCampaigns.length === 0) {
+                campaigns = [
                 {
                     id: 'camp_001',
                     title: 'Help 4-Year-Old Aarav Fight Leukemia',
@@ -2080,6 +2146,8 @@
             ];
             
             allCampaigns = [...campaigns];
+            saveDataToStorage(); // Save initial sample data
+            }
             renderCampaigns();
         }
 
@@ -2149,13 +2217,17 @@
             if (!file || !currentUser) return;
 
             try {
-                // Create a preview immediately
+                // Create a preview immediately and save to localStorage
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    const imageDataUrl = e.target.result;
                     const avatarElements = document.querySelectorAll('#profileAvatar, #userAvatarNav');
                     avatarElements.forEach(avatar => {
-                        avatar.innerHTML = `<img src="${e.target.result}" alt="Profile Picture">`;
+                        avatar.innerHTML = `<img src="${imageDataUrl}" alt="Profile Picture">`;
                     });
+                    
+                    // Save to localStorage for persistence
+                    saveProfilePicture(imageDataUrl);
                 };
                 reader.readAsDataURL(file);
 
@@ -2335,7 +2407,9 @@
                     isAdmin: isAdmin
                 };
                 
+                saveDataToStorage(); // Save user data
                 updateAuthUI();
+                loadProfilePicture(); // Load saved profile picture
                 closeModal('loginModal');
             } catch (error) {
                 showNotification('Login failed: ' + error.message, 'error');
@@ -2487,7 +2561,9 @@
                     isAdmin: isAdmin
                 };
                 
+                saveDataToStorage(); // Save user data
                 updateAuthUI();
+                loadProfilePicture(); // Load any saved profile picture
                 closeModal('otpModal');
                 
                 // Clear temporary data
@@ -2577,6 +2653,8 @@ Team Flapping Bird`
                 }
                 currentUser = null;
                 userVerificationStatus = 'unverified';
+                localStorage.removeItem('currentUser'); // Clear user data
+                localStorage.removeItem('userVerificationStatus');
                 updateAuthUI();
                 showHomePage();
                 showNotification('Logged out successfully', 'success');
@@ -2596,9 +2674,17 @@ Team Flapping Bird`
             const formData = new FormData(document.getElementById('campaignForm'));
             
             try {
-                const images = campaignImages.length > 0 ? 
-                    campaignImages.map(() => getDefaultCategoryImage(formData.get('category'))) : 
-                    [getDefaultCategoryImage(formData.get('category'))];
+                // Convert uploaded images to base64 for storage
+                let images = [];
+                if (campaignImages.length > 0) {
+                    for (let file of campaignImages) {
+                        const base64 = await convertFileToBase64(file);
+                        images.push(base64);
+                    }
+                } else {
+                    // Use default image only if no images uploaded
+                    images = [getDefaultCategoryImage(formData.get('category'))];
+                }
 
                 const campaignData = {
                     title: formData.get('title'),
@@ -2620,7 +2706,7 @@ Team Flapping Bird`
                     donors: 0,
                     daysLeft: formData.get('duration') === 'ongoing' ? 999 : parseInt(formData.get('duration')),
                     urgent: false,
-                    image: images[0],
+                    image: images[0], // Use the first uploaded image or default
                     images: images,
                     createdAt: new Date(),
                     created: new Date(),
@@ -2633,6 +2719,7 @@ Team Flapping Bird`
                 };
                 
                 allCampaigns.push(newCampaign);
+                saveDataToStorage(); // Save to localStorage
                 
                 closeModal('createCampaignModal');
                 document.getElementById('campaignForm').reset();
@@ -2644,6 +2731,16 @@ Team Flapping Bird`
             } catch (error) {
                 showNotification('Failed to create campaign: ' + error.message, 'error');
             }
+        }
+
+        // Helper function to convert file to base64
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
 
         function getDefaultCategoryImage(category) {
@@ -2663,6 +2760,7 @@ Team Flapping Bird`
             if (campaign && currentUser && currentUser.isAdmin) {
                 campaign.status = 'active';
                 campaigns.push(campaign);
+                saveDataToStorage(); // Persist changes
                 renderCampaigns(); // This will now display approved campaigns on the landing page
                 renderAdminPanel();
                 showNotification('Campaign approved and is now live on the platform!', 'success');
@@ -2674,6 +2772,7 @@ Team Flapping Bird`
                 if (confirm('Are you sure you want to reject this campaign?')) {
                     allCampaigns = allCampaigns.filter(c => c.id !== campaignId);
                     campaigns = campaigns.filter(c => c.id !== campaignId);
+                    saveDataToStorage(); // Persist changes
                     renderCampaigns();
                     renderAdminPanel();
                     showNotification('Campaign rejected and removed.', 'success');
@@ -2699,6 +2798,7 @@ Team Flapping Bird`
             if (confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
                 allCampaigns = allCampaigns.filter(c => c.id !== campaignId);
                 campaigns = campaigns.filter(c => c.id !== campaignId);
+                saveDataToStorage(); // Persist changes
                 renderCampaigns();
                 renderAdminPanel();
                 showNotification('Campaign deleted successfully.', 'success');
@@ -2864,6 +2964,13 @@ Team Flapping Bird`
                 campaign.goal = parseInt(newGoal);
                 campaign.goalAmount = parseInt(newGoal);
                 
+                // Update the campaign in both arrays if it exists in campaigns
+                const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
+                if (campaignIndex !== -1) {
+                    campaigns[campaignIndex] = { ...campaign };
+                }
+                
+                saveDataToStorage(); // Persist changes
                 renderCampaigns();
                 renderAdminPanel();
                 showNotification('Campaign updated successfully!', 'success');
@@ -2891,6 +2998,13 @@ Team Flapping Bird`
                     if (!campaign.images) campaign.images = [];
                     campaign.images[0] = e.target.result;
                     
+                    // Update the campaign in both arrays if it exists in campaigns
+                    const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
+                    if (campaignIndex !== -1) {
+                        campaigns[campaignIndex] = { ...campaign };
+                    }
+                    
+                    saveDataToStorage(); // Persist changes
                     renderCampaigns();
                     renderAdminPanel();
                     showNotification('Campaign image updated successfully!', 'success');
@@ -2915,12 +3029,27 @@ Team Flapping Bird`
             if (paymentLink && paymentLink.trim()) {
                 campaign.paymentLink = paymentLink.trim();
                 
+                // Update the campaign in both arrays if it exists in campaigns
+                const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
+                if (campaignIndex !== -1) {
+                    campaigns[campaignIndex] = { ...campaign };
+                }
+                
+                saveDataToStorage(); // Persist changes
                 renderCampaigns();
                 renderAdminPanel();
                 showNotification('Payment link added successfully! Donations will now redirect to this payment gateway.', 'success');
             } else if (paymentLink === '') {
                 // Empty string means remove payment link
                 campaign.paymentLink = '';
+                
+                // Update the campaign in both arrays if it exists in campaigns
+                const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
+                if (campaignIndex !== -1) {
+                    campaigns[campaignIndex] = { ...campaign };
+                }
+                
+                saveDataToStorage(); // Persist changes
                 renderCampaigns();
                 renderAdminPanel();
                 showNotification('Payment link removed. Donations will use default processing.', 'info');
