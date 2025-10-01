@@ -4,552 +4,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flapping Bird - Your Complete Travel Companion</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase SDK v9 -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
-    
+    <title>Flapping Bird - India's Most Trusted Crowdfunding Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-blue: #003580;
-            --secondary-blue: #0071c2;
-            --accent-orange: #ff8c00;
-            --light-blue: #e7f0ff;
-            --text-dark: #1a1a1a;
-            --text-light: #666666;
-            --white: #ffffff;
-            --gray-50: #f8f9fa;
-            --gray-100: #e9ecef;
-            --gray-200: #dee2e6;
-            --gray-300: #ced4da;
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --border-radius: 8px;
-            --shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #00b386;
+            --primary-dark: #009970;
+            --secondary: #ff4757;
+            --accent: #3742fa;
+            --success: #2ed573;
+            --warning: #ffa502;
+            --danger: #ff3838;
+            --dark: #2f3542;
+            --light: #f1f2f6;
+            --gray: #57606f;
+            --white: #ffffff;
+            --border: #ddd;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             line-height: 1.6;
-            color: var(--text-dark);
-            background-color: var(--gray-50);
+            color: var(--dark);
+            background: #fafbfc;
         }
 
-        /* Header Styles */
-        .header {
-            background: var(--white);
-            border-bottom: 1px solid var(--gray-200);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: var(--shadow);
-        }
-
-        .header-container {
+        .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            box-shadow: 0 2px 10px var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 70px;
+            padding: 1rem 0;
         }
 
         .logo {
-            font-family: 'Poppins', sans-serif;
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--primary-blue);
-            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
         }
 
-        .logo i {
-            color: var(--accent-orange);
-        }
-
-        .nav-menu {
+        .nav-links {
             display: flex;
             list-style: none;
-            gap: 30px;
+            gap: 2rem;
             align-items: center;
         }
 
-        .nav-item {
-            position: relative;
-        }
-
-        .nav-link {
+        .nav-links a {
+            color: var(--dark);
             text-decoration: none;
-            color: var(--text-dark);
             font-weight: 500;
-            padding: 10px 0;
-            transition: color 0.3s ease;
+            transition: color 0.3s;
         }
 
-        .nav-link:hover {
-            color: var(--secondary-blue);
+        .nav-links a:hover {
+            color: var(--primary);
         }
 
-        .header-actions {
+        .auth-section {
             display: flex;
-            gap: 15px;
+            gap: 1rem;
             align-items: center;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 16px;
-            background: var(--light-blue);
-            border-radius: var(--border-radius);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--secondary-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
+        .btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
             font-weight: 600;
-        }
-
-        .currency-selector {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .currency-btn {
-            padding: 8px 12px;
-            border: 2px solid var(--gray-200);
-            background: var(--white);
-            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .currency-btn.active {
-            border-color: var(--secondary-blue);
-            background: var(--secondary-blue);
-            color: var(--white);
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-size: 14px;
         }
 
         .btn-primary {
-            background: var(--secondary-blue);
+            background: var(--primary);
             color: var(--white);
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
         }
 
         .btn-primary:hover {
-            background: var(--primary-blue);
-            transform: translateY(-2px);
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
         }
 
         .btn-secondary {
-            background: transparent;
-            color: var(--secondary-blue);
-            padding: 12px 24px;
-            border: 2px solid var(--secondary-blue);
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-secondary:hover {
-            background: var(--secondary-blue);
+            background: var(--secondary);
             color: var(--white);
         }
 
-        .btn-danger {
-            background: var(--danger);
-            color: var(--white);
+        .btn-small {
             padding: 8px 16px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
-        .btn-danger:hover {
-            background: #c82333;
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 1.1rem;
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             color: var(--white);
-            padding: 80px 0;
+            padding: 120px 0 80px;
             text-align: center;
-        }
-
-        .hero-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
         }
 
         .hero h1 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 48px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            line-height: 1.2;
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
         }
 
         .hero p {
-            font-size: 20px;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-
-        /* Auth Section */
-        .auth-section {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            margin-top: -50px;
-            position: relative;
-            z-index: 10;
-            box-shadow: var(--shadow-lg);
-            max-width: 500px;
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            text-align: center;
+            opacity: 0.95;
         }
 
-        .auth-section h3 {
-            margin-bottom: 20px;
-            color: var(--text-dark);
-        }
-
-        .auth-form {
+        .hero-buttons {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .auth-input {
-            padding: 15px;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .auth-input:focus {
-            outline: none;
-            border-color: var(--secondary-blue);
-        }
-
-        /* Booking Tabs */
-        .booking-tabs {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            margin-top: 50px;
-            box-shadow: var(--shadow-lg);
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 0;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--gray-200);
+            gap: 1rem;
+            justify-content: center;
             flex-wrap: wrap;
         }
 
-        .tab-button {
-            padding: 15px 20px;
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 120px;
-            justify-content: center;
+        /* Trust Section */
+        .trust-section {
+            background: var(--white);
+            padding: 60px 0;
+            text-align: center;
         }
 
-        .tab-button.active {
-            color: var(--secondary-blue);
-            border-bottom-color: var(--secondary-blue);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .search-form {
+        .trust-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            align-items: end;
+            gap: 2rem;
+            margin-top: 2rem;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
+        .stat-item {
+            padding: 2rem;
         }
 
-        .form-label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-dark);
-        }
-
-        .form-input {
-            padding: 15px;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--secondary-blue);
-        }
-
-        .btn-search {
-            background: var(--accent-orange);
-            color: var(--white);
-            padding: 15px 30px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 18px;
+        .stat-number {
+            font-size: 2.5rem;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
         }
 
-        .btn-search:hover {
-            background: #e67e00;
-            transform: translateY(-2px);
+        .stat-label {
+            color: var(--gray);
+            font-weight: 500;
         }
 
-        /* Main Content */
-        .main-content {
-            max-width: 1200px;
-            margin: 80px auto;
-            padding: 0 20px;
+        /* Categories Section */
+        .categories-section {
+            padding: 80px 0;
+            background: var(--light);
         }
 
-        .section {
-            margin-bottom: 80px;
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
         }
 
         .section-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 36px;
+            font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 40px;
-            text-align: center;
-            color: var(--text-dark);
+            margin-bottom: 1rem;
+            color: var(--dark);
         }
 
         .section-subtitle {
-            font-size: 18px;
-            color: var(--text-light);
-            text-align: center;
-            margin-bottom: 50px;
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        /* Services Grid */
-        .services-grid {
+        .categories-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
+            gap: 2rem;
         }
 
-        .service-card {
+        .category-card {
             background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 30px;
+            padding: 2rem;
+            border-radius: 12px;
             text-align: center;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--shadow);
+            transition: transform 0.3s;
             cursor: pointer;
         }
 
-        .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+        .category-card:hover {
+            transform: translateY(-8px);
         }
 
-        .service-icon {
+        .category-icon {
             width: 80px;
             height: 80px;
-            background: var(--light-blue);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 36px;
-            color: var(--secondary-blue);
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: var(--white);
         }
 
-        .service-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-        }
-
-        .service-description {
-            color: var(--text-light);
-            line-height: 1.6;
-        }
-
-        /* Products Section */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-        }
-
-        .product-card {
+        /* Campaigns Section */
+        .campaigns-section {
+            padding: 80px 0;
             background: var(--white);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
         }
 
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 200px;
-            background: var(--gray-200);
+        .campaigns-filter {
             display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 48px;
-            color: var(--text-light);
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid var(--border);
+            background: var(--white);
+            color: var(--gray);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .campaigns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .campaign-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 25px var(--shadow);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .campaign-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .campaign-image-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
             overflow: hidden;
         }
 
-        .product-image img {
+        .campaign-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s;
         }
 
-        .product-info {
-            padding: 20px;
+        .campaign-card:hover .campaign-image {
+            transform: scale(1.05);
         }
 
-        .product-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--text-dark);
-        }
-
-        .product-price {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--accent-orange);
-            margin-bottom: 15px;
-        }
-
-        .product-rating {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .stars {
-            color: var(--warning);
-        }
-
-        .btn-add-cart {
-            width: 100%;
-            background: var(--secondary-blue);
-            color: var(--white);
-            padding: 12px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-add-cart:hover {
-            background: var(--primary-blue);
-        }
-
-        /* Shopping Cart */
-        .cart-icon {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .cart-count {
+        .campaign-badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--accent-orange);
+            top: 15px;
+            left: 15px;
+            background: var(--primary);
             color: var(--white);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 4px 12px;
+            border-radius: 15px;
             font-size: 12px;
             font-weight: 600;
+        }
+
+        .urgent-badge {
+            background: var(--danger);
+        }
+
+        .campaign-content {
+            padding: 1.5rem;
+        }
+
+        .campaign-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            line-height: 1.4;
+        }
+
+        .campaign-organizer {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .campaign-description {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .campaign-progress {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        .amount-raised {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .campaign-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .campaign-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--gray);
         }
 
         /* Modal Styles */
@@ -561,1364 +429,2432 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
             background-color: var(--white);
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: var(--border-radius);
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 12px;
             width: 90%;
-            max-width: 600px;
-            position: relative;
+            max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 2rem;
         }
 
         .close {
-            position: absolute;
-            right: 20px;
-            top: 20px;
+            color: var(--gray);
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
-            color: var(--text-light);
+            transition: color 0.3s;
         }
 
         .close:hover {
-            color: var(--text-dark);
+            color: var(--danger);
         }
 
-        /* Payment Integration Styles */
-        .payment-section {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            margin: 20px 0;
-            box-shadow: var(--shadow);
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .payment-methods {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
         }
 
-        .payment-method {
-            padding: 15px;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            text-align: center;
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* User Profile Dropdown */
+        .user-menu {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-weight: 600;
         }
 
-        .payment-method:hover {
-            border-color: var(--secondary-blue);
-        }
-
-        .payment-method.selected {
-            border-color: var(--secondary-blue);
-            background: var(--light-blue);
-        }
-
-        .payment-method i {
-            font-size: 24px;
-            color: var(--secondary-blue);
-            margin-bottom: 10px;
-        }
-
-        .loading {
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--white);
+            box-shadow: 0 10px 30px var(--shadow);
+            border-radius: 8px;
+            min-width: 200px;
+            padding: 0.5rem 0;
             display: none;
-            text-align: center;
-            padding: 20px;
         }
 
-        .loading.show {
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .dropdown-item:hover {
+            background: var(--light);
+        }
+
+        /* Profile Pages */
+        .profile-section {
+            display: none;
+            padding: 120px 0 80px;
+            min-height: 100vh;
+            background: var(--light);
+        }
+
+        .profile-section.active {
             display: block;
         }
 
-        /* Error Message */
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: var(--border-radius);
-            margin: 10px 0;
-            border: 1px solid #f5c6cb;
+        .profile-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 2rem;
         }
 
-        /* Success Message */
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: var(--border-radius);
-            margin: 10px 0;
-            border: 1px solid #c3e6cb;
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .profile-info h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .verification-form {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-top: 2rem;
+        }
+
+        .verification-status {
+            background: var(--warning);
+            color: var(--white);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .verification-status.verified {
+            background: var(--success);
+        }
+
+        .withdrawal-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .withdrawal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .withdrawal-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .status-approved {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .status-rejected {
+            background: var(--danger);
+            color: var(--white);
         }
 
         /* Footer */
         .footer {
-            background: var(--text-dark);
+            background: var(--dark);
             color: var(--white);
-            padding: 60px 0 30px;
+            padding: 3rem 0 1rem;
         }
 
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .footer-grid {
+        .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
 
         .footer-section h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--white);
+            margin-bottom: 1rem;
+            color: var(--primary);
         }
 
-        .footer-links {
-            list-style: none;
-        }
-
-        .footer-links li {
-            margin-bottom: 10px;
-        }
-
-        .footer-links a {
-            color: var(--gray-300);
+        .footer-section a {
+            color: #adb5bd;
             text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--white);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid #333;
-            color: var(--gray-300);
-        }
-
-        /* User Menu Styles */
-        .user-menu {
-            position: relative;
-            display: inline-block;
-        }
-
-        .user-menu-btn {
-            background: var(--secondary-blue);
-            color: var(--white);
-            padding: 8px 16px;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            transition: background 0.3s ease;
-        }
-
-        .user-menu-btn:hover {
-            background: var(--primary-blue);
-        }
-
-        .user-menu-dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: var(--white);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-lg);
-            min-width: 200px;
-            z-index: 1000;
-        }
-
-        .user-menu-dropdown.show {
             display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
         }
 
-        .user-menu-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--gray-100);
-            transition: background 0.3s ease;
+        .footer-section a:hover {
+            color: var(--white);
         }
 
-        .user-menu-item:hover {
-            background: var(--gray-50);
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
         }
 
-        .user-menu-item:last-child {
-            border-bottom: none;
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: var(--white);
+            transition: background 0.3s;
         }
 
-        /* Responsive Design */
+        .social-links a:hover {
+            background: var(--primary);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #adb5bd;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .nav-menu {
+            .nav-links {
                 display: none;
             }
-
+            
             .hero h1 {
-                font-size: 36px;
+                font-size: 2.5rem;
             }
-
+            
             .hero p {
-                font-size: 18px;
+                font-size: 1.1rem;
             }
+            
+            .btn-large {
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+        }
 
-            .auth-section {
-                margin: -30px 20px 0;
-                padding: 20px;
+        /* Loading and animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-            .booking-tabs {
-                margin: 20px 20px 0;
-                padding: 20px;
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
             }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
 
-            .search-form {
-                grid-template-columns: 1fr;
-            }
-
-            .tab-buttons {
-                flex-wrap: wrap;
-            }
-
-            .tab-button {
-                min-width: 100px;
-                padding: 12px 16px;
-            }
-
-            .section-title {
-                font-size: 28px;
-            }
-
-            .currency-selector {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .header-actions {
-                flex-direction: column;
-                gap: 10px;
-            }
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="header-container">
-            <a href="#" class="logo">
-                <i class="fas fa-dove"></i>
-                Flapping Bird
-            </a>
-            <nav>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="#" class="nav-link">Flights</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Hotels</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Yachts</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Cars</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Bikes</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Shop</a></li>
+        <nav class="container">
+            <div class="nav">
+                <a href="#" class="logo" onclick="showHomePage()">
+                    <i class="fas fa-hands-helping"></i>
+                    Flapping Bird
+                </a>
+                
+                <ul class="nav-links">
+                    <li><a href="#campaigns" onclick="showHomePage()">Browse Campaigns</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#success-stories">Success Stories</a></li>
+                    <li><a href="#about">About</a></li>
                 </ul>
-            </nav>
-            <div class="header-actions">
-                <div class="currency-selector">
-                    <button class="currency-btn active" onclick="setCurrency('INR')">₹ INR</button>
-                    <button class="currency-btn" onclick="setCurrency('USD')">$ USD</button>
+                
+                <div class="auth-section" id="authSection">
+                    <button class="btn btn-outline" onclick="openModal('loginModal')">Login</button>
+                    <button class="btn btn-primary" onclick="openModal('signupModal')">Sign Up</button>
                 </div>
+                
+                <!-- User Menu (hidden by default) -->
                 <div class="user-menu" id="userMenu" style="display: none;">
-                    <button class="user-menu-btn" onclick="toggleUserMenu()">
-                        <div class="user-avatar" id="userAvatar"></div>
-                        <span id="userName"></span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="user-menu-dropdown" id="userMenuDropdown">
-                        <div class="user-menu-item" onclick="toggleCart()">
-                            <i class="fas fa-shopping-cart"></i> Cart (<span id="cartCount">0</span>)
-                        </div>
-                        <div class="user-menu-item" onclick="signOut()">
-                            <i class="fas fa-sign-out-alt"></i> Sign Out
-                        </div>
+                    <div class="user-avatar" onclick="toggleDropdown()">
+                        <span id="userInitials">U</span>
+                    </div>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="#" class="dropdown-item" onclick="showProfile()"><i class="fas fa-user"></i> Profile</a>
+                        <a href="#" class="dropdown-item" onclick="showMyCampaigns()"><i class="fas fa-heart"></i> My Campaigns</a>
+                        <a href="#" class="dropdown-item" onclick="showMyDonations()"><i class="fas fa-donate"></i> My Donations</a>
+                        <a href="#" class="dropdown-item" onclick="showSettings()"><i class="fas fa-cog"></i> Settings</a>
+                        <hr style="margin: 0.5rem 0;">
+                        <a href="#" class="dropdown-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
                     </div>
                 </div>
             </div>
-        </div>
+        </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-container">
-            <h1>Explore the World with Confidence</h1>
-            <p>Book flights, hotels, yachts, bikes and find everything you need for your perfect journey</p>
+    <!-- Home Page -->
+    <div id="homePage">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <h1>India's Most Trusted Crowdfunding Platform</h1>
+                <p>Join millions of Indians who have raised funds for medical emergencies, education, disasters, and social causes</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-secondary btn-large" onclick="checkAuthAndStartCampaign()">
+                        <i class="fas fa-plus"></i> Start Fundraiser
+                    </button>
+                    <a href="#campaigns" class="btn btn-outline btn-large">
+                        <i class="fas fa-search"></i> Browse Campaigns
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Section -->
+        <section class="trust-section">
+            <div class="container">
+                <h2>Trusted by Millions Across India</h2>
+                <div class="trust-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalRaised">₹250+ Cr</div>
+                        <div class="stat-label">Funds Raised</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalCampaigns">1.2L+</div>
+                        <div class="stat-label">Successful Campaigns</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalDonors">15L+</div>
+                        <div class="stat-label">Happy Donors</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Cities Covered</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="categories-section" id="categories">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Fundraise For Any Cause</h2>
+                    <p class="section-subtitle">From medical emergencies to education, we support all genuine causes</p>
+                </div>
+                <div class="categories-grid">
+                    <div class="category-card" onclick="filterCampaigns('medical')">
+                        <div class="category-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h3>Medical Emergencies</h3>
+                        <p>Help patients get life-saving treatments and surgeries</p>
+                    </div>
+                    <div class="category-card" onclick="filterCampaigns('education')">
+                        <div class="category-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3>Education</h3>
+                        <p>Support students achieve their educational dreams</p>
+                    </div>
+                    <div class="category-card" onclick="filterCampaigns('disaster')">
+                        <div class="category-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h3>Disaster Relief</h3>
+                        <p>Aid victims of natural disasters and emergencies</p>
+                    </div>
+                    <div class="category-card" onclick="filterCampaigns('debt')">
+                        <div class="category-icon">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3>Debt Relief</h3>
+                        <p>Help families overcome financial burdens</p>
+                    </div>
+                    <div class="category-card" onclick="filterCampaigns('animal')">
+                        <div class="category-icon">
+                            <i class="fas fa-paw"></i>
+                        </div>
+                        <h3>Animal Welfare</h3>
+                        <p>Support rescue and care for animals in need</p>
+                    </div>
+                    <div class="category-card" onclick="filterCampaigns('social')">
+                        <div class="category-icon">
+                            <i class="fas fa-hands-helping"></i>
+                        </div>
+                        <h3>Social Causes</h3>
+                        <p>Make a difference in your community</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Campaigns Section -->
+        <section class="campaigns-section" id="campaigns">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Featured Campaigns</h2>
+                    <p class="section-subtitle">Support these urgent campaigns that need your help today</p>
+                </div>
+                
+                <div class="campaigns-filter">
+                    <button class="filter-btn active" data-filter="all">All Campaigns</button>
+                    <button class="filter-btn" data-filter="medical">Medical</button>
+                    <button class="filter-btn" data-filter="education">Education</button>
+                    <button class="filter-btn" data-filter="disaster">Emergency</button>
+                    <button class="filter-btn" data-filter="debt">Debt Relief</button>
+                    <button class="filter-btn" data-filter="animal">Animals</button>
+                </div>
+                
+                <div class="campaigns-grid" id="campaignsGrid">
+                    <!-- Campaigns will be loaded here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Profile Section -->
+    <section class="profile-section" id="profileSection">
+        <div class="container">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar" onclick="uploadProfilePicture()">
+                        <span id="profileInitials">U</span>
+                        <div class="upload-overlay" style="position: absolute; bottom: 0; right: 0; background: var(--primary); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <i class="fas fa-camera" style="color: white; font-size: 12px;"></i>
+                        </div>
+                    </div>
+                    <input type="file" id="profilePictureInput" accept="image/*" style="display: none;" onchange="handleProfilePictureUpload(event)">
+                    <div class="profile-info">
+                        <h2 id="profileName">User Name</h2>
+                        <p id="profileEmail">user@example.com</p>
+                        <p id="profilePhone">+91-9876543210</p>
+                        <div class="verification-status" id="profileVerificationStatus">
+                            <i class="fas fa-clock"></i> Account Verification Pending
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="userTotalRaised">₹0</div>
+                        <div class="stat-label">Total Raised</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userTotalDonated">₹0</div>
+                        <div class="stat-label">Total Donated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userCampaignsCount">0</div>
+                        <div class="stat-label">Campaigns Created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userDonationsCount">0</div>
+                        <div class="stat-label">Donations Made</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="verification-form" id="verificationForm">
+                <h3><i class="fas fa-shield-alt"></i> Account Verification</h3>
+                <p style="color: var(--gray); margin-bottom: 2rem;">Please verify your account to start fundraising and manage withdrawals.</p>
+                
+                <form id="verificationFormData">
+                    <div class="form-group">
+                        <label class="form-label">Aadhaar Number</label>
+                        <input type="text" class="form-control" id="aadhaarNumber" placeholder="Enter 12-digit Aadhaar number" maxlength="12" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">PAN Number</label>
+                        <input type="text" class="form-control" id="panNumber" placeholder="Enter PAN number" maxlength="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bank Account Number</label>
+                        <input type="text" class="form-control" id="bankAccount" placeholder="Enter bank account number" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">IFSC Code</label>
+                        <input type="text" class="form-control" id="ifscCode" placeholder="Enter IFSC code" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" id="bankName" placeholder="Enter bank name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" class="form-control" id="accountHolderName" placeholder="Enter account holder name" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-check"></i> Submit for Verification
+                    </button>
+                </form>
+            </div>
         </div>
-        
-        <!-- Booking Tabs (always visible for anonymous browsing) -->
-        <div class="booking-tabs">
-            <div class="tab-buttons">
-                <button class="tab-button active" onclick="switchTab('flights')">
-                    <i class="fas fa-plane"></i> Flights
-                </button>
-                <button class="tab-button" onclick="switchTab('hotels')">
-                    <i class="fas fa-bed"></i> Hotels
-                </button>
-                <button class="tab-button" onclick="switchTab('yachts')">
-                    <i class="fas fa-ship"></i> Yachts
-                </button>
-                <button class="tab-button" onclick="switchTab('cars')">
-                    <i class="fas fa-car"></i> Cars
-                </button>
-                <button class="tab-button" onclick="switchTab('bikes')">
-                    <i class="fas fa-motorcycle"></i> Bikes
-                </button>
-                <button class="tab-button" onclick="switchTab('shop')">
-                    <i class="fas fa-shopping-bag"></i> Shop
-                </button>
-            </div>
+    </section>
 
-            <!-- Flight Search -->
-            <div id="flights" class="tab-content active">
-                <form class="search-form" onsubmit="handleSearch(event, 'flights')">
-                    <div class="form-group">
-                        <label class="form-label">From</label>
-                        <input type="text" class="form-input" placeholder="Departure city" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">To</label>
-                        <input type="text" class="form-input" placeholder="Destination city" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Departure</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Return</label>
-                        <input type="date" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Passengers</label>
-                        <select class="form-input" required>
-                            <option>1 Passenger</option>
-                            <option>2 Passengers</option>
-                            <option>3 Passengers</option>
-                            <option>4+ Passengers</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-search">Search Flights</button>
-                </form>
-            </div>
-
-            <!-- Hotel Search -->
-            <div id="hotels" class="tab-content">
-                <form class="search-form" onsubmit="handleSearch(event, 'hotels')">
-                    <div class="form-group">
-                        <label class="form-label">Destination</label>
-                        <input type="text" class="form-input" placeholder="City or hotel name" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Check-in</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Check-out</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Guests</label>
-                        <select class="form-input" required>
-                            <option>1 Guest</option>
-                            <option>2 Guests</option>
-                            <option>3 Guests</option>
-                            <option>4+ Guests</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-search">Search Hotels</button>
-                </form>
-            </div>
-
-            <!-- Yacht Search -->
-            <div id="yachts" class="tab-content">
-                <form class="search-form" onsubmit="handleSearch(event, 'yachts')">
-                    <div class="form-group">
-                        <label class="form-label">Location</label>
-                        <input type="text" class="form-input" placeholder="Marina or destination" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Start Date</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">End Date</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Guests</label>
-                        <select class="form-input" required>
-                            <option>2-4 Guests</option>
-                            <option>5-8 Guests</option>
-                            <option>9-12 Guests</option>
-                            <option>12+ Guests</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-search">Search Yachts</button>
-                </form>
-            </div>
-
-            <!-- Car Rental Search -->
-            <div id="cars" class="tab-content">
-                <form class="search-form" onsubmit="handleSearch(event, 'cars')">
-                    <div class="form-group">
-                        <label class="form-label">Pick-up Location</label>
-                        <input type="text" class="form-input" placeholder="City or airport" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Pick-up Date</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Return Date</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Car Type</label>
-                        <select class="form-input" required>
-                            <option>Economy</option>
-                            <option>Compact</option>
-                            <option>Mid-size</option>
-                            <option>Full-size</option>
-                            <option>Luxury</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-search">Search Cars</button>
-                </form>
-            </div>
-
-            <!-- Bike Rental Search -->
-            <div id="bikes" class="tab-content">
-                <form class="search-form" onsubmit="handleSearch(event, 'bikes')">
-                    <div class="form-group">
-                        <label class="form-label">Pick-up Location</label>
-                        <input type="text" class="form-input" placeholder="City or station" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Pick-up Date</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Return Date</label>
-                        <input type="date" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Bike Type</label>
-                        <select class="form-input" required>
-                            <option>Standard Bike</option>
-                            <option>Electric Bike</option>
-                            <option>Mountain Bike</option>
-                            <option>Road Bike</option>
-                            <option>Scooter</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-search">Search Bikes</button>
-                </form>
-            </div>
-
-            <!-- Shop Tab -->
-            <div id="shop" class="tab-content">
-                <div style="text-align: center; padding: 40px;">
-                    <h3>Travel Essentials Shop</h3>
-                    <p>Browse our collection of travel products below or explore by category</p>
-                    <div style="margin-top: 30px;">
-                        <button class="btn-primary" onclick="scrollToProducts()">Browse Products</button>
+    <!-- My Campaigns Section -->
+    <section class="profile-section" id="myCampaignsSection">
+        <div class="container">
+            <div class="profile-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2><i class="fas fa-heart"></i> My Campaigns</h2>
+                    <button class="btn btn-primary" onclick="checkAuthAndStartCampaign()">
+                        <i class="fas fa-plus"></i> Create New Campaign
+                    </button>
+                </div>
+                
+                <div id="userCampaignsList">
+                    <div class="empty-state">
+                        <i class="fas fa-heart-broken"></i>
+                        <h3>No Campaigns Yet</h3>
+                        <p>You haven't created any campaigns yet. Start your first fundraiser to make a difference!</p>
+                        <button class="btn btn-primary" onclick="checkAuthAndStartCampaign()">
+                            <i class="fas fa-plus"></i> Create Your First Campaign
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Services Section -->
-        <section class="section">
-            <h2 class="section-title">Our Travel Services</h2>
-            <p class="section-subtitle">Everything you need for your perfect journey in one place</p>
-            
-            <div class="services-grid">
-                <div class="service-card" onclick="redirectToFlights()">
-                    <div class="service-icon">
-                        <i class="fas fa-plane"></i>
-                    </div>
-                    <h3 class="service-title">Flight Booking</h3>
-                    <p class="service-description">Compare and book flights from hundreds of airlines worldwide. Get the best deals and flexible booking options.</p>
-                </div>
+    <!-- My Donations Section -->
+    <section class="profile-section" id="myDonationsSection">
+        <div class="container">
+            <div class="profile-card">
+                <h2><i class="fas fa-donate"></i> My Donations</h2>
                 
-                <div class="service-card" onclick="redirectToHotels()">
-                    <div class="service-icon">
-                        <i class="fas fa-bed"></i>
+                <div id="userDonationsList">
+                    <div class="empty-state">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <h3>No Donations Yet</h3>
+                        <p>You haven't made any donations yet. Donate now to make a change!</p>
+                        <button class="btn btn-primary" onclick="showHomePage(); scrollToCampaigns();">
+                            <i class="fas fa-heart"></i> Browse Campaigns to Donate
+                        </button>
                     </div>
-                    <h3 class="service-title">Hotel Reservations</h3>
-                    <p class="service-description">Find and book the perfect accommodation from budget hotels to luxury resorts worldwide.</p>
-                </div>
-                
-                <div class="service-card" onclick="redirectToYachts()">
-                    <div class="service-icon">
-                        <i class="fas fa-ship"></i>
-                    </div>
-                    <h3 class="service-title">Yacht Charter</h3>
-                    <p class="service-description">Luxury yacht rentals for unforgettable experiences. Explore coastlines and islands in style.</p>
-                </div>
-                
-                <div class="service-card" onclick="redirectToCars()">
-                    <div class="service-icon">
-                        <i class="fas fa-car"></i>
-                    </div>
-                    <h3 class="service-title">Car Rental</h3>
-                    <p class="service-description">Rent a car for your destination. Choose from economy to luxury vehicles with flexible terms.</p>
-                </div>
-
-                <div class="service-card" onclick="redirectToBikes()">
-                    <div class="service-icon">
-                        <i class="fas fa-motorcycle"></i>
-                    </div>
-                    <h3 class="service-title">Bike Rental</h3>
-                    <p class="service-description">Explore your destination on two wheels. Choose from city bikes, e-bikes, scooters and more.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Travel Products Section -->
-        <section class="section" id="productsSection">
-            <h2 class="section-title">Travel Essentials</h2>
-            <p class="section-subtitle">Shop for everything you need for your travels</p>
-            
-            <div class="products-grid" id="productsGrid">
-                <!-- Products will be populated by JavaScript -->
+    <!-- Settings Section -->
+    <section class="profile-section" id="settingsSection">
+        <div class="container">
+            <div class="profile-card">
+                <h2><i class="fas fa-cog"></i> Account Settings</h2>
+                
+                <div style="margin-top: 2rem;">
+                    <h3>Withdrawal Management</h3>
+                    <div id="withdrawalsList">
+                        <div class="empty-state">
+                            <i class="fas fa-money-check-alt"></i>
+                            <h3>No Withdrawals Yet</h3>
+                            <p>You haven't made any withdrawal requests yet.</p>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="openWithdrawalModal()" style="margin-top: 1rem;">
+                        <i class="fas fa-money-bill-wave"></i> Request Withdrawal
+                    </button>
+                </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-in-alt"></i> Login to Your Account</h2>
+                <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Email or Phone</label>
+                        <input type="text" class="form-control" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                </form>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Don't have an account? <a href="#" onclick="closeModal('loginModal'); openModal('signupModal')">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> Create Your Account</h2>
+                <span class="close" onclick="closeModal('signupModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="signupName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="signupEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="signupPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="signupPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+                </form>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Already have an account? <a href="#" onclick="closeModal('signupModal'); openModal('loginModal')">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Creation Modal -->
+    <div id="createCampaignModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus-circle"></i> Start Your Fundraiser</h2>
+                <span class="close" onclick="closeModal('createCampaignModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="campaignForm">
+                    <div class="form-group">
+                        <label class="form-label">Campaign Title</label>
+                        <input type="text" class="form-control" name="title" placeholder="e.g., Help Priya Fight Cancer" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-control" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="medical">Medical Emergency</option>
+                            <option value="education">Education</option>
+                            <option value="disaster">Disaster Relief</option>
+                            <option value="debt">Debt Relief</option>
+                            <option value="animal">Animal Welfare</option>
+                            <option value="social">Social Cause</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Funding Goal (₹)</label>
+                        <input type="number" class="form-control" name="goal" min="10000" placeholder="Enter amount needed" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Your Story</label>
+                        <textarea class="form-control" name="description" rows="6" placeholder="Tell people why you're raising funds. Include specific details about how the money will be used." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Upload Images (Maximum 5)</label>
+                        <input type="file" id="campaignImages" class="form-control" accept="image/*" multiple onchange="previewCampaignImages(event)">
+                        <small style="color: #666;">Upload clear photos that show the situation. Medical campaigns should include hospital documents.</small>
+                        <div id="imagePreview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px;"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-rocket"></i> Create Campaign
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div id="withdrawalModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-money-bill-wave"></i> Request Withdrawal</h2>
+                <span class="close" onclick="closeModal('withdrawalModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="withdrawalForm">
+                    <div class="form-group">
+                        <label class="form-label">Select Campaign</label>
+                        <select class="form-control" id="withdrawalCampaign" required>
+                            <option value="">Select a campaign</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Withdrawal Amount (₹)</label>
+                        <input type="number" class="form-control" id="withdrawalAmount" min="1000" placeholder="Minimum ₹1,000" required>
+                        <small>Available balance will be shown after selecting campaign</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Purpose of Withdrawal</label>
+                        <textarea class="form-control" id="withdrawalPurpose" rows="4" placeholder="Explain how the funds will be used (e.g., hospital payment, medicine purchase)" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Upload Supporting Documents</label>
+                        <input type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                        <small>Upload bills, prescriptions, or other relevant documents</small>
+                    </div>
+                    
+                    <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #2d5016;">Important Notes</h4>
+                        <ul style="margin: 0; padding-left: 1.5rem; color: #2d5016;">
+                            <li>All withdrawals are subject to verification</li>
+                            <li>Processing time: 3-5 business days after approval</li>
+                            <li>Platform fee: 5% of withdrawal amount</li>
+                            <li>Funds will be transferred to your verified bank account</li>
+                        </ul>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-grid">
+        <div class="container">
+            <div class="footer-content">
                 <div class="footer-section">
                     <h3>Flapping Bird</h3>
-                    <p>Your complete travel companion for flights, hotels, yachts, car rentals, bike rentals, and travel essentials.</p>
+                    <p>India's most trusted crowdfunding platform helping millions raise funds for medical emergencies, education, and social causes.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
                 </div>
-                
                 <div class="footer-section">
-                    <h3>Services</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Flight Booking</a></li>
-                        <li><a href="#">Hotel Reservations</a></li>
-                        <li><a href="#">Yacht Charter</a></li>
-                        <li><a href="#">Car Rental</a></li>
-                        <li><a href="#">Bike Rental</a></li>
-                        <li><a href="#">Travel Insurance</a></li>
-                    </ul>
+                    <h3>Campaigns</h3>
+                    <a href="#">Medical Fundraising</a>
+                    <a href="#">Education Fundraising</a>
+                    <a href="#">Emergency Relief</a>
+                    <a href="#">Animal Welfare</a>
+                    <a href="#">Success Stories</a>
                 </div>
-                
-                <div class="footer-section">
-                    <h3>Shop</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Luggage</a></li>
-                        <li><a href="#">Travel Accessories</a></li>
-                        <li><a href="#">Electronics</a></li>
-                        <li><a href="#">Clothing</a></li>
-                        <li><a href="#">Health & Safety</a></li>
-                    </ul>
-                </div>
-                
                 <div class="footer-section">
                     <h3>Support</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Cancellation Policy</a></li>
-                    </ul>
+                    <a href="#" onclick="openInfoModal('howItWorks')">How It Works</a>
+                    <a href="#" onclick="openInfoModal('safety')">Safety & Security</a>
+                    <a href="#" onclick="openInfoModal('pricing')">Pricing & Fees</a>
+                    <a href="#" onclick="openInfoModal('help')">Help Center</a>
+                    <a href="#" onclick="openInfoModal('contact')">Contact Support</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Legal</h3>
+                    <a href="#" onclick="openInfoModal('terms')">Terms of Service</a>
+                    <a href="#" onclick="openInfoModal('privacy')">Privacy Policy</a>
+                    <a href="#" onclick="openInfoModal('refund')">Refund Policy</a>
+                    <a href="#" onclick="openInfoModal('guidelines')">Campaign Guidelines</a>
+                    <a href="#" onclick="openInfoModal('tax')">Tax Benefits</a>
                 </div>
             </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2024 Flapping Bird. All rights reserved. | Affiliate Partner of Travel Payouts</p>
+            <div class="copyright">
+                <p>&copy; 2024 Flapping Bird Technologies Pvt Ltd. All rights reserved. | CIN: U74999MH2024PTC123456</p>
             </div>
         </div>
     </footer>
 
-    <!-- Authentication Modal -->
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAuthModal()">&times;</span>
-            <div id="authContent">
-                <h2 id="authTitle">Sign In</h2>
-                <p style="margin-bottom: 20px; color: var(--text-light);">Please sign in to make purchases and manage your bookings</p>
-                <div id="authMessages"></div>
-                <div class="auth-form">
-                    <input type="email" id="authEmail" class="auth-input" placeholder="Email" required>
-                    <input type="password" id="authPassword" class="auth-input" placeholder="Password" required>
-                    <button class="btn-primary" onclick="handleAuth()">Sign In</button>
-                    <button class="btn-secondary" onclick="toggleAuthMode()">Switch to Register</button>
-                </div>
-                <div class="loading" id="authLoading">
-                    <i class="fas fa-spinner fa-spin"></i> Processing...
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase Configuration
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, getDocs, query, where, orderBy, limit, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js';
 
-    <!-- Shopping Cart Modal -->
-    <div id="cartModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleCart()">&times;</span>
-            <h2>Shopping Cart</h2>
-            <div id="cartItems"></div>
-            <div id="cartTotal"></div>
-            <div class="payment-section" id="paymentSection" style="display: none;">
-                <h3>Payment Method</h3>
-                <div class="payment-methods">
-                    <div class="payment-method selected" data-method="razorpay">
-                        <i class="fas fa-credit-card"></i>
-                        <div>Razorpay</div>
-                    </div>
-                    <div class="payment-method" data-method="stripe">
-                        <i class="fab fa-stripe"></i>
-                        <div>Stripe</div>
-                    </div>
-                    <div class="payment-method" data-method="paypal">
-                        <i class="fab fa-paypal"></i>
-                        <div>PayPal</div>
-                    </div>
-                    <div class="payment-method" data-method="upi">
-                        <i class="fas fa-mobile-alt"></i>
-                        <div>UPI</div>
-                    </div>
-                </div>
-                <button class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="processPayment()">
-                    Proceed to Payment
-                </button>
-            </div>
-            <button class="btn-primary" id="checkoutBtn" style="width: 100%; margin-top: 20px;" onclick="showPaymentSection()">
-                Proceed to Checkout
-            </button>
-        </div>
-    </div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDvi5Arr_qEJv5UsocpIIrOBmxYcbCoN2E",
+            authDomain: "flapping-bird-f9a21.firebaseapp.com",
+            projectId: "flapping-bird-f9a21",
+            storageBucket: "flapping-bird-f9a21.firebasestorage.app",
+            messagingSenderId: "501160247273",
+            appId: "1:501160247273:web:eec35ea17b64aa7dbbd578",
+            measurementId: "G-SDPQVPP3TD"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+        const analytics = getAnalytics(app);
+
+        // Make Firebase services available globally
+        window.firebaseServices = { db, auth, storage, addDoc, collection, updateDoc, doc, getDocs, query, where, orderBy, limit, onSnapshot, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytes, getDownloadURL };
+    </script>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXeD8SMXHnqhNDg01Rlm4fC1t05Eb4NFs",
-            authDomain: "flapping-bird-f9921.firebaseapp.com",
-            projectId: "flapping-bird-f9921",
-            storageBucket: "flapping-bird-f9921.firebasestorage.app",
-            messagingSenderId: "1038545058004",
-            appId: "1:1038545058004:web:65b29c57eda2939f18e341",
-            measurementId: "G-SH9Y19ZE74"
-        };
-
-        // Travel Payouts API Configuration
-        const TRAVEL_PAYOUTS_CONFIG = {
-            partnerId: '232377',
-            apiToken: 'a9465ce2914a4f99c7e0f79cfdbf3ba37f9',
-            baseUrl: 'https://api.travelpayouts.com/v1',
-            affiliateUrl: 'https://search.avs.io/hotels',
-            flightSearchUrl: 'https://aviasales.com',
-            bikeBookingUrl: 'https://bikesbooking.tpx.lu/40fmM6sd'
-        };
-
-        // Initialize Firebase with error handling
-        let auth, db, storage;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-            storage = firebase.storage();
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            console.error('Firebase initialization error:', error);
-            showMessage('Firebase connection error. Some features may not work.', 'error');
-        }
-
-        // Global variables
-        let currentUser = null;
-        let currentCurrency = 'INR';
-        let cart = [];
-        let cartTotal = 0;
-        let authMode = 'signin';
-        let selectedPaymentMethod = 'razorpay';
-
-        // Updated product data with better images matching descriptions
-        const products = [
-            {
-                id: 1,
-                name: 'Premium Travel Luggage Set',
-                prices: { INR: 12999, USD: 159.99 },
-                rating: 4.8,
-                icon: 'fas fa-suitcase-rolling',
-                image: 'https://images.unsplash.com/photo-1564194282-a0ffc7f8fd8c?w=300&h=200&fit=crop'
-            },
-            {
-                id: 2,
-                name: 'Travel Document Organizer',
-                prices: { INR: 1999, USD: 24.99 },
-                rating: 4.3,
-                icon: 'fas fa-passport',
-                image: 'https://images.unsplash.com/photo-1543248939-4e9b2c7d0d04?w=300&h=200&fit=crop'
-            },
-            {
-                id: 3,
-                name: 'Noise Cancelling Headphones',
-                prices: { INR: 15999, USD: 199.99 },
-                rating: 4.9,
-                icon: 'fas fa-headphones',
-                image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop'
-            },
-            {
-                id: 4,
-                name: 'Travel Camera Kit',
-                prices: { INR: 27999, USD: 349.99 },
-                rating: 4.7,
-                icon: 'fas fa-camera',
-                image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=300&h=200&fit=crop'
-            },
-            {
-                id: 5,
-                name: 'Quick-Dry Travel Clothing',
-                prices: { INR: 2999, USD: 39.99 },
-                rating: 4.4,
-                icon: 'fas fa-tshirt',
-                image: 'https://images.unsplash.com/photo-1523359346063-d879354c0ea5?w=300&h=200&fit=crop'
-            },
-            {
-                id: 6,
-                name: 'Universal Travel Adapter',
-                prices: { INR: 2399, USD: 29.99 },
-                rating: 4.6,
-                icon: 'fas fa-plug',
-                image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop'
-            },
-            {
-                id: 7,
-                name: 'Travel First Aid Kit',
-                prices: { INR: 1599, USD: 19.99 },
-                rating: 4.2,
-                icon: 'fas fa-medkit',
-                image: 'https://images.unsplash.com/photo-1603398938430-f96f4e4fbf5d?w=300&h=200&fit=crop'
-            },
-            {
-                id: 8,
-                name: 'Portable Power Bank 20000mAh',
-                prices: { INR: 3999, USD: 49.99 },
-                rating: 4.8,
-                icon: 'fas fa-battery-full',
-                image: 'https://images.unsplash.com/photo-1609592935274-b7f3f1e25100?w=300&h=200&fit=crop'
-            },
-            {
-                id: 9,
-                name: 'Travel Pillow & Blanket Set',
-                prices: { INR: 2499, USD: 32.99 },
-                rating: 4.5,
-                icon: 'fas fa-bed',
-                image: 'https://images.unsplash.com/photo-1631049035182-249067d7618e?w=300&h=200&fit=crop'
-            },
-            {
-                id: 10,
-                name: 'Waterproof Travel Backpack',
-                prices: { INR: 8999, USD: 119.99 },
-                rating: 4.7,
-                icon: 'fas fa-backpack',
-                image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=200&fit=crop'
-            },
-            {
-                id: 11,
-                name: 'Travel Security Money Belt',
-                prices: { INR: 1299, USD: 16.99 },
-                rating: 4.3,
-                icon: 'fas fa-money-bill-wave',
-                image: 'https://images.unsplash.com/photo-1607473129811-82c8b04ad7a8?w=300&h=200&fit=crop'
-            },
-            {
-                id: 12,
-                name: 'Portable Water Purifier',
-                prices: { INR: 4999, USD: 65.99 },
-                rating: 4.6,
-                icon: 'fas fa-tint',
-                image: 'https://images.unsplash.com/photo-1581889470536-467718b4d5b2?w=300&h=200&fit=crop'
+        // Main Donation Platform Class
+        class DonationPlatform {
+            constructor() {
+                this.currentUser = null;
+                this.campaigns = [];
+                this.userCampaigns = [];
+                this.userDonations = [];
+                this.userWithdrawals = [];
+                this.categories = ['all', 'medical', 'education', 'disaster', 'debt', 'animal', 'social'];
+                this.init();
             }
-        ];
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProducts();
-            setupPaymentMethods();
-            
-            // Firebase auth state observer with error handling
-            if (auth) {
-                auth.onAuthStateChanged(function(user) {
-                    if (user) {
-                        currentUser = user;
-                        updateUIForLoggedInUser();
-                        saveUserData(user);
-                        loadUserCart();
-                    } else {
-                        currentUser = null;
-                        updateUIForLoggedOutUser();
+            async init() {
+                this.loadRealisticCampaigns();
+                this.setupEventListeners();
+                this.renderCampaigns();
+                this.updateStats();
+                await this.checkUserSession();
+            }
+
+            loadRealisticCampaigns() {
+                const realisticCampaigns = [
+                    {
+                        id: 1,
+                        title: "Help 4-Year-Old Aarav Fight Leukemia",
+                        category: "medical",
+                        description: "Little Aarav was diagnosed with Acute Lymphoblastic Leukemia at just 4 years old. His parents, Ramesh and Priya, are daily wage workers from Nagpur who have exhausted all their savings. The treatment requires immediate chemotherapy sessions costing ₹15 lakhs. The doctors at Tata Memorial Hospital have given hope that with proper treatment, Aarav can make a full recovery. Without your support, this brave little fighter might lose his battle. Every rupee you donate brings Aarav one step closer to a healthy childhood. His favorite toy is a small red car, and he dreams of becoming a pilot when he grows up. Please help make his dreams come true.",
+                        goal: 1500000,
+                        raised: 987000,
+                        organizer: "Ramesh Kumar (Father)",
+                        contact: "ramesh.aarav@gmail.com",
+                        image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                        duration: 60,
+                        daysLeft: 23,
+                        donorCount: 287,
+                        created: new Date('2024-01-15'),
+                        verified: true,
+                        urgent: true,
+                        location: "Nagpur, Maharashtra",
+                        hospital: "Tata Memorial Hospital, Mumbai"
+                    },
+                    {
+                        id: 2,
+                        title: "Emergency Kidney Transplant for Meera Sharma",
+                        category: "medical",
+                        description: "Meera Sharma, a 28-year-old teacher from Delhi, urgently needs a kidney transplant. Her younger brother Rohit has volunteered as a donor, but the family cannot afford the ₹25 lakh surgery cost at Apollo Hospital. Meera has been on dialysis for 18 months, and her condition is deteriorating rapidly. She teaches underprivileged children in a government school and has touched hundreds of lives. Her students have been praying for her recovery. The surgery is scheduled for next month, but without funds, it may have to be postponed indefinitely. Meera's dream is to return to her classroom and continue educating children. Please help save this dedicated teacher's life.",
+                        goal: 2500000,
+                        raised: 1680000,
+                        organizer: "Rohit Sharma (Brother)",
+                        contact: "rohit.meera.help@gmail.com",
+                        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                        duration: 45,
+                        daysLeft: 18,
+                        donorCount: 456,
+                        created: new Date('2024-01-20'),
+                        verified: true,
+                        urgent: true,
+                        location: "New Delhi",
+                        hospital: "Apollo Hospital, Delhi"
                     }
+                ];
+
+                this.campaigns = realisticCampaigns;
+            }
+
+            setupEventListeners() {
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
                 });
-            }
 
-            // Close user menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const userMenu = document.getElementById('userMenu');
-                const userMenuDropdown = document.getElementById('userMenuDropdown');
-                
-                if (userMenu && !userMenu.contains(event.target)) {
-                    userMenuDropdown.classList.remove('show');
-                }
-            });
-        });
-
-        // Helper function to show messages
-        function showMessage(message, type = 'info') {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
-            messageDiv.textContent = message;
-            
-            const authMessages = document.getElementById('authMessages');
-            if (authMessages) {
-                authMessages.innerHTML = '';
-                authMessages.appendChild(messageDiv);
-                setTimeout(() => {
-                    messageDiv.remove();
-                }, 5000);
-            } else {
-                // Fallback to alert if modal is not open
-                alert(message);
-            }
-        }
-
-        // Authentication functions with improved error handling
-        function showAuthModal(mode = 'signin') {
-            authMode = mode;
-            document.getElementById('authModal').style.display = 'block';
-            updateAuthModal();
-            clearAuthMessages();
-        }
-
-        function closeAuthModal() {
-            document.getElementById('authModal').style.display = 'none';
-            clearAuthMessages();
-        }
-
-        function clearAuthMessages() {
-            const authMessages = document.getElementById('authMessages');
-            if (authMessages) {
-                authMessages.innerHTML = '';
-            }
-        }
-
-        function updateAuthModal() {
-            const title = document.getElementById('authTitle');
-            const button = document.querySelector('#authContent .btn-primary');
-            const toggle = document.querySelector('#authContent .btn-secondary');
-            
-            if (authMode === 'signin') {
-                title.textContent = 'Sign In';
-                button.textContent = 'Sign In';
-                toggle.textContent = 'Switch to Register';
-            } else {
-                title.textContent = 'Register';
-                button.textContent = 'Register';
-                toggle.textContent = 'Switch to Sign In';
-            }
-        }
-
-        function toggleAuthMode() {
-            authMode = authMode === 'signin' ? 'register' : 'signin';
-            updateAuthModal();
-            clearAuthMessages();
-        }
-
-        function handleAuth() {
-            if (!auth) {
-                showMessage('Authentication service unavailable. Please try again later.', 'error');
-                return;
-            }
-
-            const email = document.getElementById('authEmail').value.trim();
-            const password = document.getElementById('authPassword').value;
-            const loading = document.getElementById('authLoading');
-            
-            if (!email || !password) {
-                showMessage('Please fill in all fields', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showMessage('Password must be at least 6 characters long', 'error');
-                return;
-            }
-
-            loading.classList.add('show');
-            
-            const authPromise = authMode === 'signin' 
-                ? auth.signInWithEmailAndPassword(email, password)
-                : auth.createUserWithEmailAndPassword(email, password);
-            
-            authPromise
-                .then((userCredential) => {
-                    loading.classList.remove('show');
-                    showMessage(`${authMode === 'signin' ? 'Sign in' : 'Registration'} successful!`, 'success');
-                    setTimeout(() => {
-                        closeAuthModal();
-                    }, 1500);
-                })
-                .catch(error => {
-                    loading.classList.remove('show');
-                    let errorMessage = 'Authentication failed. ';
-                    
-                    switch (error.code) {
-                        case 'auth/user-not-found':
-                            errorMessage += 'No account found with this email.';
-                            break;
-                        case 'auth/wrong-password':
-                            errorMessage += 'Incorrect password.';
-                            break;
-                        case 'auth/email-already-in-use':
-                            errorMessage += 'An account with this email already exists.';
-                            break;
-                        case 'auth/weak-password':
-                            errorMessage += 'Password is too weak.';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage += 'Invalid email address.';
-                            break;
-                        case 'auth/network-request-failed':
-                            errorMessage += 'Network error. Please check your connection.';
-                            break;
-                        default:
-                            errorMessage += error.message;
-                    }
-                    
-                    showMessage(errorMessage, 'error');
+                document.getElementById('signupForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSignup();
                 });
-        }
 
-        function signOut() {
-            if (auth) {
-                auth.signOut().then(() => {
-                    cart = [];
-                    updateCartDisplay();
-                    showMessage('Signed out successfully', 'success');
-                }).catch(error => {
-                    console.error('Sign out error:', error);
+                document.getElementById('campaignForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.createCampaign();
                 });
-            }
-        }
 
-        function toggleUserMenu() {
-            const dropdown = document.getElementById('userMenuDropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        function updateUIForLoggedInUser() {
-            const userMenu = document.getElementById('userMenu');
-            if (userMenu) {
-                userMenu.style.display = 'block';
-                
-                if (currentUser) {
-                    document.getElementById('userName').textContent = currentUser.email.split('@')[0];
-                    document.getElementById('userAvatar').textContent = currentUser.email.charAt(0).toUpperCase();
-                }
-            }
-        }
-
-        function updateUIForLoggedOutUser() {
-            const userMenu = document.getElementById('userMenu');
-            if (userMenu) {
-                userMenu.style.display = 'none';
-            }
-        }
-
-        function saveUserData(user) {
-            if (!db) return;
-            
-            const userData = {
-                uid: user.uid,
-                email: user.email,
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                currency: currentCurrency
-            };
-            
-            db.collection('users').doc(user.uid).set(userData, { merge: true })
-                .catch(error => console.error('Error saving user data:', error));
-        }
-
-        function loadUserCart() {
-            if (!currentUser || !db) return;
-            
-            db.collection('users').doc(currentUser.uid).get()
-                .then(doc => {
-                    if (doc.exists && doc.data().cart) {
-                        cart = doc.data().cart;
-                        updateCartDisplay();
-                    }
-                })
-                .catch(error => console.error('Error loading cart:', error));
-        }
-
-        // Currency functions
-        function setCurrency(currency) {
-            currentCurrency = currency;
-            document.querySelectorAll('.currency-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            loadProducts();
-            updateCartDisplay();
-            
-            // Save currency preference for logged-in users
-            if (currentUser && db) {
-                db.collection('users').doc(currentUser.uid).update({
-                    currency: currency
-                }).catch(error => console.error('Error saving currency:', error));
-            }
-        }
-
-        function formatPrice(price) {
-            if (currentCurrency === 'INR') {
-                return '₹' + price.toLocaleString('en-IN');
-            } else {
-                return '$' + price.toFixed(2);
-            }
-        }
-
-        // Product functions
-        function loadProducts() {
-            const grid = document.getElementById('productsGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            products.forEach(product => {
-                const price = product.prices[currentCurrency];
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    <div class="product-image">
-                        ${product.image ? 
-                            `<img src="${product.image}" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                             <i class="${product.icon}" style="display:none;"></i>` : 
-                            `<i class="${product.icon}"></i>`
-                        }
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-title">${product.name}</h3>
-                        <div class="product-price">${formatPrice(price)}</div>
-                        <div class="product-rating">
-                            <div class="stars">
-                                ${generateStars(product.rating)}
-                            </div>
-                            <span>(${product.rating})</span>
-                        </div>
-                        <button class="btn-add-cart" onclick="addToCart(${product.id})">Add to Cart</button>
-                    </div>
-                `;
-                grid.appendChild(productCard);
-            });
-        }
-
-        function generateStars(rating) {
-            const fullStars = Math.floor(rating);
-            const hasHalfStar = rating % 1 !== 0;
-            let stars = '';
-            
-            for (let i = 0; i < fullStars; i++) {
-                stars += '<i class="fas fa-star"></i>';
-            }
-            
-            if (hasHalfStar) {
-                stars += '<i class="fas fa-star-half-alt"></i>';
-            }
-            
-            const emptyStars = 5 - Math.ceil(rating);
-            for (let i = 0; i < emptyStars; i++) {
-                stars += '<i class="far fa-star"></i>';
-            }
-            
-            return stars;
-        }
-
-        // Cart functions - require login for purchases
-        function addToCart(productId) {
-            if (!currentUser) {
-                showAuthModal();
-                return;
-            }
-            
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                cart.push({
-                    id: productId,
-                    name: product.name,
-                    price: product.prices[currentCurrency],
-                    currency: currentCurrency
+                document.getElementById('verificationFormData').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitVerification();
                 });
-                updateCartDisplay();
-                saveCartToFirebase();
-                alert(`${product.name} added to cart!`);
-            }
-        }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartDisplay();
-            saveCartToFirebase();
-        }
-
-        function updateCartDisplay() {
-            const cartCount = document.getElementById('cartCount');
-            if (cartCount) cartCount.textContent = cart.length;
-            
-            const cartItems = document.getElementById('cartItems');
-            if (!cartItems) return;
-            
-            cartItems.innerHTML = '';
-            cartTotal = 0;
-            
-            cart.forEach((item, index) => {
-                cartTotal += item.price;
-                cartItems.innerHTML += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gray-200);">
-                        <span>${item.name}</span>
-                        <div>
-                            <span>${formatPrice(item.price)}</span>
-                            <button onclick="removeFromCart(${index})" style="margin-left: 10px; background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Remove</button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            const cartTotalElement = document.getElementById('cartTotal');
-            if (cartTotalElement) {
-                cartTotalElement.innerHTML = `
-                    <div style="font-size: 18px; font-weight: bold; margin-top: 20px; text-align: right;">
-                        Total: ${formatPrice(cartTotal)}
-                    </div>
-                `;
-            }
-            
-            // Show/hide payment section based on cart contents
-            const paymentSection = document.getElementById('paymentSection');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            
-            if (cart.length > 0) {
-                if (checkoutBtn) checkoutBtn.style.display = 'block';
-            } else {
-                if (checkoutBtn) checkoutBtn.style.display = 'none';
-                if (paymentSection) paymentSection.style.display = 'none';
-            }
-        }
-
-        function saveCartToFirebase() {
-            if (currentUser && db) {
-                db.collection('users').doc(currentUser.uid).update({
-                    cart: cart
-                }).catch(error => console.error('Error saving cart:', error));
-            }
-        }
-
-        function toggleCart() {
-            if (!currentUser) {
-                showAuthModal();
-                return;
-            }
-            
-            const modal = document.getElementById('cartModal');
-            if (modal) {
-                modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
-            }
-        }
-
-        function showPaymentSection() {
-            const paymentSection = document.getElementById('paymentSection');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            if (paymentSection) paymentSection.style.display = 'block';
-            if (checkoutBtn) checkoutBtn.style.display = 'none';
-        }
-
-        // Payment functions
-        function setupPaymentMethods() {
-            document.querySelectorAll('.payment-method').forEach(method => {
-                method.addEventListener('click', function() {
-                    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedPaymentMethod = this.dataset.method;
+                document.getElementById('withdrawalForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitWithdrawal();
                 });
-            });
-        }
 
-        function processPayment() {
-            if (!currentUser) {
-                showAuthModal();
-                return;
-            }
-            
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
-            
-            const paymentData = {
-                userId: currentUser.uid,
-                userEmail: currentUser.email,
-                items: cart,
-                total: cartTotal,
-                currency: currentCurrency,
-                paymentMethod: selectedPaymentMethod,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                status: 'pending'
-            };
-            
-            // Save order to Firebase
-            if (db) {
-                db.collection('orders').add(paymentData)
-                    .then((docRef) => {
-                        alert(`Order placed successfully! Order ID: ${docRef.id}\nPayment integration will be completed here.`);
-                        
-                        // Clear cart
-                        cart = [];
-                        updateCartDisplay();
-                        toggleCart();
-                        
-                        // Clear cart from Firebase
-                        db.collection('users').doc(currentUser.uid).update({
-                            cart: []
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error placing order:', error);
-                        alert('Order placement failed. Please try again.');
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.handleFilterClick(e.target);
                     });
-            } else {
-                alert('Payment service unavailable. Please try again later.');
+                });
+
+                window.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal')) {
+                        e.target.style.display = 'none';
+                    }
+                });
             }
-        }
 
-        // Tab and form functions
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
-            
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
+            async handleLogin() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
 
-        function scrollToProducts() {
-            document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
-        }
+                try {
+                    const { signInWithEmailAndPassword, getDocs, collection, query, where } = window.firebaseServices;
+                    const userCredential = await signInWithEmailAndPassword(window.firebaseServices.auth, email, password);
+                    
+                    // Get user data from Firestore
+                    const userQuery = query(collection(window.firebaseServices.db, 'users'), where('uid', '==', userCredential.user.uid));
+                    const userSnapshot = await getDocs(userQuery);
+                    
+                    let userData = {};
+                    if (!userSnapshot.empty) {
+                        userData = userSnapshot.docs[0].data();
+                    }
+                    
+                    this.showNotification('Login successful! Welcome back.', 'success');
+                    this.currentUser = {
+                        uid: userCredential.user.uid,
+                        name: userData.name || userCredential.user.displayName || email.split('@')[0],
+                        email: userCredential.user.email,
+                        phone: userData.phone || '',
+                        verificationStatus: userData.verificationStatus || 'pending',
+                        totalDonated: userData.totalDonated || 0,
+                        totalRaised: userData.totalRaised || 0,
+                        campaignsCreated: userData.campaignsCreated || 0,
+                        donationCount: userData.donationCount || 0
+                    };
+                    this.updateAuthUI();
+                    this.loadUserData();
+                    closeModal('loginModal');
+                } catch (error) {
+                    this.showNotification('Login failed: ' + error.message, 'error');
+                }
+            }
 
-        // Travel service redirect functions - allow anonymous browsing
-        function redirectToFlights() {
-            const flightUrl = `${TRAVEL_PAYOUTS_CONFIG.flightSearchUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
-            window.open(flightUrl, '_blank');
-        }
+            async handleSignup() {
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const phone = document.getElementById('signupPhone').value;
+                const password = document.getElementById('signupPassword').value;
 
-        function redirectToHotels() {
-            const hotelUrl = `${TRAVEL_PAYOUTS_CONFIG.affiliateUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
-            window.open(hotelUrl, '_blank');
-        }
+                try {
+                    const { createUserWithEmailAndPassword, addDoc, collection } = window.firebaseServices;
+                    const userCredential = await createUserWithEmailAndPassword(window.firebaseServices.auth, email, password);
+                    
+                    // Create user document in Firestore
+                    await addDoc(collection(window.firebaseServices.db, 'users'), {
+                        uid: userCredential.user.uid,
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        createdAt: new Date(),
+                        totalDonated: 0,
+                        totalRaised: 0,
+                        campaignsCreated: 0,
+                        donationCount: 0,
+                        verificationStatus: 'pending'
+                    });
 
-        function redirectToYachts() {
-            const yachtUrl = 'https://searadar.tpx.lu/EECgzks';
-            window.open(yachtUrl, '_blank');
-        }
+                    this.showNotification('Account created successfully! Welcome to Flapping Bird.', 'success');
+                    this.currentUser = {
+                        uid: userCredential.user.uid,
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        verificationStatus: 'pending',
+                        totalDonated: 0,
+                        totalRaised: 0,
+                        campaignsCreated: 0,
+                        donationCount: 0
+                    };
+                    this.updateAuthUI();
+                    this.loadUserData();
+                    closeModal('signupModal');
+                } catch (error) {
+                    this.showNotification('Signup failed: ' + error.message, 'error');
+                }
+            }
 
-        function redirectToCars() {
-            const carUrl = 'https://bikesbooking.tpx.lu/40fmM6sd';
-            window.open(carUrl, '_blank');
-        }
+            updateAuthUI() {
+                const authSection = document.getElementById('authSection');
+                const userMenu = document.getElementById('userMenu');
+                
+                if (this.currentUser) {
+                    authSection.style.display = 'none';
+                    userMenu.style.display = 'block';
+                    document.getElementById('userInitials').textContent = this.currentUser.name.charAt(0).toUpperCase();
+                    
+                    // Update profile information
+                    document.getElementById('profileInitials').textContent = this.currentUser.name.charAt(0).toUpperCase();
+                    document.getElementById('profileName').textContent = this.currentUser.name;
+                    document.getElementById('profileEmail').textContent = this.currentUser.email;
+                    document.getElementById('profilePhone').textContent = this.currentUser.phone;
+                    
+                    // Update verification status
+                    const verificationStatus = document.getElementById('profileVerificationStatus');
+                    if (this.currentUser.verificationStatus === 'verified') {
+                        verificationStatus.innerHTML = '<i class="fas fa-check-circle"></i> Account Verified';
+                        verificationStatus.className = 'verification-status verified';
+                        document.getElementById('verificationForm').style.display = 'none';
+                    } else {
+                        verificationStatus.innerHTML = '<i class="fas fa-clock"></i> Account Verification Pending';
+                        verificationStatus.className = 'verification-status';
+                        document.getElementById('verificationForm').style.display = 'block';
+                    }
+                    
+                    // Update stats
+                    document.getElementById('userTotalRaised').textContent = '₹' + this.formatNumber(this.currentUser.totalRaised);
+                    document.getElementById('userTotalDonated').textContent = '₹' + this.formatNumber(this.currentUser.totalDonated);
+                    document.getElementById('userCampaignsCount').textContent = this.currentUser.campaignsCreated;
+                    document.getElementById('userDonationsCount').textContent = this.currentUser.donationCount;
+                } else {
+                    authSection.style.display = 'flex';
+                    userMenu.style.display = 'none';
+                }
+            }
 
-        function redirectToBikes() {
-            const bikeUrl = TRAVEL_PAYOUTS_CONFIG.bikeBookingUrl;
-            window.open(bikeUrl, '_blank');
-        }
+            async createCampaign() {
+                if (!this.currentUser) {
+                    this.showNotification('Please login to create a campaign', 'warning');
+                    openModal('loginModal');
+                    return;
+                }
 
-        // Allow anonymous form searches, but save data only for logged in users
-        function handleSearch(event, type) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            
-            // For logged in users, save search data
-            if (currentUser && db) {
-                const searchData = {
-                    type: type,
-                    userId: currentUser.uid,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    data: Object.fromEntries(formData)
+                const formData = new FormData(document.getElementById('campaignForm'));
+                
+                try {
+                    const { addDoc, collection } = window.firebaseServices;
+                    
+                    const campaignData = {
+                        title: formData.get('title'),
+                        category: formData.get('category'),
+                        description: formData.get('description'),
+                        goalAmount: parseInt(formData.get('goal')),
+                        raisedAmount: 0,
+                        organizer: {
+                            uid: this.currentUser.uid,
+                            name: this.currentUser.name,
+                            email: this.currentUser.email
+                        },
+                        status: 'under_review',
+                        verificationStatus: 'pending',
+                        donorCount: 0,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    };
+
+                    const docRef = await addDoc(collection(window.firebaseServices.db, 'campaigns'), campaignData);
+                    
+                    // Add to user campaigns
+                    const newCampaign = {
+                        id: docRef.id,
+                        ...campaignData,
+                        daysLeft: 60,
+                        image: this.getDefaultCategoryImage(formData.get('category'))
+                    };
+                    this.userCampaigns.push(newCampaign);
+                    
+                    closeModal('createCampaignModal');
+                    document.getElementById('campaignForm').reset();
+                    
+                    // Show verification modal
+                    this.showCampaignCreatedModal(newCampaign);
+                } catch (error) {
+                    this.showNotification('Failed to create campaign: ' + error.message, 'error');
+                }
+            }
+
+            showCampaignCreatedModal(campaign) {
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.style.display = 'block';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-check-circle" style="color: #28a745;"></i> Campaign Created Successfully!</h2>
+                            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div style="text-align: center; margin-bottom: 2rem;">
+                                <div style="color: #28a745; font-size: 4rem; margin-bottom: 1rem;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h3>Your campaign "${campaign.title}" is now under review!</h3>
+                                <p style="color: #666; margin: 1rem 0;">Our team will verify your campaign within 24-48 hours.</p>
+                            </div>
+                            
+                            <div style="background: #f8f9fa; padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
+                                <h4>Next Steps:</h4>
+                                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                                    <li>Complete your account verification (if not done)</li>
+                                    <li>Our team will review your campaign details</li>
+                                    <li>Once approved, your campaign will go live</li>
+                                    <li>You'll receive the campaign link to share</li>
+                                    <li>Start collecting donations!</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                                <h4 style="margin: 0 0 1rem 0; color: #2d5016;">Campaign Link (Preview)</h4>
+                                <p style="background: white; padding: 1rem; border-radius: 4px; font-family: monospace; margin: 0; word-break: break-all;">
+                                    https://flappingbird.com/campaign/${campaign.id}
+                                </p>
+                                <small style="color: #2d5016;">Share this link once your campaign is approved!</small>
+                            </div>
+                            
+                            <div style="background: #fff3e0; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #f57c00;">
+                                <h4 style="margin: 0 0 1rem 0; color: #f57c00;">Important: Withdrawal Process</h4>
+                                <ul style="margin: 0; padding-left: 1.5rem; color: #f57c00;">
+                                    <li>All withdrawals are subject to verification</li>
+                                    <li>Upload bills/receipts when requesting withdrawals</li>
+                                    <li>Funds will be transferred to your verified bank account</li>
+                                    <li>Platform fee: 5% of withdrawn amount</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="display: flex; gap: 1rem; justify-content: center;">
+                                <button class="btn btn-primary" onclick="showProfile(); this.closest('.modal').remove();">
+                                    <i class="fas fa-user"></i> Complete Profile Verification
+                                </button>
+                                <button class="btn btn-outline" onclick="showMyCampaigns(); this.closest('.modal').remove();">
+                                    <i class="fas fa-heart"></i> View My Campaigns
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+
+            async submitVerification() {
+                const aadhaar = document.getElementById('aadhaarNumber').value;
+                const pan = document.getElementById('panNumber').value;
+                const bankAccount = document.getElementById('bankAccount').value;
+                const ifscCode = document.getElementById('ifscCode').value;
+                const bankName = document.getElementById('bankName').value;
+                const accountHolderName = document.getElementById('accountHolderName').value;
+
+                try {
+                    const { addDoc, collection } = window.firebaseServices;
+                    
+                    await addDoc(collection(window.firebaseServices.db, 'verifications'), {
+                        userId: this.currentUser.uid,
+                        aadhaarNumber: aadhaar,
+                        panNumber: pan,
+                        bankDetails: {
+                            accountNumber: bankAccount,
+                            ifscCode: ifscCode,
+                            bankName: bankName,
+                            accountHolderName: accountHolderName
+                        },
+                        status: 'pending',
+                        submittedAt: new Date()
+                    });
+
+                    this.showNotification('Verification documents submitted successfully! We will review within 24-48 hours.', 'success');
+                    document.getElementById('verificationFormData').reset();
+                    
+                    // Update UI to show submitted status
+                    const verificationStatus = document.getElementById('profileVerificationStatus');
+                    verificationStatus.innerHTML = '<i class="fas fa-clock"></i> Verification Under Review';
+                    
+                } catch (error) {
+                    this.showNotification('Failed to submit verification: ' + error.message, 'error');
+                }
+            }
+
+            async submitWithdrawal() {
+                const campaignId = document.getElementById('withdrawalCampaign').value;
+                const amount = parseInt(document.getElementById('withdrawalAmount').value);
+                const purpose = document.getElementById('withdrawalPurpose').value;
+
+                try {
+                    const { addDoc, collection } = window.firebaseServices;
+                    
+                    const withdrawalData = {
+                        campaignId: campaignId,
+                        userId: this.currentUser.uid,
+                        amount: amount,
+                        purpose: purpose,
+                        status: 'pending',
+                        requestedAt: new Date()
+                    };
+
+                    await addDoc(collection(window.firebaseServices.db, 'withdrawals'), withdrawalData);
+                    
+                    // Add to user withdrawals
+                    this.userWithdrawals.push({
+                        id: Date.now(),
+                        ...withdrawalData
+                    });
+                    
+                    this.showNotification('Withdrawal request submitted successfully! Processing time: 3-5 business days.', 'success');
+                    closeModal('withdrawalModal');
+                    document.getElementById('withdrawalForm').reset();
+                    this.renderWithdrawals();
+                    
+                } catch (error) {
+                    this.showNotification('Failed to submit withdrawal request: ' + error.message, 'error');
+                }
+            }
+
+            async loadUserData() {
+                if (!this.currentUser) return;
+
+                try {
+                    const { getDocs, collection, query, where } = window.firebaseServices;
+                    
+                    // Load user campaigns
+                    const campaignsQuery = query(collection(window.firebaseServices.db, 'campaigns'), 
+                                                where('organizer.uid', '==', this.currentUser.uid));
+                    const campaignsSnapshot = await getDocs(campaignsQuery);
+                    this.userCampaigns = campaignsSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                    // Load user donations
+                    const donationsQuery = query(collection(window.firebaseServices.db, 'donations'), 
+                                                where('donorId', '==', this.currentUser.uid));
+                    const donationsSnapshot = await getDocs(donationsQuery);
+                    this.userDonations = donationsSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                    // Load user withdrawals
+                    const withdrawalsQuery = query(collection(window.firebaseServices.db, 'withdrawals'), 
+                                                 where('userId', '==', this.currentUser.uid));
+                    const withdrawalsSnapshot = await getDocs(withdrawalsQuery);
+                    this.userWithdrawals = withdrawalsSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                    this.renderUserCampaigns();
+                    this.renderUserDonations();
+                    this.renderWithdrawals();
+                    this.populateWithdrawalCampaigns();
+                    
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+            }
+
+            renderUserCampaigns() {
+                const container = document.getElementById('userCampaignsList');
+                
+                if (this.userCampaigns.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-heart-broken"></i>
+                            <h3>No Campaigns Yet</h3>
+                            <p>You haven't created any campaigns yet. Start your first fundraiser to make a difference!</p>
+                            <button class="btn btn-primary" onclick="checkAuthAndStartCampaign()">
+                                <i class="fas fa-plus"></i> Create Your First Campaign
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.userCampaigns.map(campaign => `
+                    <div class="campaign-card" style="margin-bottom: 1rem;">
+                        <div style="position: relative;">
+                            <img src="${this.getDefaultCategoryImage(campaign.category)}" alt="${campaign.title}" class="campaign-image">
+                            <div class="campaign-badge" style="background: ${campaign.status === 'active' ? '#28a745' : '#ffc107'};">
+                                ${campaign.status === 'active' ? 'LIVE' : 'UNDER REVIEW'}
+                            </div>
+                        </div>
+                        <div class="campaign-content">
+                            <h3 class="campaign-title">${campaign.title}</h3>
+                            <div class="campaign-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min((campaign.raisedAmount / campaign.goalAmount) * 100, 100)}%"></div>
+                                </div>
+                                <div class="progress-info">
+                                    <span class="amount-raised">₹${this.formatNumber(campaign.raisedAmount)} raised</span>
+                                    <span>₹${this.formatNumber(campaign.goalAmount)} goal</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                <button class="btn btn-primary btn-small" onclick="donationPlatform.shareCampaign('${campaign.id}')">
+                                    <i class="fas fa-share-alt"></i> Share Campaign
+                                </button>
+                                ${campaign.status === 'active' ? `
+                                    <button class="btn btn-outline btn-small" onclick="donationPlatform.requestWithdrawal('${campaign.id}')">
+                                        <i class="fas fa-money-bill-wave"></i> Request Withdrawal
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderUserDonations() {
+                const container = document.getElementById('userDonationsList');
+                
+                if (this.userDonations.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            <h3>No Donations Yet</h3>
+                            <p>You haven't made any donations yet. Donate now to make a change!</p>
+                            <button class="btn btn-primary" onclick="showHomePage(); scrollToCampaigns();">
+                                <i class="fas fa-heart"></i> Browse Campaigns to Donate
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.userDonations.map(donation => `
+                    <div class="withdrawal-card">
+                        <div class="withdrawal-header">
+                            <h4>₹${this.formatNumber(donation.amount)} Donation</h4>
+                            <span class="withdrawal-status status-approved">Completed</span>
+                        </div>
+                        <p><strong>Campaign:</strong> ${donation.campaignTitle || 'Campaign'}</p>
+                        <p><strong>Date:</strong> ${new Date(donation.createdAt?.toDate?.() || donation.createdAt).toLocaleDateString()}</p>
+                        <p><strong>Transaction ID:</strong> ${donation.paymentDetails?.transactionId || 'N/A'}</p>
+                        ${donation.message ? `<p><strong>Message:</strong> ${donation.message}</p>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            renderWithdrawals() {
+                const container = document.getElementById('withdrawalsList');
+                
+                if (this.userWithdrawals.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-money-check-alt"></i>
+                            <h3>No Withdrawals Yet</h3>
+                            <p>You haven't made any withdrawal requests yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.userWithdrawals.map(withdrawal => `
+                    <div class="withdrawal-card">
+                        <div class="withdrawal-header">
+                            <h4>₹${this.formatNumber(withdrawal.amount)} Withdrawal</h4>
+                            <span class="withdrawal-status status-${withdrawal.status}">${withdrawal.status.toUpperCase()}</span>
+                        </div>
+                        <p><strong>Purpose:</strong> ${withdrawal.purpose}</p>
+                        <p><strong>Requested:</strong> ${new Date(withdrawal.requestedAt?.toDate?.() || withdrawal.requestedAt).toLocaleDateString()}</p>
+                        <p><strong>Status:</strong> ${withdrawal.status === 'pending' ? 'Under Review' : 
+                                                      withdrawal.status === 'approved' ? 'Approved - Processing' : 
+                                                      'Processed'}</p>
+                    </div>
+                `).join('');
+            }
+
+            populateWithdrawalCampaigns() {
+                const select = document.getElementById('withdrawalCampaign');
+                select.innerHTML = '<option value="">Select a campaign</option>';
+                
+                this.userCampaigns.filter(c => c.status === 'active' && c.raisedAmount > 0).forEach(campaign => {
+                    const option = document.createElement('option');
+                    option.value = campaign.id;
+                    option.textContent = `${campaign.title} (₹${this.formatNumber(campaign.raisedAmount)} available)`;
+                    select.appendChild(option);
+                });
+            }
+
+            shareCampaign(campaignId) {
+                const campaignUrl = `https://flappingbird.com/campaign/${campaignId}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Support My Campaign',
+                        text: 'Please support my fundraising campaign',
+                        url: campaignUrl
+                    });
+                } else {
+                    // Fallback to copying to clipboard
+                    navigator.clipboard.writeText(campaignUrl).then(() => {
+                        this.showNotification('Campaign link copied to clipboard!', 'success');
+                    }).catch(() => {
+                        this.showNotification('Campaign URL: ' + campaignUrl, 'info');
+                    });
+                }
+            }
+
+            requestWithdrawal(campaignId) {
+                document.getElementById('withdrawalCampaign').value = campaignId;
+                openModal('withdrawalModal');
+            }
+
+            getDefaultCategoryImage(category) {
+                const images = {
+                    medical: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    education: 'https://images.unsplash.com/photo-1577896851231-70ef18861754?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    disaster: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    debt: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    animal: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    social: 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                };
+                return images[category] || images.social;
+            }
+
+            handleFilterClick(btn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                this.renderCampaigns(filter);
+            }
+
+            renderCampaigns(filter = 'all') {
+                const grid = document.getElementById('campaignsGrid');
+                grid.innerHTML = '';
+
+                let filteredCampaigns = this.campaigns;
+                if (filter !== 'all') {
+                    filteredCampaigns = this.campaigns.filter(campaign => campaign.category === filter);
+                }
+
+                filteredCampaigns.forEach(campaign => {
+                    const progressPercentage = Math.min((campaign.raised / campaign.goal) * 100, 100);
+                    const urgencyClass = campaign.urgent ? 'urgent' : '';
+                    const verifiedBadge = campaign.verified ? '<i class="fas fa-check-circle" style="color: #28a745; margin-left: 5px;"></i>' : '';
+                    
+                    const campaignCard = document.createElement('div');
+                    campaignCard.className = `campaign-card ${urgencyClass}`;
+                    campaignCard.innerHTML = `
+                        <div class="campaign-image-container">
+                            <img src="${campaign.image}" alt="${campaign.title}" class="campaign-image">
+                            ${campaign.urgent ? '<div class="campaign-badge urgent-badge">URGENT</div>' : ''}
+                            ${campaign.verified ? '<div class="campaign-badge" style="top: 15px; right: 15px; background: #28a745;"><i class="fas fa-shield-alt"></i> Verified</div>' : ''}
+                        </div>
+                        <div class="campaign-content">
+                            <h3 class="campaign-title">${campaign.title}</h3>
+                            <div class="campaign-organizer">
+                                <i class="fas fa-user"></i> by ${campaign.organizer} ${verifiedBadge}
+                                ${campaign.location ? `<br><i class="fas fa-map-marker-alt"></i> ${campaign.location}` : ''}
+                            </div>
+                            <p class="campaign-description">${this.truncateText(campaign.description, 150)}</p>
+                            
+                            <div class="campaign-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                                </div>
+                                <div class="progress-info">
+                                    <span class="amount-raised">₹${this.formatNumber(campaign.raised)} raised</span>
+                                    <span>${Math.round(progressPercentage)}% funded</span>
+                                </div>
+                                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                                    Goal: ₹${this.formatNumber(campaign.goal)}
+                                </div>
+                            </div>
+                            
+                            <div class="campaign-footer">
+                                <div class="campaign-meta">
+                                    <span><i class="fas fa-users"></i> ${campaign.donorCount} donors</span>
+                                    <span><i class="fas fa-clock"></i> ${campaign.daysLeft} days left</span>
+                                </div>
+                                <button class="btn btn-primary btn-small" onclick="donationPlatform.openDonationModal(${campaign.id})">
+                                    Donate Now
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    grid.appendChild(campaignCard);
+                });
+            }
+
+            openDonationModal(campaignId) {
+                const campaign = this.campaigns.find(c => c.id === campaignId);
+                if (!campaign) return;
+
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.style.display = 'block';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 700px;">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-heart"></i> Support ${campaign.title}</h2>
+                            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                <div>
+                                    <img src="${campaign.image}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                                </div>
+                                <div>
+                                    <h3>${campaign.title}</h3>
+                                    <p style="color: #666; margin: 0.5rem 0;">by ${campaign.organizer}</p>
+                                    ${campaign.location ? `<p style="color: #666;"><i class="fas fa-map-marker-alt"></i> ${campaign.location}</p>` : ''}
+                                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                            <span>₹${this.formatNumber(campaign.raised)} raised</span>
+                                            <span>₹${this.formatNumber(campaign.goal)} goal</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: ${Math.min((campaign.raised / campaign.goal) * 100, 100)}%"></div>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                                            <span>${campaign.donorCount} donors</span>
+                                            <span>${campaign.daysLeft} days left</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 2rem;">
+                                <h4>Campaign Story</h4>
+                                <p style="line-height: 1.6; color: #333;">${campaign.description}</p>
+                                ${campaign.hospital ? `<p style="color: #666; margin-top: 1rem;"><strong>Hospital:</strong> ${campaign.hospital}</p>` : ''}
+                            </div>
+                            
+                            <form id="donationForm">
+                                <h4>Choose Donation Amount</h4>
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 1rem 0;">
+                                    <button type="button" class="btn btn-outline btn-small" onclick="setDonationAmount(500)">₹500</button>
+                                    <button type="button" class="btn btn-outline btn-small" onclick="setDonationAmount(1000)">₹1,000</button>
+                                    <button type="button" class="btn btn-outline btn-small" onclick="setDonationAmount(2500)">₹2,500</button>
+                                    <button type="button" class="btn btn-outline btn-small" onclick="setDonationAmount(5000)">₹5,000</button>
+                                </div>
+                                <div class="form-group">
+                                    <input type="number" id="donationAmount" class="form-control" placeholder="Enter custom amount" min="100" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Your Name</label>
+                                    <input type="text" id="donorName" class="form-control" value="${this.currentUser?.name || ''}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" id="donorEmail" class="form-control" value="${this.currentUser?.email || ''}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" id="donorPhone" class="form-control" value="${this.currentUser?.phone || ''}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Message of Support (Optional)</label>
+                                    <textarea id="donorMessage" class="form-control" rows="3" placeholder="Leave words of encouragement..."></textarea>
+                                </div>
+                                
+                                <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                    <h4 style="margin: 0 0 0.5rem 0; color: #2d5016;">Secure Payment</h4>
+                                    <p style="margin: 0; font-size: 0.9rem; color: #2d5016;">
+                                        Your donation is secure and protected. We accept UPI, Credit/Debit Cards, Net Banking, and Wallets.
+                                        You'll receive a tax-exemption receipt under Section 80G.
+                                    </p>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;" onclick="donationPlatform.processDonation(event, ${campaignId})">
+                                    <i class="fas fa-heart"></i> Donate Securely
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+
+            async processDonation(event, campaignId) {
+                event.preventDefault();
+                
+                const amount = parseInt(document.getElementById('donationAmount').value);
+                const donorName = document.getElementById('donorName').value;
+                const donorEmail = document.getElementById('donorEmail').value;
+                const donorPhone = document.getElementById('donorPhone').value;
+                const message = document.getElementById('donorMessage').value;
+                
+                if (amount < 100) {
+                    this.showNotification('Minimum donation amount is ₹100', 'warning');
+                    return;
+                }
+
+                this.showNotification('Redirecting to secure payment gateway...', 'info');
+                
+                setTimeout(async () => {
+                    try {
+                        const { addDoc, collection, updateDoc, doc } = window.firebaseServices;
+                        
+                        // Add donation record
+                        const donationData = {
+                            campaignId: campaignId,
+                            donorId: this.currentUser?.uid || null,
+                            donor: {
+                                name: donorName,
+                                email: donorEmail,
+                                phone: donorPhone,
+                                isAnonymous: false
+                            },
+                            amount: amount,
+                            currency: 'INR',
+                            message: message,
+                            paymentDetails: {
+                                transactionId: 'TXN' + Date.now(),
+                                status: 'success'
+                            },
+                            createdAt: new Date()
+                        };
+
+                        await addDoc(collection(window.firebaseServices.db, 'donations'), donationData);
+                        
+                        // Update user's donation history
+                        if (this.currentUser) {
+                            this.userDonations.push(donationData);
+                            this.currentUser.totalDonated += amount;
+                            this.currentUser.donationCount += 1;
+                            this.updateAuthUI();
+                        }
+                        
+                        // Update campaign amounts (for demo purposes)
+                        this.completeDonation(campaignId, amount, donorName, donorEmail, donorPhone, message);
+                    } catch (error) {
+                        this.showNotification('Donation failed: ' + error.message, 'error');
+                    }
+                }, 2000);
+            }
+
+            completeDonation(campaignId, amount, donorName, donorEmail, donorPhone, message) {
+                const campaign = this.campaigns.find(c => c.id === campaignId);
+                if (campaign) {
+                    campaign.raised += amount;
+                    campaign.donorCount += 1;
+                }
+
+                const donation = {
+                    id: Date.now(),
+                    campaignId: campaignId,
+                    amount: amount,
+                    donorName: donorName,
+                    donorEmail: donorEmail,
+                    donorPhone: donorPhone,
+                    message: message,
+                    date: new Date(),
+                    transactionId: 'TXN' + Date.now()
                 };
                 
-                db.collection('searches').add(searchData)
-                    .catch(error => console.error('Error saving search:', error));
+                this.renderCampaigns();
+                this.updateStats();
+                
+                document.querySelector('.modal').remove();
+                
+                this.showDonationSuccess(donation, campaign);
             }
-            
-            // Redirect to appropriate booking platform for all users
-            let redirectUrl;
-            switch(type) {
-                case 'flights':
-                    redirectUrl = `${TRAVEL_PAYOUTS_CONFIG.flightSearchUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
-                    break;
-                case 'hotels':
-                    redirectUrl = `${TRAVEL_PAYOUTS_CONFIG.affiliateUrl}?marker=${TRAVEL_PAYOUTS_CONFIG.partnerId}`;
-                    break;
-                case 'yachts':
-                    redirectUrl = 'https://searadar.tpx.lu/EECgzks';
-                    break;
-                case 'cars':
-                    redirectUrl = 'https://bikesbooking.tpx.lu/40fmM6sd';
-                    break;
-                case 'bikes':
-                    redirectUrl = TRAVEL_PAYOUTS_CONFIG.bikeBookingUrl;
-                    break;
-                default:
-                    alert('Redirecting to booking platform...');
-                    return;
+
+            showDonationSuccess(donation, campaign) {
+                const successModal = document.createElement('div');
+                successModal.className = 'modal';
+                successModal.style.display = 'block';
+                successModal.innerHTML = `
+                    <div class="modal-content" style="text-align: center; max-width: 500px;">
+                        <div style="padding: 2rem;">
+                            <div style="color: #28a745; font-size: 4rem; margin-bottom: 1rem;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h2 style="color: #28a745; margin-bottom: 1rem;">Thank You for Your Generosity!</h2>
+                            <p style="font-size: 1.1rem; margin-bottom: 2rem;">
+                                Your donation of <strong>₹${this.formatNumber(donation.amount)}</strong> has been successfully processed.
+                            </p>
+                            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; text-align: left;">
+                                <p><strong>Transaction ID:</strong> ${donation.transactionId}</p>
+                                <p><strong>Campaign:</strong> ${campaign.title}</p>
+                                <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                                <p><strong>Tax Receipt:</strong> Will be emailed within 24 hours</p>
+                            </div>
+                            <p style="margin-bottom: 2rem; color: #666;">
+                                Your contribution brings hope and makes a real difference. A tax-exemption receipt will be sent to your email.
+                            </p>
+                            <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Continue</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(successModal);
             }
-            window.open(redirectUrl, '_blank');
+
+            updateStats() {
+                document.getElementById('totalRaised').textContent = '₹250+ Cr';
+                document.getElementById('totalCampaigns').textContent = '1.2L+';
+                document.getElementById('totalDonors').textContent = '15L+';
+            }
+
+            formatNumber(num) {
+                if (num >= 10000000) {
+                    return (num / 10000000).toFixed(1) + ' Cr';
+                } else if (num >= 100000) {
+                    return (num / 100000).toFixed(1) + ' L';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                }
+                return num.toLocaleString('en-IN');
+            }
+
+            truncateText(text, maxLength) {
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + '...';
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    padding: 1rem 1.5rem;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 600;
+                    z-index: 3000;
+                    animation: slideInRight 0.3s ease-out;
+                    max-width: 350px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                `;
+
+                const colors = {
+                    success: '#28a745',
+                    error: '#dc3545',
+                    info: '#007bff',
+                    warning: '#ffc107'
+                };
+
+                notification.style.background = colors[type] || colors.info;
+                notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'}-circle"></i> ${message}`;
+
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease-out';
+                    setTimeout(() => notification.remove(), 300);
+                }, 4000);
+            }
+
+            async checkUserSession() {
+                const { onAuthStateChanged } = window.firebaseServices;
+                onAuthStateChanged(window.firebaseServices.auth, (user) => {
+                    if (user) {
+                        this.currentUser = {
+                            uid: user.uid,
+                            name: user.displayName || user.email.split('@')[0],
+                            email: user.email
+                        };
+                        this.loadUserData();
+                    } else {
+                        this.currentUser = null;
+                    }
+                    this.updateAuthUI();
+                });
+            }
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const authModal = document.getElementById('authModal');
-            const cartModal = document.getElementById('cartModal');
-            
-            if (event.target === authModal) {
-                closeAuthModal();
-            }
-            
-            if (event.target === cartModal) {
-                toggleCart();
+        // Global functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function uploadProfilePicture() {
+            document.getElementById('profilePictureInput').click();
+        }
+
+        function handleProfilePictureUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const profileAvatar = document.getElementById('profileAvatar');
+                    profileAvatar.style.backgroundImage = `url(${e.target.result})`;
+                    profileAvatar.style.backgroundSize = 'cover';
+                    profileAvatar.style.backgroundPosition = 'center';
+                    profileAvatar.innerHTML = '<div class="upload-overlay" style="position: absolute; bottom: 0; right: 0; background: var(--primary); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="fas fa-camera" style="color: white; font-size: 12px;"></i></div>';
+                };
+                reader.readAsDataURL(file);
             }
         }
+
+        function previewCampaignImages(event) {
+            const files = event.target.files;
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+
+            if (files.length > 5) {
+                donationPlatform.showNotification('Maximum 5 images allowed', 'warning');
+                event.target.value = '';
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden;';
+                    imageContainer.innerHTML = `
+                        <img src="${e.target.result}" style="width: 100%; height: 80px; object-fit: cover;">
+                        <button onclick="removeImagePreview(this)" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">&times;</button>
+                    `;
+                    preview.appendChild(imageContainer);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImagePreview(button) {
+            button.parentElement.remove();
+        }
+
+        function openInfoModal(type) {
+            const content = getInfoContent(type);
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h2><i class="${content.icon}"></i> ${content.title}</h2>
+                        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        ${content.body}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function getInfoContent(type) {
+            const contents = {
+                howItWorks: {
+                    icon: 'fas fa-question-circle',
+                    title: 'How It Works',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>1. Create Your Campaign</h3>
+                            <p>Tell your story, add photos, and set your fundraising goal. Our team reviews each campaign to ensure authenticity.</p>
+                            
+                            <h3>2. Share Your Campaign</h3>
+                            <p>Share your campaign link with friends, family, and social media. The more people who see it, the more support you'll receive.</p>
+                            
+                            <h3>3. Receive Donations</h3>
+                            <p>Donors can contribute directly through our secure platform. All donations are processed safely and securely.</p>
+                            
+                            <h3>4. Withdraw Funds</h3>
+                            <p>Request withdrawals anytime with proper documentation. Funds are transferred to your verified bank account within 3-5 business days.</p>
+                            
+                            <h3>5. Update Your Supporters</h3>
+                            <p>Keep donors informed about your progress and how their contributions are making a difference.</p>
+                        </div>
+                    `
+                },
+                safety: {
+                    icon: 'fas fa-shield-alt',
+                    title: 'Safety & Security',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Campaign Verification</h3>
+                            <p>Every campaign is manually reviewed by our team. We verify organizer identity and campaign authenticity before approval.</p>
+                            
+                            <h3>Secure Payments</h3>
+                            <p>All payments are processed through PCI DSS compliant gateways. We use industry-standard encryption to protect your data.</p>
+                            
+                            <h3>Fund Protection</h3>
+                            <p>Funds are held in secure escrow accounts. Withdrawals require proper documentation and verification.</p>
+                            
+                            <h3>Fraud Prevention</h3>
+                            <p>We use advanced fraud detection systems and manual reviews to prevent misuse of our platform.</p>
+                            
+                            <h3>24/7 Monitoring</h3>
+                            <p>Our security team monitors the platform round-the-clock for suspicious activities and ensures user safety.</p>
+                        </div>
+                    `
+                },
+                pricing: {
+                    icon: 'fas fa-rupee-sign',
+                    title: 'Pricing & Fees',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Platform Fee</h3>
+                            <p>We charge a 5% platform fee on successful withdrawals to maintain and improve our services.</p>
+                            
+                            <h3>Payment Processing</h3>
+                            <p>Payment gateway fees (2.5-3%) are automatically deducted during donation processing.</p>
+                            
+                            <h3>No Hidden Charges</h3>
+                            <p>No setup fees, monthly charges, or hidden costs. You only pay when you withdraw funds.</p>
+                            
+                            <h3>Transparent Pricing</h3>
+                            <p>All fees are clearly displayed before withdrawal. What you see is what you pay.</p>
+                            
+                            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Service</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Fee</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">Campaign Creation</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">Free</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">Platform Fee</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">5% on withdrawals</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">Payment Processing</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">2.5-3% per donation</td>
+                                </tr>
+                            </table>
+                        </div>
+                    `
+                },
+                help: {
+                    icon: 'fas fa-life-ring',
+                    title: 'Help Center',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Frequently Asked Questions</h3>
+                            
+                            <h4>How do I create a campaign?</h4>
+                            <p>Click "Start Fundraiser", fill in your campaign details, upload supporting documents, and submit for review.</p>
+                            
+                            <h4>How long does verification take?</h4>
+                            <p>Campaign verification typically takes 24-48 hours. Account verification may take 2-3 business days.</p>
+                            
+                            <h4>When can I withdraw funds?</h4>
+                            <p>You can request withdrawals anytime after receiving donations. Provide proper documentation for faster processing.</p>
+                            
+                            <h4>What documents do I need?</h4>
+                            <p>For verification: Aadhaar, PAN, and bank details. For withdrawals: Bills, receipts, or medical reports related to your cause.</p>
+                            
+                            <h4>Is there a minimum withdrawal amount?</h4>
+                            <p>Yes, the minimum withdrawal amount is ₹1,000 to cover processing costs.</p>
+                            
+                            <h3>Contact Support</h3>
+                            <p>Email: support@flappingbird.com<br>
+                            Phone: +91-8000-123-456<br>
+                            Hours: Mon-Fri 9 AM - 6 PM IST</p>
+                        </div>
+                    `
+                },
+                contact: {
+                    icon: 'fas fa-phone',
+                    title: 'Contact Support',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Get in Touch</h3>
+                            <p>Our support team is here to help you with any questions or concerns.</p>
+                            
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h4>Support Channels</h4>
+                                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> support@flappingbird.com</p>
+                                <p><i class="fas fa-phone"></i> <strong>Phone:</strong> +91-8000-123-456</p>
+                                <p><i class="fab fa-whatsapp"></i> <strong>WhatsApp:</strong> +91-8000-123-456</p>
+                                <p><i class="fas fa-clock"></i> <strong>Hours:</strong> Monday - Friday, 9 AM - 6 PM IST</p>
+                            </div>
+                            
+                            <h4>Office Address</h4>
+                            <p>Flapping Bird Technologies Pvt Ltd<br>
+                            123 Innovation Hub, Sector 18<br>
+                            Gurugram, Haryana 122015<br>
+                            India</p>
+                            
+                            <h4>Emergency Support</h4>
+                            <p>For urgent campaign-related issues, call our 24/7 helpline: <strong>+91-8000-911-911</strong></p>
+                        </div>
+                    `
+                },
+                terms: {
+                    icon: 'fas fa-file-contract',
+                    title: 'Terms of Service',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Terms and Conditions</h3>
+                            <p><em>Last updated: January 2024</em></p>
+                            
+                            <h4>1. Acceptance of Terms</h4>
+                            <p>By using Flapping Bird, you agree to these terms and conditions. If you don't agree, please don't use our services.</p>
+                            
+                            <h4>2. User Responsibilities</h4>
+                            <ul>
+                                <li>Provide accurate and truthful information</li>
+                                <li>Use the platform only for legitimate fundraising</li>
+                                <li>Comply with all applicable laws and regulations</li>
+                                <li>Respect other users and maintain platform integrity</li>
+                            </ul>
+                            
+                            <h4>3. Campaign Guidelines</h4>
+                            <ul>
+                                <li>Campaigns must be for genuine causes</li>
+                                <li>Medical campaigns require proper documentation</li>
+                                <li>No fraudulent or misleading campaigns</li>
+                                <li>We reserve the right to remove inappropriate content</li>
+                            </ul>
+                            
+                            <h4>4. Fees and Payments</h4>
+                            <p>Platform fees and payment processing charges apply as outlined in our pricing policy.</p>
+                            
+                            <h4>5. Limitation of Liability</h4>
+                            <p>Flapping Bird is not liable for campaign outcomes or disputes between users.</p>
+                        </div>
+                    `
+                },
+                privacy: {
+                    icon: 'fas fa-user-shield',
+                    title: 'Privacy Policy',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Privacy Policy</h3>
+                            <p><em>Last updated: January 2024</em></p>
+                            
+                            <h4>Information We Collect</h4>
+                            <ul>
+                                <li>Personal details (name, email, phone)</li>
+                                <li>Payment and banking information</li>
+                                <li>Campaign content and documentation</li>
+                                <li>Usage data and device information</li>
+                            </ul>
+                            
+                            <h4>How We Use Your Information</h4>
+                            <ul>
+                                <li>Process donations and withdrawals</li>
+                                <li>Verify user identity and prevent fraud</li>
+                                <li>Improve our services and user experience</li>
+                                <li>Send important updates and notifications</li>
+                            </ul>
+                            
+                            <h4>Information Sharing</h4>
+                            <p>We don't sell your personal information. We may share data with:</p>
+                            <ul>
+                                <li>Payment processors for transaction processing</li>
+                                <li>Government authorities when legally required</li>
+                                <li>Service providers who help operate our platform</li>
+                            </ul>
+                            
+                            <h4>Data Security</h4>
+                            <p>We use industry-standard security measures to protect your data, including encryption and secure servers.</p>
+                            
+                            <h4>Your Rights</h4>
+                            <p>You can access, update, or delete your personal information anytime through your account settings.</p>
+                        </div>
+                    `
+                },
+                refund: {
+                    icon: 'fas fa-undo',
+                    title: 'Refund Policy',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Refund Policy</h3>
+                            
+                            <h4>Donor Refunds</h4>
+                            <p>Donations can be refunded within 48 hours if:</p>
+                            <ul>
+                                <li>The donation was made by mistake</li>
+                                <li>The campaign is found to be fraudulent</li>
+                                <li>The campaign is cancelled before funds are withdrawn</li>
+                            </ul>
+                            
+                            <h4>Campaign Cancellation</h4>
+                            <p>If a campaign is cancelled or removed:</p>
+                            <ul>
+                                <li>All donors will be automatically refunded</li>
+                                <li>Refunds are processed within 5-7 business days</li>
+                                <li>Any withdrawn funds must be returned by the organizer</li>
+                            </ul>
+                            
+                            <h4>Platform Fee Refunds</h4>
+                            <p>Platform fees are non-refundable once a withdrawal is processed, except in cases of proven fraud.</p>
+                            
+                            <h4>How to Request a Refund</h4>
+                            <ol>
+                                <li>Contact support within 48 hours of donation</li>
+                                <li>Provide transaction details and reason</li>
+                                <li>Our team will review and process valid requests</li>
+                            </ol>
+                            
+                            <h4>Processing Time</h4>
+                            <p>Refunds typically take 3-7 business days to reflect in your account, depending on your bank.</p>
+                        </div>
+                    `
+                },
+                guidelines: {
+                    icon: 'fas fa-clipboard-list',
+                    title: 'Campaign Guidelines',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Campaign Guidelines</h3>
+                            
+                            <h4>Allowed Campaigns</h4>
+                            <ul>
+                                <li>Medical emergencies and treatments</li>
+                                <li>Education and scholarship needs</li>
+                                <li>Disaster relief and emergency aid</li>
+                                <li>Social causes and community development</li>
+                                <li>Animal welfare and rescue</li>
+                                <li>Debt relief for genuine hardships</li>
+                            </ul>
+                            
+                            <h4>Prohibited Content</h4>
+                            <ul>
+                                <li>Fraudulent or misleading campaigns</li>
+                                <li>Political campaigns or activities</li>
+                                <li>Religious conversion activities</li>
+                                <li>Illegal activities or substances</li>
+                                <li>Adult content or services</li>
+                                <li>Gambling or lottery schemes</li>
+                            </ul>
+                            
+                            <h4>Documentation Requirements</h4>
+                            <h5>Medical Campaigns:</h5>
+                            <ul>
+                                <li>Hospital reports and diagnosis</li>
+                                <li>Treatment cost estimates</li>
+                                <li>Doctor's recommendations</li>
+                                <li>Medical bills and receipts</li>
+                            </ul>
+                            
+                            <h5>Education Campaigns:</h5>
+                            <ul>
+                                <li>Admission letters or fee notices</li>
+                                <li>Academic transcripts</li>
+                                <li>Income certificates (if applicable)</li>
+                            </ul>
+                            
+                            <h4>Best Practices</h4>
+                            <ul>
+                                <li>Use clear, honest campaign titles</li>
+                                <li>Provide detailed campaign descriptions</li>
+                                <li>Upload authentic photos and documents</li>
+                                <li>Set realistic fundraising goals</li>
+                                <li>Keep supporters updated regularly</li>
+                            </ul>
+                        </div>
+                    `
+                },
+                tax: {
+                    icon: 'fas fa-receipt',
+                    title: 'Tax Benefits',
+                    body: `
+                        <div style="line-height: 1.6;">
+                            <h3>Tax Benefits for Donors</h3>
+                            
+                            <h4>Section 80G Benefits</h4>
+                            <p>Donations to eligible campaigns qualify for tax deduction under Section 80G of the Income Tax Act.</p>
+                            
+                            <h4>Eligible Campaigns</h4>
+                            <ul>
+                                <li>Medical emergencies and healthcare</li>
+                                <li>Educational causes and scholarships</li>
+                                <li>Disaster relief and rehabilitation</li>
+                                <li>Social welfare and community development</li>
+                            </ul>
+                            
+                            <h4>Tax Receipt</h4>
+                            <ul>
+                                <li>Automatic tax receipts for eligible donations</li>
+                                <li>Receipts emailed within 24 hours</li>
+                                <li>Valid for income tax filing</li>
+                                <li>Download anytime from your donation history</li>
+                            </ul>
+                            
+                            <h4>Deduction Limits</h4>
+                            <p>Tax deductions are subject to limits as per Income Tax regulations:</p>
+                            <ul>
+                                <li>50% deduction: Up to 10% of adjusted gross income</li>
+                                <li>100% deduction: Limited cases as per government guidelines</li>
+                            </ul>
+                            
+                            <h4>Important Notes</h4>
+                            <ul>
+                                <li>Tax benefits apply only to Indian taxpayers</li>
+                                <li>Consult your tax advisor for specific guidance</li>
+                                <li>Deduction claims subject to IT department verification</li>
+                            </ul>
+                            
+                            <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                <p><strong>Disclaimer:</strong> Tax benefits are subject to applicable laws and regulations. Please consult a qualified tax professional for personalized advice.</p>
+                            </div>
+                        </div>
+                    `
+                }
+            };
+            return contents[type] || { icon: 'fas fa-info', title: 'Information', body: 'Content not available.' };
+        }
+
+        function setDonationAmount(amount) {
+            document.getElementById('donationAmount').value = amount;
+        }
+
+        function checkAuthAndStartCampaign() {
+            if (donationPlatform.currentUser) {
+                openModal('createCampaignModal');
+            } else {
+                donationPlatform.showNotification('Please login to start a fundraiser', 'warning');
+                openModal('loginModal');
+            }
+        }
+
+        function filterCampaigns(category) {
+            donationPlatform.handleFilterClick(document.querySelector(`[data-filter="${category}"]`));
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function showHomePage() {
+            document.getElementById('homePage').style.display = 'block';
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('dropdownMenu').style.display = 'none';
+        }
+
+        function showProfile() {
+            document.getElementById('homePage').style.display = 'none';
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('profileSection').classList.add('active');
+            document.getElementById('dropdownMenu').style.display = 'none';
+        }
+
+        function showMyCampaigns() {
+            document.getElementById('homePage').style.display = 'none';
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('myCampaignsSection').classList.add('active');
+            document.getElementById('dropdownMenu').style.display = 'none';
+        }
+
+        function showMyDonations() {
+            document.getElementById('homePage').style.display = 'none';
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('myDonationsSection').classList.add('active');
+            document.getElementById('dropdownMenu').style.display = 'none';
+        }
+
+        function showSettings() {
+            document.getElementById('homePage').style.display = 'none';
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('settingsSection').classList.add('active');
+            document.getElementById('dropdownMenu').style.display = 'none';
+        }
+
+        function scrollToCampaigns() {
+            setTimeout(() => {
+                document.getElementById('campaigns').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        function openWithdrawalModal() {
+            if (!donationPlatform.currentUser) {
+                donationPlatform.showNotification('Please login first', 'warning');
+                return;
+            }
+            
+            if (donationPlatform.currentUser.verificationStatus !== 'verified') {
+                donationPlatform.showNotification('Please complete account verification first', 'warning');
+                showProfile();
+                return;
+            }
+            
+            openModal('withdrawalModal');
+        }
+
+        async function logout() {
+            try {
+                const { signOut } = window.firebaseServices;
+                await signOut(window.firebaseServices.auth);
+                donationPlatform.currentUser = null;
+                donationPlatform.userCampaigns = [];
+                donationPlatform.userDonations = [];
+                donationPlatform.userWithdrawals = [];
+                donationPlatform.updateAuthUI();
+                donationPlatform.showNotification('Logged out successfully', 'info');
+                document.getElementById('dropdownMenu').style.display = 'none';
+                showHomePage();
+            } catch (error) {
+                donationPlatform.showNotification('Logout failed: ' + error.message, 'error');
+            }
+        }
+
+        // Initialize the platform
+        const donationPlatform = new DonationPlatform();
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('dropdownMenu').style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
