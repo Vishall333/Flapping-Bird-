@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2355,10 +2354,11 @@
                 loadProfilePicture();
             }
             
-            // Only initialize sample campaigns if no data exists in Firestore
-            if (allCampaigns.length === 0) {
-                // ALL campaigns (14 total - all will be visible)
-                const campaignsData = [
+            // FORCE sync all 14 campaigns to Firebase on every load
+            console.log('FORCE syncing all 14 campaigns to Firebase...');
+            
+            // ALL campaigns (14 total - all will be visible)
+            const campaignsData = [
                 {
                     id: 'camp_001',
                     title: 'Help 4-Year-Old Aarav Fight Leukemia',
@@ -2674,23 +2674,72 @@
 
             // Combine all campaigns - ALL 14 campaigns will be visible
             allCampaignsData.push(...moreCampaignsData);
-            allCampaigns = allCampaignsData;
-            campaigns = allCampaigns.filter(c => c.status === 'active');
             
-            console.log(`Saving ${allCampaigns.length} campaigns to Firestore...`);
+            console.log(`FORCE SYNCING all ${allCampaignsData.length} campaigns to Firebase...`);
             
-            // Save ALL campaigns to Firestore with base64 images
-            for (const campaign of allCampaigns) {
+            // FORCE PUSH all campaigns to Firestore, regardless of what exists
+            for (const campaign of allCampaignsData) {
                 try {
-                    await saveCampaignToFirestore(campaign);
-                    console.log(`Saved campaign: ${campaign.id} - ${campaign.title}`);
+                    // Check if campaign already exists in Firestore
+                    const existingInFirestore = allCampaigns.find(c => c.id === campaign.id);
+                    
+                    // Preserve real donor data and admin modifications if they exist
+                    if (existingInFirestore) {
+                        // Keep real donors if they exist
+                        if (existingInFirestore.donorsList && existingInFirestore.donorsList.length > 0) {
+                            const hasRealDonors = existingInFirestore.donorsList.some(d => d.email && d.email.includes('@'));
+                            if (hasRealDonors) {
+                                campaign.donorsList = existingInFirestore.donorsList;
+                                campaign.raised = existingInFirestore.raised;
+                                campaign.raisedAmount = existingInFirestore.raisedAmount;
+                                campaign.donors = existingInFirestore.donors;
+                            }
+                        }
+                        
+                        // PRESERVE admin modifications (images and payment links)
+                        if (existingInFirestore.image && existingInFirestore.image.startsWith('data:')) {
+                            campaign.image = existingInFirestore.image;
+                        }
+                        if (existingInFirestore.images && existingInFirestore.images.length > 0) {
+                            campaign.images = existingInFirestore.images;
+                        }
+                        if (existingInFirestore.paymentLink) {
+                            campaign.paymentLink = existingInFirestore.paymentLink;
+                        }
+                    }
+                    
+                    // FORCE save to Firestore (this will create or overwrite)
+                    const { setDoc, doc } = window.firebaseServices;
+                    const db = window.firebaseServices.db;
+                    
+                    await setDoc(doc(db, 'campaigns', campaign.id), {
+                        ...campaign,
+                        created: campaign.created || new Date(),
+                        updatedAt: new Date()
+                    }, { merge: false }); // merge: false means complete overwrite
+                    
+                    console.log(`✓ FORCE SYNCED campaign to Firebase: ${campaign.id} - ${campaign.title}`);
+                    
                 } catch (error) {
-                    console.error(`Failed to save campaign ${campaign.id}:`, error);
+                    console.error(`❌ Failed to sync campaign ${campaign.id}:`, error);
                 }
             }
             
-            console.log(`Successfully saved ${allCampaigns.length} campaigns to Firestore`);
-            }
+            // Reload all campaigns from Firestore to get the complete set
+            console.log('Reloading all campaigns from Firebase...');
+            const { getDocs, collection } = window.firebaseServices;
+            const db = window.firebaseServices.db;
+            const campaignsSnapshot = await getDocs(collection(db, 'campaigns'));
+            allCampaigns = campaignsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                created: doc.data().created?.toDate() || new Date(doc.data().created)
+            }));
+            
+            console.log(`✅ SUCCESS! ${allCampaigns.length} campaigns now in Firebase and app`);
+            console.log('Campaign IDs:', allCampaigns.map(c => c.id));
+            
+            campaigns = allCampaigns.filter(c => c.status === 'active');
             renderCampaigns();
         }
 
@@ -3549,6 +3598,8 @@ Team Flapping Bird`
                     const campaign = allCampaigns.find(c => c.id === campaignId);
                     if (!campaign) return;
                     
+                    showNotification('Saving changes to Firebase...', 'info');
+                    
                     // Update campaign data
                     campaign.title = document.getElementById('adminEditTitle').value;
                     campaign.description = document.getElementById('adminEditDescription').value;
@@ -3566,20 +3617,38 @@ Team Flapping Bird`
                     
                     campaign.paymentLink = document.getElementById('adminEditPaymentLink').value.trim();
                     campaign.status = document.getElementById('adminEditStatus').value;
+                    campaign.updatedAt = new Date();
                     
-                    // Save to Firestore
-                    await saveCampaignToFirestore(campaign);
+                    // FORCE save to Firestore with complete overwrite
+                    const { setDoc, doc } = window.firebaseServices;
+                    const db = window.firebaseServices.db;
                     
-                    // Update the campaign in campaigns array if it exists
+                    await setDoc(doc(db, 'campaigns', campaignId), {
+                        ...campaign,
+                        created: campaign.created || new Date(),
+                        updatedAt: new Date()
+                    }, { merge: false }); // Complete overwrite to ensure changes persist
+                    
+                    console.log('✅ Admin changes saved to Firebase:', campaignId);
+                    
+                    // Update the campaign in both arrays
+                    const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
+                    if (allCampaignIndex !== -1) {
+                        allCampaigns[allCampaignIndex] = { ...campaign };
+                    }
+                    
                     const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                     if (campaignIndex !== -1) {
                         campaigns[campaignIndex] = { ...campaign };
                     }
                     
+                    // Reload from Firestore to confirm persistence
+                    await loadDataFromStorage();
+                    
                     renderCampaigns();
                     renderAdminPanel();
                     closeModal('adminEditModal');
-                    showNotification('Campaign updated successfully! Changes are visible to all users.', 'success');
+                    showNotification('✅ Changes saved permanently to Firebase! All users will see updates.', 'success');
                 });
             }
         });
@@ -3598,7 +3667,7 @@ Team Flapping Bird`
                 const file = event.target.files[0];
                 if (!file) return;
                 
-                showNotification('Uploading image...', 'info');
+                showNotification('Uploading image to Firebase...', 'info');
                 
                 // Convert to base64
                 const reader = new FileReader();
@@ -3610,19 +3679,37 @@ Team Flapping Bird`
                     if (!campaign.images) campaign.images = [];
                     campaign.images[0] = imageData;
                     campaign.imageUrl = ''; // Clear URL since we're using base64
+                    campaign.updatedAt = new Date();
                     
-                    // Save to Firestore with base64 image
-                    await saveCampaignToFirestore(campaign);
+                    // FORCE save to Firestore with complete overwrite
+                    const { setDoc, doc } = window.firebaseServices;
+                    const db = window.firebaseServices.db;
                     
-                    // Update the campaign in campaigns array if it exists
+                    await setDoc(doc(db, 'campaigns', campaignId), {
+                        ...campaign,
+                        created: campaign.created || new Date(),
+                        updatedAt: new Date()
+                    }, { merge: false }); // Complete overwrite
+                    
+                    console.log('✅ Image saved permanently to Firebase:', campaignId);
+                    
+                    // Update the campaign in both arrays
+                    const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
+                    if (allCampaignIndex !== -1) {
+                        allCampaigns[allCampaignIndex] = { ...campaign };
+                    }
+                    
                     const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                     if (campaignIndex !== -1) {
                         campaigns[campaignIndex] = { ...campaign };
                     }
                     
+                    // Reload from Firestore to confirm persistence
+                    await loadDataFromStorage();
+                    
                     renderCampaigns();
                     renderAdminPanel();
-                    showNotification('Campaign image updated successfully! All users will see the new image.', 'success');
+                    showNotification('✅ Image saved permanently to Firebase! All users will see the new image.', 'success');
                 };
                 reader.readAsDataURL(file);
                 
@@ -3642,37 +3729,73 @@ Team Flapping Bird`
             const paymentLink = prompt(`Enter Razorpay payment link for "${campaign.title}":\n\nExample formats:\n• Razorpay Payment Link: https://rzp.io/l/xxxxxxx\n• UPI Link: upi://pay?pa=example@okaxis&pn=Name\n• Custom Payment URL`, campaign.paymentLink || '');
             
             if (paymentLink && paymentLink.trim()) {
+                showNotification('Saving payment link to Firebase...', 'info');
+                
                 // Update campaign object
                 campaign.paymentLink = paymentLink.trim();
+                campaign.updatedAt = new Date();
                 
-                // Save to Firestore
-                await saveCampaignToFirestore(campaign);
+                // FORCE save to Firestore with complete overwrite
+                const { setDoc, doc } = window.firebaseServices;
+                const db = window.firebaseServices.db;
                 
-                // Update the campaign in campaigns array if it exists
+                await setDoc(doc(db, 'campaigns', campaignId), {
+                    ...campaign,
+                    created: campaign.created || new Date(),
+                    updatedAt: new Date()
+                }, { merge: false }); // Complete overwrite
+                
+                console.log('✅ Payment link saved permanently to Firebase:', campaignId);
+                
+                // Update the campaign in both arrays
+                const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
+                if (allCampaignIndex !== -1) {
+                    allCampaigns[allCampaignIndex] = { ...campaign };
+                }
+                
                 const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                 if (campaignIndex !== -1) {
                     campaigns[campaignIndex] = { ...campaign };
                 }
                 
+                // Reload from Firestore to confirm persistence
+                await loadDataFromStorage();
+                
                 renderCampaigns();
                 renderAdminPanel();
-                showNotification('Payment link added successfully! All users will see this payment option.', 'success');
+                showNotification('✅ Payment link saved permanently to Firebase! All users will see this.', 'success');
             } else if (paymentLink === '') {
                 // Empty string means remove payment link
                 campaign.paymentLink = '';
+                campaign.updatedAt = new Date();
                 
-                // Save to Firestore
-                await saveCampaignToFirestore(campaign);
+                // FORCE save to Firestore
+                const { setDoc, doc } = window.firebaseServices;
+                const db = window.firebaseServices.db;
                 
-                // Update the campaign in campaigns array if it exists
+                await setDoc(doc(db, 'campaigns', campaignId), {
+                    ...campaign,
+                    created: campaign.created || new Date(),
+                    updatedAt: new Date()
+                }, { merge: false });
+                
+                // Update the campaign in both arrays
+                const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
+                if (allCampaignIndex !== -1) {
+                    allCampaigns[allCampaignIndex] = { ...campaign };
+                }
+                
                 const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                 if (campaignIndex !== -1) {
                     campaigns[campaignIndex] = { ...campaign };
                 }
                 
+                // Reload from Firestore
+                await loadDataFromStorage();
+                
                 renderCampaigns();
                 renderAdminPanel();
-                showNotification('Payment link removed. Donations will use default processing.', 'info');
+                showNotification('Payment link removed permanently from Firebase.', 'info');
             }
         }
 
@@ -3723,18 +3846,40 @@ Team Flapping Bird`
             
             let donors = [];
             
-            // Use actual donors if available, otherwise use sample data
-            if (campaign && campaign.donorsList && campaign.donorsList.length > 0) {
+            // Check if campaign has real donors (with email addresses)
+            const hasRealDonors = campaign && campaign.donorsList && campaign.donorsList.length > 0 && 
+                                  campaign.donorsList.some(d => d.email && d.email.includes('@'));
+            
+            if (hasRealDonors) {
+                // Show real donors
                 donors = campaign.donorsList;
             } else {
-                // Sample donors for display
-                donors = [
+                // Generate rotating dummy donors for sample campaigns
+                const dummyDonorPool = [
                     { name: 'Anonymous', amount: 5000, message: 'Praying for your recovery!' },
                     { name: 'Rajesh Kumar', amount: 10000, message: 'Stay strong!' },
                     { name: 'Priya Sharma', amount: 2500, message: 'Hope this helps.' },
                     { name: 'Anonymous', amount: 1000, message: 'Best wishes' },
-                    { name: 'Amit Singh', amount: 7500, message: 'Get well soon!' }
+                    { name: 'Amit Singh', amount: 7500, message: 'Get well soon!' },
+                    { name: 'Kavita Patel', amount: 3000, message: 'Sending positive vibes!' },
+                    { name: 'Suresh Reddy', amount: 15000, message: 'May God bless you!' },
+                    { name: 'Anonymous', amount: 2000, message: 'You are in our prayers' },
+                    { name: 'Meera Gupta', amount: 5000, message: 'Hang in there!' },
+                    { name: 'Vikram Joshi', amount: 8000, message: 'Wishing you a speedy recovery' },
+                    { name: 'Anjali Singh', amount: 4000, message: 'Stay positive!' },
+                    { name: 'Rahul Verma', amount: 6000, message: 'Keep fighting!' }
                 ];
+                
+                // Shuffle and pick 5-8 random donors
+                const shuffled = [...dummyDonorPool].sort(() => Math.random() - 0.5);
+                const donorCount = 5 + Math.floor(Math.random() * 4); // 5-8 donors
+                donors = shuffled.slice(0, donorCount);
+                
+                // Add random recent dates
+                donors = donors.map(d => ({
+                    ...d,
+                    date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000) // Last 7 days
+                }));
             }
 
             donorsList.innerHTML = donors.map(donor => `
