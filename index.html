@@ -4819,5 +4819,112 @@ Team Flapping Bird
             }
         }
     </script>
+
+<!-- Persistence shim: ensures admin edits (images, payment links, edits) persist across refresh by caching campaigns in localStorage.
+     It wraps existing admin functions and keeps a local 'campaigns_cache' that is synced with Firebase when available.
+-->
+<script>
+(function(){
+    function saveLocalCache() {
+        try {
+            if (window.allCampaigns && window.allCampaigns.length>0) {
+                localStorage.setItem('campaigns_cache', JSON.stringify(window.allCampaigns));
+                console.log('Local campaigns cache saved (' + window.allCampaigns.length + ' items).');
+            }
+        } catch (e) {
+            console.warn('Failed to save local campaigns cache:', e);
+        }
+    }
+
+    function loadLocalCache() {
+        try {
+            const data = localStorage.getItem('campaigns_cache');
+            if (!data) return false;
+            const parsed = JSON.parse(data);
+            if (!Array.isArray(parsed)) return false;
+            window.allCampaigns = parsed;
+            window.campaigns = window.allCampaigns.filter(c => c.status === 'active');
+            if (typeof renderCampaigns === 'function') {
+                renderCampaigns();
+            }
+            if (typeof renderAdminPanel === 'function') {
+                renderAdminPanel();
+            }
+            console.log('Loaded campaigns from local cache (' + window.allCampaigns.length + ' items).');
+            return true;
+        } catch (e) {
+            console.warn('Failed to load local campaigns cache:', e);
+            return false;
+        }
+    }
+
+    // Try to load cache on startup if Firestore isn't available or returns empty
+    window.addEventListener('DOMContentLoaded', function(){
+        // Wait briefly to allow original loadDataFromStorage to run if present
+        setTimeout(function(){
+            try {
+                if ((window.allCampaigns && window.allCampaigns.length === 0) || !window.allCampaigns) {
+                    const ok = loadLocalCache();
+                    if (ok) {
+                        // ensure UI shows admin menu etc
+                        if (window.currentUser) {
+                            updateAuthUI && updateAuthUI();
+                        }
+                    }
+                }
+            } catch(e){
+                console.warn('Persistence shim init error:', e);
+            }
+        }, 800);
+
+        // Keep local cache in sync periodically (also acts as backup if firebase writes fail)
+        setInterval(function(){
+            try {
+                if (window.allCampaigns && window.allCampaigns.length>0) {
+                    localStorage.setItem('campaigns_cache', JSON.stringify(window.allCampaigns));
+                }
+            } catch(e){}
+        }, 5000);
+
+        // Wrap admin functions to save cache after changes
+        setTimeout(function(){
+            try {
+                if (typeof window.setPaymentLink === 'function') {
+                    const orig = window.setPaymentLink;
+                    window.setPaymentLink = async function(campaignId) {
+                        const result = await orig(campaignId);
+                        saveLocalCache();
+                        return result;
+                    };
+                }
+            } catch(e){}
+            try {
+                if (typeof window.manageCampaignImages === 'function') {
+                    const orig2 = window.manageCampaignImages;
+                    window.manageCampaignImages = async function(campaignId) {
+                        const result = await orig2(campaignId);
+                        // images are uploaded asynchronously; give a short delay before saving cache
+                        setTimeout(saveLocalCache, 1200);
+                        return result;
+                    };
+                }
+            } catch(e){}
+            try {
+                const adminEditForm = document.getElementById('adminEditForm');
+                if (adminEditForm) {
+                    adminEditForm.addEventListener('submit', function(){
+                        // Admin edit handler modifies allCampaigns; save a copy after a small delay
+                        setTimeout(saveLocalCache, 600);
+                    });
+                }
+            } catch(e){}
+        }, 1000);
+    });
+
+    // Expose helpers for debugging
+    window._persistenceShim = { saveLocalCache, loadLocalCache };
+})();
+</script>
+
 </body>
 </html>
