@@ -2265,10 +2265,22 @@
             if (currentUser) {
                 const savedPicture = localStorage.getItem(`profilePicture_${currentUser.uid}`);
                 if (savedPicture) {
-                    const avatarElements = document.querySelectorAll('#profileAvatar, #userAvatarNav');
-                    avatarElements.forEach(avatar => {
-                        avatar.innerHTML = `<img src="${savedPicture}" alt="Profile Picture">`;
-                    });
+                    // Update navbar avatar
+                    const navAvatar = document.getElementById('userAvatarNav');
+                    if (navAvatar) {
+                        navAvatar.innerHTML = `<img src="${savedPicture}" alt="Profile Picture">`;
+                    }
+                    
+                    // Update profile page avatar
+                    const profileAvatar = document.getElementById('profileAvatar');
+                    if (profileAvatar) {
+                        profileAvatar.innerHTML = `
+                            <img src="${savedPicture}" alt="Profile Picture">
+                            <div class="upload-overlay">
+                                <i class="fas fa-camera" style="color: white; font-size: 12px;"></i>
+                            </div>
+                        `;
+                    }
                 }
             }
         }
@@ -2277,6 +2289,11 @@
         function initializeSampleCampaigns() {
             // Load data from storage first
             loadDataFromStorage();
+            
+            // Load profile picture if user is logged in
+            if (currentUser) {
+                loadProfilePicture();
+            }
             
             // Only initialize sample campaigns if no data exists
             if (campaigns.length === 0 && allCampaigns.length === 0) {
@@ -2613,6 +2630,17 @@
         function handleDocumentUpload(input, docType) {
             const file = input.files[0];
             if (!file) return;
+
+            // Save document to localStorage
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (currentUser) {
+                    const docKey = `verificationDoc_${currentUser.uid}_${docType}`;
+                    localStorage.setItem(docKey, e.target.result);
+                    localStorage.setItem(`${docKey}_filename`, file.name);
+                }
+            };
+            reader.readAsDataURL(file);
 
             const uploadDiv = input.parentNode;
             uploadDiv.classList.add('has-file');
@@ -3375,21 +3403,25 @@ Team Flapping Bird`
             const newGoal = prompt('Edit funding goal (₹):', campaign.goal || campaign.goalAmount);
 
             if (newTitle && newDescription && newGoal) {
+                // Update in allCampaigns
                 campaign.title = newTitle;
                 campaign.description = newDescription;
                 campaign.goal = parseInt(newGoal);
                 campaign.goalAmount = parseInt(newGoal);
                 
-                // Update the campaign in both arrays if it exists in campaigns
+                // Update the campaign in campaigns array if it exists
                 const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                 if (campaignIndex !== -1) {
-                    campaigns[campaignIndex] = { ...campaign };
+                    campaigns[campaignIndex].title = newTitle;
+                    campaigns[campaignIndex].description = newDescription;
+                    campaigns[campaignIndex].goal = parseInt(newGoal);
+                    campaigns[campaignIndex].goalAmount = parseInt(newGoal);
                 }
                 
-                saveDataToStorage(); // Persist changes
+                saveDataToStorage(); // Persist changes to localStorage
                 renderCampaigns();
                 renderAdminPanel();
-                showNotification('Campaign updated successfully!', 'success');
+                showNotification('Campaign updated successfully! Changes are visible to all users.', 'success');
             }
         }
 
@@ -3410,20 +3442,25 @@ Team Flapping Bird`
                 // Create preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    campaign.image = e.target.result;
-                    if (!campaign.images) campaign.images = [];
-                    campaign.images[0] = e.target.result;
+                    const imageData = e.target.result;
                     
-                    // Update the campaign in both arrays if it exists in campaigns
+                    // Update in allCampaigns
+                    campaign.image = imageData;
+                    if (!campaign.images) campaign.images = [];
+                    campaign.images[0] = imageData;
+                    
+                    // Update the campaign in campaigns array if it exists
                     const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                     if (campaignIndex !== -1) {
-                        campaigns[campaignIndex] = { ...campaign };
+                        campaigns[campaignIndex].image = imageData;
+                        if (!campaigns[campaignIndex].images) campaigns[campaignIndex].images = [];
+                        campaigns[campaignIndex].images[0] = imageData;
                     }
                     
-                    saveDataToStorage(); // Persist changes
+                    saveDataToStorage(); // Persist changes to localStorage
                     renderCampaigns();
                     renderAdminPanel();
-                    showNotification('Campaign image updated successfully!', 'success');
+                    showNotification('Campaign image updated successfully! Changes are visible to all users.', 'success');
                 };
                 reader.readAsDataURL(file);
                 
@@ -3443,29 +3480,30 @@ Team Flapping Bird`
             const paymentLink = prompt(`Enter Razorpay payment link for "${campaign.title}":\n\nExample formats:\n• Razorpay Payment Link: https://rzp.io/l/xxxxxxx\n• UPI Link: upi://pay?pa=example@okaxis&pn=Name\n• Custom Payment URL`, campaign.paymentLink || '');
             
             if (paymentLink && paymentLink.trim()) {
+                // Update in allCampaigns
                 campaign.paymentLink = paymentLink.trim();
                 
-                // Update the campaign in both arrays if it exists in campaigns
+                // Update the campaign in campaigns array if it exists
                 const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                 if (campaignIndex !== -1) {
-                    campaigns[campaignIndex] = { ...campaign };
+                    campaigns[campaignIndex].paymentLink = paymentLink.trim();
                 }
                 
-                saveDataToStorage(); // Persist changes
+                saveDataToStorage(); // Persist changes to localStorage
                 renderCampaigns();
                 renderAdminPanel();
-                showNotification('Payment link added successfully! Donations will now redirect to this payment gateway.', 'success');
+                showNotification('Payment link added successfully! All users will see this payment option.', 'success');
             } else if (paymentLink === '') {
                 // Empty string means remove payment link
                 campaign.paymentLink = '';
                 
-                // Update the campaign in both arrays if it exists in campaigns
+                // Update the campaign in campaigns array if it exists
                 const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
                 if (campaignIndex !== -1) {
-                    campaigns[campaignIndex] = { ...campaign };
+                    campaigns[campaignIndex].paymentLink = '';
                 }
                 
-                saveDataToStorage(); // Persist changes
+                saveDataToStorage(); // Persist changes to localStorage
                 renderCampaigns();
                 renderAdminPanel();
                 showNotification('Payment link removed. Donations will use default processing.', 'info');
@@ -3615,8 +3653,13 @@ Team Flapping Bird`
         }
 
         async function completeDonation(campaignId, amount, name, email, message) {
-            const campaign = campaigns.find(c => c.id === campaignId) || allCampaigns.find(c => c.id === campaignId);
-            if (!campaign) return;
+            // Find campaign in both arrays
+            const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
+            const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
+            
+            if (allCampaignIndex === -1) return;
+            
+            const campaign = allCampaigns[allCampaignIndex];
 
             // Update campaign with new donation
             const currentRaised = campaign.raised || campaign.raisedAmount || 0;
@@ -3637,6 +3680,17 @@ Team Flapping Bird`
                 date: new Date(),
                 email: email
             });
+
+            // Update in campaigns array if it exists there
+            if (campaignIndex !== -1) {
+                campaigns[campaignIndex].raised = campaign.raised;
+                campaigns[campaignIndex].raisedAmount = campaign.raised;
+                campaigns[campaignIndex].donors = campaign.donors;
+                campaigns[campaignIndex].donorsList = campaign.donorsList;
+            }
+
+            // Save changes to localStorage
+            saveDataToStorage();
 
             // Send thank you email via EmailJS
             await sendThankYouEmail(name, email, amount, campaign.title);
