@@ -2176,7 +2176,7 @@
     <script type="module">
         // Firebase Configuration
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, getDocs, query, where, orderBy, limit, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, getDocs, setDoc, query, where, orderBy, limit, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
         import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
         import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js';
@@ -2199,7 +2199,7 @@
         const analytics = getAnalytics(app);
 
         // Make Firebase services available globally
-        window.firebaseServices = { db, auth, storage, addDoc, collection, updateDoc, doc, getDocs, query, where, orderBy, limit, onSnapshot, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytes, getDownloadURL, deleteDoc };
+        window.firebaseServices = { db, auth, storage, addDoc, collection, updateDoc, doc, getDocs, setDoc, query, where, orderBy, limit, onSnapshot, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytes, getDownloadURL, deleteDoc };
     </script>
 
     <script>
@@ -2211,24 +2211,39 @@
         let campaignImages = [];
         let userVerificationStatus = 'unverified'; // unverified, pending, verified
 
-        // Load data from Firebase Firestore
+        // Load data from Firebase Firestore with real-time sync
         async function loadDataFromStorage() {
             try {
-                const { getDocs, collection, query, where } = window.firebaseServices;
+                const { getDocs, collection, onSnapshot } = window.firebaseServices;
                 const db = window.firebaseServices.db;
                 
-                // Load all campaigns from Firestore
-                const campaignsSnapshot = await getDocs(collection(db, 'campaigns'));
-                allCampaigns = campaignsSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    created: doc.data().created?.toDate() || new Date(doc.data().created)
-                }));
+                // Set up real-time listener for campaigns
+                const campaignsRef = collection(db, 'campaigns');
+                onSnapshot(campaignsRef, (snapshot) => {
+                    // Update allCampaigns from Firebase - this ensures admin changes are reflected
+                    allCampaigns = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        return {
+                            id: doc.id,
+                            ...data,
+                            created: data.created?.toDate?.() || (data.created instanceof Date ? data.created : new Date(data.created || Date.now())),
+                            updatedAt: data.updatedAt?.toDate?.() || (data.updatedAt instanceof Date ? data.updatedAt : new Date())
+                        };
+                    });
+                    
+                    // Filter active campaigns for display
+                    campaigns = allCampaigns.filter(c => c.status === 'active');
+                    
+                    // Re-render campaigns when data changes
+                    renderCampaigns();
+                    if (currentUser && currentUser.isAdmin) {
+                        renderAdminPanel();
+                    }
+                    
+                    console.log('✅ Campaigns synced from Firebase:', allCampaigns.length, 'changes detected');
+                });
                 
-                // Filter active campaigns for display
-                campaigns = allCampaigns.filter(c => c.status === 'active');
-                
-                // Load user data from localStorage (for session)
+                // Load user data from localStorage (for session only)
                 const storedUser = localStorage.getItem('currentUser');
                 if (storedUser) {
                     currentUser = JSON.parse(storedUser);
@@ -3569,59 +3584,49 @@ Team Flapping Bird`
                     
                     const campaignId = this.dataset.campaignId;
                     const campaign = allCampaigns.find(c => c.id === campaignId);
-                    if (!campaign) return;
+                    if (!campaign) {
+                        showNotification('Campaign not found!', 'error');
+                        return;
+                    }
                     
                     showNotification('Saving changes to Firebase...', 'info');
                     
-                    // Update campaign data
-                    campaign.title = document.getElementById('adminEditTitle').value;
-                    campaign.description = document.getElementById('adminEditDescription').value;
-                    campaign.goal = parseInt(document.getElementById('adminEditGoal').value);
-                    campaign.goalAmount = campaign.goal;
-                    
-                    const newImageUrl = document.getElementById('adminEditImage').value.trim();
-                    if (newImageUrl && newImageUrl !== campaign.imageUrl) {
-                        // Convert new image URL to base64
-                        campaign.imageUrl = newImageUrl;
-                        campaign.image = await urlToBase64(newImageUrl);
-                        if (!campaign.images) campaign.images = [];
-                        campaign.images[0] = campaign.image;
+                    try {
+                        // Create updated campaign object with ALL existing data
+                        const updatedCampaign = {
+                            ...campaign,
+                            title: document.getElementById('adminEditTitle').value,
+                            description: document.getElementById('adminEditDescription').value,
+                            goal: parseInt(document.getElementById('adminEditGoal').value),
+                            goalAmount: parseInt(document.getElementById('adminEditGoal').value),
+                            paymentLink: document.getElementById('adminEditPaymentLink').value.trim(),
+                            status: document.getElementById('adminEditStatus').value,
+                            updatedAt: new Date()
+                        };
+                        
+                        const newImageUrl = document.getElementById('adminEditImage').value.trim();
+                        if (newImageUrl && newImageUrl !== campaign.imageUrl) {
+                            // Convert new image URL to base64
+                            updatedCampaign.imageUrl = newImageUrl;
+                            updatedCampaign.image = await urlToBase64(newImageUrl);
+                            if (!updatedCampaign.images) updatedCampaign.images = [];
+                            updatedCampaign.images[0] = updatedCampaign.image;
+                        }
+                        
+                        // Write to Firestore - real-time listener will update UI automatically
+                        const { setDoc, doc } = window.firebaseServices;
+                        const db = window.firebaseServices.db;
+                        
+                        await setDoc(doc(db, 'campaigns', campaignId), updatedCampaign, { merge: false });
+                        
+                        console.log('✅ Admin changes written to Firebase:', campaignId, updatedCampaign);
+                        
+                        closeModal('adminEditModal');
+                        showNotification('✅ Changes saved to Firebase! All users will see updates.', 'success');
+                    } catch (error) {
+                        console.error('❌ Failed to save admin changes:', error);
+                        showNotification('Failed to save changes: ' + error.message, 'error');
                     }
-                    
-                    campaign.paymentLink = document.getElementById('adminEditPaymentLink').value.trim();
-                    campaign.status = document.getElementById('adminEditStatus').value;
-                    campaign.updatedAt = new Date();
-                    
-                    // FORCE save to Firestore with complete overwrite
-                    const { setDoc, doc } = window.firebaseServices;
-                    const db = window.firebaseServices.db;
-                    
-                    await setDoc(doc(db, 'campaigns', campaignId), {
-                        ...campaign,
-                        created: campaign.created || new Date(),
-                        updatedAt: new Date()
-                    }, { merge: true }); // Merge to preserve all existing data
-                    
-                    console.log('✅ Admin changes saved to Firebase:', campaignId);
-                    
-                    // Update the campaign in both arrays
-                    const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
-                    if (allCampaignIndex !== -1) {
-                        allCampaigns[allCampaignIndex] = { ...campaign };
-                    }
-                    
-                    const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
-                    if (campaignIndex !== -1) {
-                        campaigns[campaignIndex] = { ...campaign };
-                    }
-                    
-                    // Reload from Firestore to confirm persistence
-                    await loadDataFromStorage();
-                    
-                    renderCampaigns();
-                    renderAdminPanel();
-                    closeModal('adminEditModal');
-                    showNotification('✅ Changes saved permanently to Firebase! All users will see updates.', 'success');
                 });
             }
         });
@@ -3642,49 +3647,44 @@ Team Flapping Bird`
                 
                 showNotification('Uploading image to Firebase...', 'info');
                 
-                // Convert to base64
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    const imageData = e.target.result;
-                    
-                    // Update campaign object with base64 image
-                    campaign.image = imageData;
-                    if (!campaign.images) campaign.images = [];
-                    campaign.images[0] = imageData;
-                    campaign.imageUrl = ''; // Clear URL since we're using base64
-                    campaign.updatedAt = new Date();
-                    
-                    // FORCE save to Firestore with complete overwrite
-                    const { setDoc, doc } = window.firebaseServices;
-                    const db = window.firebaseServices.db;
-                    
-                    await setDoc(doc(db, 'campaigns', campaignId), {
-                        ...campaign,
-                        created: campaign.created || new Date(),
-                        updatedAt: new Date()
-                    }, { merge: false }); // Complete overwrite
-                    
-                    console.log('✅ Image saved permanently to Firebase:', campaignId);
-                    
-                    // Update the campaign in both arrays
-                    const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
-                    if (allCampaignIndex !== -1) {
-                        allCampaigns[allCampaignIndex] = { ...campaign };
-                    }
-                    
-                    const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
-                    if (campaignIndex !== -1) {
-                        campaigns[campaignIndex] = { ...campaign };
-                    }
-                    
-                    // Reload from Firestore to confirm persistence
-                    await loadDataFromStorage();
-                    
-                    renderCampaigns();
-                    renderAdminPanel();
-                    showNotification('✅ Image saved permanently to Firebase! All users will see the new image.', 'success');
-                };
-                reader.readAsDataURL(file);
+                try {
+                    // Convert to base64
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        try {
+                            const imageData = e.target.result;
+                            
+                            // Create updated campaign with ALL existing data + new image
+                            const updatedCampaign = {
+                                ...campaign,
+                                image: imageData,
+                                images: [imageData],
+                                imageUrl: '',
+                                updatedAt: new Date()
+                            };
+                            
+                            // Get Firebase functions from global scope
+                            const db = window.firebaseServices.db;
+                            const { doc } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+                            
+                            // Import setDoc dynamically
+                            const { setDoc } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+                            
+                            // Write to Firebase
+                            await setDoc(doc(db, 'campaigns', campaignId), updatedCampaign);
+                            
+                            console.log('✅ Image written to Firebase:', campaignId);
+                            showNotification('✅ Image saved to Firebase! Changes will sync automatically.', 'success');
+                        } catch (innerError) {
+                            console.error('❌ Failed to save image:', innerError);
+                            showNotification('Failed to save image: ' + innerError.message, 'error');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    console.error('❌ Failed to process image:', error);
+                    showNotification('Failed to process image: ' + error.message, 'error');
+                }
                 
                 // Clean up
                 document.body.removeChild(fileInput);
@@ -3701,74 +3701,34 @@ Team Flapping Bird`
 
             const paymentLink = prompt(`Enter Razorpay payment link for "${campaign.title}":\n\nExample formats:\n• Razorpay Payment Link: https://rzp.io/l/xxxxxxx\n• UPI Link: upi://pay?pa=example@okaxis&pn=Name\n• Custom Payment URL`, campaign.paymentLink || '');
             
-            if (paymentLink && paymentLink.trim()) {
+            if (paymentLink !== null) {
                 showNotification('Saving payment link to Firebase...', 'info');
                 
-                // Update campaign object
-                campaign.paymentLink = paymentLink.trim();
-                campaign.updatedAt = new Date();
-                
-                // FORCE save to Firestore with complete overwrite
-                const { setDoc, doc } = window.firebaseServices;
-                const db = window.firebaseServices.db;
-                
-                await setDoc(doc(db, 'campaigns', campaignId), {
-                    ...campaign,
-                    created: campaign.created || new Date(),
-                    updatedAt: new Date()
-                }, { merge: false }); // Complete overwrite
-                
-                console.log('✅ Payment link saved permanently to Firebase:', campaignId);
-                
-                // Update the campaign in both arrays
-                const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
-                if (allCampaignIndex !== -1) {
-                    allCampaigns[allCampaignIndex] = { ...campaign };
+                try {
+                    // Create updated campaign with ALL existing data
+                    const updatedCampaign = {
+                        ...campaign,
+                        paymentLink: paymentLink.trim(),
+                        updatedAt: new Date()
+                    };
+                    
+                    // Write to Firebase - real-time listener will update UI
+                    const { setDoc, doc } = window.firebaseServices;
+                    const db = window.firebaseServices.db;
+                    
+                    await setDoc(doc(db, 'campaigns', campaignId), updatedCampaign, { merge: false });
+                    
+                    console.log('✅ Payment link written to Firebase:', campaignId, updatedCampaign.paymentLink);
+                    
+                    if (paymentLink.trim()) {
+                        showNotification('✅ Payment link saved to Firebase!', 'success');
+                    } else {
+                        showNotification('Payment link removed from Firebase.', 'info');
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to save payment link:', error);
+                    showNotification('Failed to save payment link: ' + error.message, 'error');
                 }
-                
-                const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
-                if (campaignIndex !== -1) {
-                    campaigns[campaignIndex] = { ...campaign };
-                }
-                
-                // Reload from Firestore to confirm persistence
-                await loadDataFromStorage();
-                
-                renderCampaigns();
-                renderAdminPanel();
-                showNotification('✅ Payment link saved permanently to Firebase! All users will see this.', 'success');
-            } else if (paymentLink === '') {
-                // Empty string means remove payment link
-                campaign.paymentLink = '';
-                campaign.updatedAt = new Date();
-                
-                // FORCE save to Firestore
-                const { setDoc, doc } = window.firebaseServices;
-                const db = window.firebaseServices.db;
-                
-                await setDoc(doc(db, 'campaigns', campaignId), {
-                    ...campaign,
-                    created: campaign.created || new Date(),
-                    updatedAt: new Date()
-                }, { merge: false });
-                
-                // Update the campaign in both arrays
-                const allCampaignIndex = allCampaigns.findIndex(c => c.id === campaignId);
-                if (allCampaignIndex !== -1) {
-                    allCampaigns[allCampaignIndex] = { ...campaign };
-                }
-                
-                const campaignIndex = campaigns.findIndex(c => c.id === campaignId);
-                if (campaignIndex !== -1) {
-                    campaigns[campaignIndex] = { ...campaign };
-                }
-                
-                // Reload from Firestore
-                await loadDataFromStorage();
-                
-                renderCampaigns();
-                renderAdminPanel();
-                showNotification('Payment link removed permanently from Firebase.', 'info');
             }
         }
 
@@ -4819,210 +4779,5 @@ Team Flapping Bird
             }
         }
     </script>
-
-
-<!-- Firebase real-time campaigns sync: keeps Firestore as source of truth and writes admin changes to Firestore.
-     Requirements: Your app must already initialize Firebase (firebase.auth && firebase.firestore).
-     This script:
-     - Attaches an onSnapshot listener to 'campaigns' collection.
-     - Updates window.allCampaigns and re-renders when server data changes.
-     - Wraps admin edit functions to persist changes to Firestore immediately.
-     - Adds an optional "Sync to server" button for admins to force-push local campaigns to Firestore.
--->
-<script>
-(function(){
-    function log(){ if(window.console) console.log.apply(console, arguments); }
-    function warn(){ if(window.console) console.warn.apply(console, arguments); }
-
-    document.addEventListener('DOMContentLoaded', function(){
-        // Check Firebase availability
-        if (!(window.firebase && firebase.firestore)) {
-            warn('Firebase not detected on page. Real-time sync script requires Firebase SDK to be loaded and initialized.');
-            return;
-        }
-        const db = firebase.firestore();
-        const collectionRef = db.collection('campaigns');
-
-        // Real-time listener: keep window.allCampaigns in sync with server
-        collectionRef.onSnapshot(function(snapshot){
-            try {
-                const campaigns = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data() || {};
-                    data._id = doc.id || data.id || null;
-                    campaigns.push(data);
-                });
-                // Sort or process if your app expects specific order; keep as fetched
-                window.allCampaigns = campaigns;
-                // Also expose campaigns variable commonly used in code
-                window.campaigns = campaigns.filter(c => c.status === 'active' || typeof c.status === 'undefined');
-                log('Campaigns updated from Firestore (count=' + campaigns.length + ')');
-                // Call UI renderers if they exist
-                if (typeof renderCampaigns === 'function') {
-                    try { renderCampaigns(); } catch(e){ warn('renderCampaigns error', e); }
-                }
-                if (typeof renderAdminPanel === 'function') {
-                    try { renderAdminPanel(); } catch(e){ warn('renderAdminPanel error', e); }
-                }
-            } catch (e) {
-                warn('Error processing campaigns snapshot:', e);
-            }
-        }, function(error){
-            warn('Firestore onSnapshot error:', error);
-        });
-
-        // Helper to upsert a single campaign object to Firestore (uses _id or id)
-        async function upsertCampaignToServer(campaignObj) {
-            try {
-                if (!campaignObj) throw new Error('No campaign object provided');
-                const id = campaignObj._id || campaignObj.id;
-                if (id) {
-                    // remove internal-only fields if present
-                    const copy = Object.assign({}, campaignObj);
-                    delete copy._localOnly;
-                    // write with merge to avoid clobbering server fields
-                    await collectionRef.doc(String(id)).set(copy, { merge: true });
-                    log('Upserted campaign to server:', id);
-                    return { ok: true };
-                } else {
-                    // If no id, add as new document and return id
-                    const docRef = await collectionRef.add(campaignObj);
-                    log('Added new campaign with id', docRef.id);
-                    return { ok: true, id: docRef.id };
-                }
-            } catch (e) {
-                warn('Failed to upsert campaign to server:', e);
-                return { ok: false, error: e };
-            }
-        }
-
-        // Wrap existing admin functions so they persist to server after local changes
-        try {
-            // Generic wrapper: after original function completes (sync or Promise), find campaign by id and upsert to Firestore
-            function wrapAndPersist(fnName) {
-                try {
-                    const orig = window[fnName];
-                    if (!orig || typeof orig !== 'function') return;
-                    window[fnName] = function(){
-                        const args = arguments;
-                        const res = orig.apply(this, args);
-                        // handle both promise and sync return
-                        const after = async function(){
-                            try {
-                                // give original code a bit of time to update window.allCampaigns
-                                await new Promise(r => setTimeout(r, 600));
-                                if (window.allCampaigns && Array.isArray(window.allCampaigns)) {
-                                    // attempt to detect which campaign changed: if first arg is id use it
-                                    let maybeId = args && args.length>0 ? args[0] : null;
-                                    let campaign = null;
-                                    if (maybeId) {
-                                        campaign = window.allCampaigns.find(c => String(c._id||c.id) === String(maybeId) || String(c._id||c.id) === String(maybeId._id||maybeId.id));
-                                    }
-                                    // fallback: if only one campaign exists, upsert all; else upsert all to be safe
-                                    if (campaign) {
-                                        await upsertCampaignToServer(campaign);
-                                    } else {
-                                        // push all campaigns to server (merge) to ensure consistency
-                                        for (const c of window.allCampaigns || []) {
-                                            await upsertCampaignToServer(c);
-                                        }
-                                    }
-                                } else {
-                                    warn('No window.allCampaigns found after admin edit wrapper.');
-                                }
-                            } catch(e){
-                                warn('Error in admin wrapper upsert:', e);
-                            }
-                        };
-                        if (res && typeof res.then === 'function') {
-                            return res.then(function(r){ after(); return r; });
-                        } else {
-                            after();
-                            return res;
-                        }
-                    };
-                    log('Wrapped admin function for persistence:', fnName);
-                } catch(e){ warn('wrapAndPersist failed for', fnName, e); }
-            }
-
-            // Wrap common admin function names if they exist
-            const functionNames = ['setPaymentLink', 'manageCampaignImages', 'saveCampaign', 'updateCampaign', 'adminSave', 'handleCampaignEdit'];
-            functionNames.forEach(wrapAndPersist);
-
-            // Additionally, if there is an admin edit form, intercept submit to push the edited campaign to server
-            const adminEditForm = document.getElementById('adminEditForm') || document.querySelector('.admin-edit-form');
-            if (adminEditForm) {
-                adminEditForm.addEventListener('submit', function(evt){
-                    try {
-                        // after form processing, push local campaign to server
-                        setTimeout(async function(){
-                            try {
-                                if (!window.allCampaigns) return;
-                                // if form has an input named campaignId, use that
-                                const idInput = adminEditForm.querySelector('[name="campaignId"]') || adminEditForm.querySelector('[name="id"]');
-                                if (idInput && idInput.value) {
-                                    const campaign = window.allCampaigns.find(c => String(c._id||c.id) === String(idInput.value));
-                                    if (campaign) await upsertCampaignToServer(campaign);
-                                } else {
-                                    // push all campaigns
-                                    for (const c of window.allCampaigns) await upsertCampaignToServer(c);
-                                }
-                            } catch(e){ warn('adminEditForm submit sync error', e); }
-                        }, 600);
-                    } catch(e){}
-                });
-                log('Attached adminEditForm submit listener for server sync.');
-            }
-        } catch(e){ warn('Error attaching wrappers:', e); }
-
-        // Add a "Sync to server" button to admin panel for manual force-sync
-        try {
-            function addSyncButton() {
-                // try to find an admin controls container
-                const adminContainer = document.querySelector('#adminControls') || document.querySelector('.admin-panel') || document.body;
-                if (!adminContainer) return;
-                // avoid duplicate buttons
-                if (document.getElementById('forceSyncToServerBtn')) return;
-                const btn = document.createElement('button');
-                btn.id = 'forceSyncToServerBtn';
-                btn.type = 'button';
-                btn.textContent = 'Force Sync to Server';
-                btn.style.margin = '6px';
-                btn.style.padding = '8px 10px';
-                btn.style.cursor = 'pointer';
-                btn.addEventListener('click', async function(){
-                    try {
-                        btn.disabled = true;
-                        btn.textContent = 'Syncing...';
-                        if (!window.allCampaigns || !Array.isArray(window.allCampaigns)) {
-                            alert('No campaigns found locally to sync.');
-                            btn.disabled = false;
-                            btn.textContent = 'Force Sync to Server';
-                            return;
-                        }
-                        for (const c of window.allCampaigns) {
-                            await upsertCampaignToServer(c);
-                        }
-                        alert('All campaigns synced to Firestore.');
-                    } catch(e){
-                        console.error('Force sync failed', e);
-                        alert('Sync failed. See console for details.');
-                    } finally {
-                        btn.disabled = false;
-                        btn.textContent = 'Force Sync to Server';
-                    }
-                });
-                // insert at top of adminContainer
-                adminContainer.insertBefore(btn, adminContainer.firstChild);
-            }
-            addSyncButton();
-            // also try again after some delay (in case admin UI loads later)
-            setTimeout(addSyncButton, 1500);
-        } catch(e){ warn('Error adding sync button', e); }
-
-    }); // DOMContentLoaded
-})();
-</script>
-
 </body>
 </html>
