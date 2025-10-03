@@ -2354,11 +2354,12 @@
                 loadProfilePicture();
             }
             
-            // FORCE sync all 14 campaigns to Firebase on every load
-            console.log('FORCE syncing all 14 campaigns to Firebase...');
-            
-            // ALL campaigns (14 total - all will be visible)
-            const campaignsData = [
+            // Check if we need to initialize campaigns (only if Firestore is empty)
+            if (allCampaigns.length === 0) {
+                console.log('Firestore is empty. Initializing campaigns...');
+                
+                // ALL campaigns (14 total - all will be visible)
+                const campaignsData = [
                 {
                     id: 'camp_001',
                     title: 'Help 4-Year-Old Aarav Fight Leukemia',
@@ -2673,71 +2674,43 @@
             }
 
             // Combine all campaigns - ALL 14 campaigns will be visible
-            allCampaignsData.push(...moreCampaignsData);
-            
-            console.log(`FORCE SYNCING all ${allCampaignsData.length} campaigns to Firebase...`);
-            
-            // FORCE PUSH all campaigns to Firestore, regardless of what exists
-            for (const campaign of allCampaignsData) {
-                try {
-                    // Check if campaign already exists in Firestore
-                    const existingInFirestore = allCampaigns.find(c => c.id === campaign.id);
-                    
-                    // Preserve real donor data and admin modifications if they exist
-                    if (existingInFirestore) {
-                        // Keep real donors if they exist
-                        if (existingInFirestore.donorsList && existingInFirestore.donorsList.length > 0) {
-                            const hasRealDonors = existingInFirestore.donorsList.some(d => d.email && d.email.includes('@'));
-                            if (hasRealDonors) {
-                                campaign.donorsList = existingInFirestore.donorsList;
-                                campaign.raised = existingInFirestore.raised;
-                                campaign.raisedAmount = existingInFirestore.raisedAmount;
-                                campaign.donors = existingInFirestore.donors;
-                            }
-                        }
+                allCampaignsData.push(...moreCampaignsData);
+                
+                console.log(`Initializing ${allCampaignsData.length} campaigns in Firestore...`);
+                
+                // Push campaigns to Firestore (only on first load)
+                for (const campaign of allCampaignsData) {
+                    try {
+                        const { setDoc, doc } = window.firebaseServices;
+                        const db = window.firebaseServices.db;
                         
-                        // PRESERVE admin modifications (images and payment links)
-                        if (existingInFirestore.image && existingInFirestore.image.startsWith('data:')) {
-                            campaign.image = existingInFirestore.image;
-                        }
-                        if (existingInFirestore.images && existingInFirestore.images.length > 0) {
-                            campaign.images = existingInFirestore.images;
-                        }
-                        if (existingInFirestore.paymentLink) {
-                            campaign.paymentLink = existingInFirestore.paymentLink;
-                        }
+                        await setDoc(doc(db, 'campaigns', campaign.id), {
+                            ...campaign,
+                            created: campaign.created || new Date(),
+                            updatedAt: new Date()
+                        });
+                        
+                        console.log(`✓ Initialized campaign: ${campaign.id}`);
+                        
+                    } catch (error) {
+                        console.error(`❌ Failed to initialize campaign ${campaign.id}:`, error);
                     }
-                    
-                    // FORCE save to Firestore (this will create or overwrite)
-                    const { setDoc, doc } = window.firebaseServices;
-                    const db = window.firebaseServices.db;
-                    
-                    await setDoc(doc(db, 'campaigns', campaign.id), {
-                        ...campaign,
-                        created: campaign.created || new Date(),
-                        updatedAt: new Date()
-                    }, { merge: false }); // merge: false means complete overwrite
-                    
-                    console.log(`✓ FORCE SYNCED campaign to Firebase: ${campaign.id} - ${campaign.title}`);
-                    
-                } catch (error) {
-                    console.error(`❌ Failed to sync campaign ${campaign.id}:`, error);
                 }
+                
+                // Reload from Firestore
+                const { getDocs, collection } = window.firebaseServices;
+                const db = window.firebaseServices.db;
+                const campaignsSnapshot = await getDocs(collection(db, 'campaigns'));
+                allCampaigns = campaignsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    created: doc.data().created?.toDate() || new Date(doc.data().created)
+                }));
+                
+                console.log(`✅ Initialized ${allCampaigns.length} campaigns`);
+            } else {
+                console.log(`✅ Loaded ${allCampaigns.length} campaigns from Firestore successfully`);
             }
-            
-            // Reload all campaigns from Firestore to get the complete set
-            console.log('Reloading all campaigns from Firebase...');
-            const { getDocs, collection } = window.firebaseServices;
-            const db = window.firebaseServices.db;
-            const campaignsSnapshot = await getDocs(collection(db, 'campaigns'));
-            allCampaigns = campaignsSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                created: doc.data().created?.toDate() || new Date(doc.data().created)
-            }));
-            
-            console.log(`✅ SUCCESS! ${allCampaigns.length} campaigns now in Firebase and app`);
-            console.log('Campaign IDs:', allCampaigns.map(c => c.id));
             
             campaigns = allCampaigns.filter(c => c.status === 'active');
             renderCampaigns();
@@ -3627,7 +3600,7 @@ Team Flapping Bird`
                         ...campaign,
                         created: campaign.created || new Date(),
                         updatedAt: new Date()
-                    }, { merge: false }); // Complete overwrite to ensure changes persist
+                    }, { merge: true }); // Merge to preserve all existing data
                     
                     console.log('✅ Admin changes saved to Firebase:', campaignId);
                     
@@ -4059,6 +4032,9 @@ Team Flapping Bird
             document.getElementById('profileSection').classList.remove('active');
             document.getElementById('verificationSection').classList.remove('active');
             document.getElementById('withdrawalsSection').classList.remove('active');
+            
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function showProfile() {
