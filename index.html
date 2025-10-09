@@ -207,7 +207,9 @@
         }
 
         .hero h1 {
-            font-size: 2.8rem;
+            font-size: 2 rem;
+            max-width: 500px;
+            margin: 0 auto 1rem;
             margin-bottom: 1rem;
             font-weight: 500;
         }
@@ -2520,7 +2522,7 @@
 
             <div class="copyright">
                 <p>&copy; 2024 Flapping Bird Technologies Pvt Ltd. All rights reserved. | CIN: U74999MH2024PTC123456</p>
-                <p>Registered Office: 123 Tech Hub, Sector 18, Gurugram, Haryana 122015 | Email: support@flappingbird.in</p>
+                <p>Registered Office: 123 Tech Hub, Sector 18, Gurugram, Haryana 122015 | Support: +91-124-4567890 | Email: support@flappingbird.in</p>
             </div>
         </div>
     </footer>
@@ -4280,7 +4282,7 @@
 
             if (updates.length > 0) {
                 updatesContainer.innerHTML = updates.map(update => {
-                    const updateDate = update.date instanceof Date ? update.date : new Date(update.date);
+                    const updateDate = update.date instanceof Date ? update.date : (()=>{const d=new Date(update.date);return isNaN(d)?new Date():d;})()
                     return `
                     <div class="update-item">
                         <div class="update-header">
@@ -5367,30 +5369,5 @@
   text-overflow: ellipsis;
 }
 </style>
-
-<script>
-function renderCampaignImages(images, title) {
-    if (!images || images.length === 0) {
-        return `<img src="default-placeholder.jpg" class="campaign-image" alt="${title}">`;
-    }
-    return images.map(img => `<img src="${img}" class="campaign-image" alt="${title}">`).join('');
-}
-</script>
-
-
-<script>
-function renderDetailImages(images) {
-    const container = document.getElementById('campaignImagesCarousel');
-    container.innerHTML = '';
-    if (!images || images.length === 0) {
-        container.innerHTML = `<img src="default-placeholder.jpg" style="width:100%;height:100%;object-fit:cover;">`;
-        return;
-    }
-    images.forEach(url => {
-        container.innerHTML += `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
-    });
-}
-</script>
-
 </body>
 </html>
