@@ -202,19 +202,19 @@
         .hero {
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             color: var(--white);
-            padding: 100px 0 30px;
+            padding: 100px 0 50px;
             text-align: center;
         }
 
         .hero h1 {
-            font-size: 2rem;
-            margin-bottom: 0.8rem;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
             font-weight: 700;
         }
 
         .hero p {
-            font-size: 1rem;
-            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
@@ -231,7 +231,7 @@
         /* Trust Section */
         .trust-section {
             background: var(--white);
-            padding: 15px 0;
+            padding: 20px 0;
             text-align: center;
         }
 
@@ -489,7 +489,7 @@
         }
 
         .campaign-title {
-            font-size: 1.3rem;
+            font-size: 1 rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
             color: var(--dark);
@@ -507,7 +507,7 @@
             margin-bottom: 1.5rem;
             flex: 1;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -925,8 +925,8 @@
         .campaign-tabs {
             display: flex;
             gap: 1rem;
-            margin-bottom: 0;
-            padding: 0 2rem;
+            margin-bottom: 2rem;
+            padding: 0 2rem; /* Align with modal-body padding */
             border-bottom: 2px solid var(--border);
         }
 
@@ -969,15 +969,15 @@
         .campaign-meta {
             display: flex;
             gap: 2rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             color: var(--gray);
         }
 
         .campaign-story {
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: var(--gray);
-            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--dark);
+            margin-bottom: 2rem;
         }
 
         /* Payouts Section */
@@ -1803,7 +1803,7 @@
     <!-- Campaign Detail Page -->
     <div class="campaign-detail" id="campaignDetail">
         <div class="container">
-            <button class="btn btn-outline" onclick="backToCampaigns()" style="margin-bottom: 2rem;">
+            <button class="btn btn-outline" onclick="showHomePage()" style="margin-bottom: 2rem;">
                 <i class="fas fa-arrow-left"></i> Back to Campaigns
             </button>
 
@@ -1824,7 +1824,9 @@
                         <div><i class="fas fa-calendar"></i> <span id="detailCampaignDate"></span></div>
                     </div>
 
-                    <p class="campaign-story" id="detailCampaignStory"></p>
+                    <div style="margin-bottom: 1.5rem;">
+                        <p id="detailCampaignDescription" style="color: var(--gray); font-size: 1rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;"></p>
+                    </div>
 
                     <div class="campaign-progress" style="margin-bottom: 2rem;">
                         <div class="progress-bar">
@@ -1856,10 +1858,10 @@
                     <button class="tab-btn" onclick="showTab('updatesTab')">Updates (<span id="updateCount">0</span>)</button>
                 </div>
 
-                <div class="campaign-info" style="padding-top: 0;">
+                <div>
                     <!-- Story Tab -->
                     <div class="tab-content active" id="storyTab">
-                        <p style="color: var(--dark); font-size: 1.05rem; line-height: 1.8;" id="detailCampaignStoryFull"></p>
+                        <p class="campaign-story" id="detailCampaignStory"></p>
                     </div>
 
                     <!-- Payouts Tab -->
@@ -2587,15 +2589,9 @@
 
         // --- Helper Functions ---
         function formatDate(date) {
-            if (!date) return 'Invalid Date';
-            try {
-                const d = date instanceof Date ? date : new Date(date);
-                if (isNaN(d.getTime())) return 'Invalid Date';
-                return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-            } catch (error) {
-                console.error('Date formatting error:', error);
-                return 'Invalid Date';
-            }
+            if (!date) return '';
+            const d = date instanceof Date ? date : new Date(date);
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         }
 
         function showTab(tabId) {
@@ -2604,41 +2600,6 @@
             document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
             document.getElementById(tabId).classList.add('active');
         }
-
-        // URL routing for campaigns
-        function updateURL(campaignId) {
-            if (campaignId) {
-                window.history.pushState({ campaignId }, '', `#campaign/${campaignId}`);
-            } else {
-                window.history.pushState({}, '', '#campaigns');
-            }
-        }
-
-        function backToCampaigns() {
-            updateURL(null);
-            showHomePage();
-            setTimeout(() => {
-                document.getElementById('campaigns')?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
-
-        // Handle browser back/forward buttons
-        window.addEventListener('popstate', (event) => {
-            if (event.state && event.state.campaignId) {
-                viewCampaign(event.state.campaignId);
-            } else {
-                showHomePage();
-            }
-        });
-
-        // Check URL on page load
-        window.addEventListener('load', () => {
-            const hash = window.location.hash;
-            if (hash.startsWith('#campaign/')) {
-                const campaignId = hash.replace('#campaign/', '');
-                viewCampaign(campaignId);
-            }
-        });
 
         function getDefaultCategoryImage(category) {
             const images = {
@@ -2656,7 +2617,7 @@
         function generateDummyDonors(campaign) {
             const seed = parseInt(campaign.id.split('_')[1] || '001');
             const raised = campaign.raised || campaign.raisedAmount || 0;
-            
+
             const donorPool = [
                 { name: 'Rajesh Kumar', messages: ['Praying for your recovery!', 'Stay strong!', 'May God bless you!'] },
                 { name: 'Priya Singh', messages: ['Hope this helps.', 'Wishing you all the best', 'Get well soon!'] },
@@ -2685,13 +2646,13 @@
 
             const donorCount = 8 + (seed % 5); // 8-12 donors
             const donors = [];
-            
+
             // Calculate donation amounts that sum up to raised amount
             let remainingAmount = raised;
             for (let i = 0; i < donorCount && remainingAmount > 0; i++) {
                 const donor = shuffled[i % shuffled.length];
                 let amount;
-                
+
                 if (i === donorCount - 1) {
                     // Last donor gets remaining amount
                     amount = remainingAmount;
@@ -2701,17 +2662,17 @@
                     amount = Math.floor(remainingAmount * percentage);
                     amount = Math.max(500, Math.min(amount, remainingAmount - 500 * (donorCount - i - 1)));
                 }
-                
+
                 const message = donor.messages[i % donor.messages.length];
                 const daysAgo = Math.floor(Math.random() * 30) + 1;
-                
+
                 donors.push({
                     name: donor.name,
                     amount: amount,
                     message: message,
                     date: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
                 });
-                
+
                 remainingAmount -= amount;
             }
 
@@ -2722,7 +2683,7 @@
         function generatePayouts(campaign) {
             const raised = campaign.raised || campaign.raisedAmount || 0;
             const seed = parseInt(campaign.id.split('_')[1] || '1');
-            
+
             // Use 75-90% of raised amount for payouts
             const payoutPercentage = 0.75 + (seed % 16) * 0.01; // 75% to 90%
             const totalPayoutAmount = Math.floor(raised * payoutPercentage);
@@ -2783,12 +2744,12 @@
             };
 
             const categoryPurposes = purposes[campaign.category] || purposes.social;
-            
+
             // Generate 2-4 payouts
             const numPayouts = 2 + (seed % 3);
             const payouts = [];
             let remainingAmount = totalPayoutAmount;
-            
+
             for (let i = 0; i < numPayouts; i++) {
                 let amount;
                 if (i === numPayouts - 1) {
@@ -2798,7 +2759,7 @@
                     const percentage = 0.25 + (seed % 20) * 0.01;
                     amount = Math.floor(remainingAmount * percentage);
                 }
-                
+
                 if (amount >= 1000) {
                     const daysOffset = 8 + (i * 12) + (seed % 5);
                     payouts.push({
@@ -2944,7 +2905,7 @@
             };
 
             const categoryUpdates = updateTemplates[campaign.category] || updateTemplates.social;
-            
+
             // Generate 2-3 updates based on campaign seed
             const numUpdates = 2 + (seed % 2);
             return categoryUpdates.slice(0, numUpdates).map((template, index) => ({
@@ -3092,15 +3053,12 @@
                     (campaign.organizer && campaign.organizer.uid === currentUser.uid)
                 );
 
-                // Get the correct image - prioritize imageUrl, then images array, then image field, then default
-                const campaignImage = campaign.imageUrl || (campaign.images && campaign.images[0]) || campaign.image || getDefaultCategoryImage(campaign.category);
-
                 const card = document.createElement('div');
                 card.className = 'campaign-card';
                 card.dataset.category = campaign.category;
                 card.innerHTML = `
                     <div class="campaign-image-container">
-                        <img src="${campaignImage}" alt="${campaign.title}" class="campaign-image">
+                        <img src="${campaign.image || getDefaultCategoryImage(campaign.category)}" alt="${campaign.title}" class="campaign-image">
                         <div class="campaign-badge ${campaign.urgent ? 'urgent-badge' : ''}">${campaign.urgent ? 'URGENT' : campaign.status.toUpperCase()}</div>
                         ${campaign.verified ? '<div class="campaign-badge" style="background: #28a745; left: auto; right: 15px;">VERIFIED</div>' : ''}
                     </div>
@@ -3124,7 +3082,7 @@
 
                         <div class="campaign-footer">
                             <div class="campaign-actions">
-                                <button class="btn btn-primary btn-small" onclick="viewCampaign('${campaign.id}'); updateURL('${campaign.id}');">
+                                <button class="btn btn-primary btn-small" onclick="viewCampaign('${campaign.id}')">
                                     <i class="fas fa-eye"></i> View Details
                                 </button>
                                 <button class="btn btn-outline btn-small" onclick="openDonationModal('${campaign.id}')">
@@ -3181,122 +3139,6 @@
                 left: scrollAmount > 0 ? scrollDistance : -scrollDistance,
                 behavior: 'smooth'
             });
-        }
-
-        function viewCampaign(campaignId) {
-            const campaign = allCampaigns.find(c => c.id === campaignId);
-            if (!campaign) {
-                showNotification('Campaign not found', 'error');
-                return;
-            }
-
-            currentCampaignId = campaignId;
-            updateURL(campaignId);
-
-            // Hide home page, show campaign detail
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('campaignDetail').classList.add('active');
-
-            // Populate campaign details
-            document.getElementById('detailCampaignTitle').textContent = campaign.title;
-            document.getElementById('detailCampaignOrganizer').textContent = campaign.organizer.name;
-            document.getElementById('detailCampaignLocation').textContent = campaign.location;
-            document.getElementById('detailCampaignDate').textContent = formatDate(campaign.created);
-            document.getElementById('detailCampaignStory').textContent = ''; // Remove from header
-            document.getElementById('detailCampaignStoryFull').textContent = campaign.description;
-
-            // Progress bar
-            const raised = campaign.raised || campaign.raisedAmount || 0;
-            const goal = campaign.goal || campaign.goalAmount;
-            const progressPercentage = Math.min((raised / goal) * 100, 100);
-            document.getElementById('detailProgressFill').style.width = progressPercentage + '%';
-            document.getElementById('detailAmountRaised').textContent = '₹' + raised.toLocaleString();
-            document.getElementById('detailGoalAmount').textContent = '₹' + goal.toLocaleString();
-            document.getElementById('detailDonorCount').textContent = (campaign.donors || 0) + ' donors';
-            document.getElementById('detailDaysLeft').textContent = campaign.daysLeft === 999 ? 'Ongoing' : campaign.daysLeft + ' days left';
-
-            // Campaign badge
-            document.getElementById('detailCampaignBadge').textContent = campaign.urgent ? 'URGENT' : campaign.status.toUpperCase();
-            document.getElementById('detailCampaignBadge').className = 'campaign-badge' + (campaign.urgent ? ' urgent-badge' : '');
-
-            // Load images carousel
-            const imagesCarousel = document.getElementById('campaignImagesCarousel');
-            imagesCarousel.innerHTML = '';
-            const images = campaign.imageUrls || [campaign.image || campaign.imageUrl || getDefaultCategoryImage(campaign.category)];
-            images.forEach(img => {
-                const imgDiv = document.createElement('div');
-                imgDiv.style.cssText = 'min-width: 100%; height: 100%; scroll-snap-align: start;';
-                imgDiv.innerHTML = `<img src="${img}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                imagesCarousel.appendChild(imgDiv);
-            });
-
-            // Load payouts, updates, and donors
-            loadCampaignPayouts(campaign);
-            loadCampaignUpdates(campaign);
-            loadCampaignDonors(campaign);
-
-            // Scroll to top
-            window.scrollTo(0, 0);
-        }
-
-        function loadCampaignPayouts(campaign) {
-            const payouts = generatePayouts(campaign);
-            document.getElementById('payoutCount').textContent = payouts.length;
-            const payoutsList = document.getElementById('payoutsList');
-            
-            if (payouts.length === 0) {
-                payoutsList.innerHTML = '<div class="empty-state"><i class="fas fa-wallet"></i><h3>No Payouts Yet</h3><p>Payouts will appear here once funds are withdrawn.</p></div>';
-            } else {
-                payoutsList.innerHTML = payouts.map(payout => `
-                    <div class="payout-item">
-                        <div class="payout-header">
-                            <span class="payout-amount">₹${payout.amount.toLocaleString()}</span>
-                            <span class="payout-date">${formatDate(payout.date)}</span>
-                        </div>
-                        <p class="payout-purpose">${payout.purpose}</p>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function loadCampaignUpdates(campaign) {
-            const updates = generateUpdates(campaign);
-            document.getElementById('updateCount').textContent = updates.length;
-            const updatesList = document.getElementById('updatesList');
-            
-            if (updates.length === 0) {
-                updatesList.innerHTML = '<div class="empty-state"><i class="fas fa-bullhorn"></i><h3>No Updates Yet</h3><p>Campaign updates will appear here.</p></div>';
-            } else {
-                updatesList.innerHTML = updates.map(update => `
-                    <div class="update-item">
-                        <div class="update-header">
-                            <span class="update-title">${update.title}</span>
-                            <span class="update-date">${formatDate(update.date)}</span>
-                        </div>
-                        <p class="update-text">${update.text}</p>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function loadCampaignDonors(campaign) {
-            const donors = campaign.donorsList || generateDummyDonors(campaign);
-            const donorsList = document.getElementById('donorsList');
-            
-            if (donors.length === 0) {
-                donorsList.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><h3>No Donations Yet</h3><p>Be the first to support this campaign!</p></div>';
-            } else {
-                donorsList.innerHTML = donors.map(donor => `
-                    <div class="donor-item">
-                        <div class="donor-info">
-                            <h4>${donor.name}</h4>
-                            <p style="color: var(--gray); font-size: 0.9rem;">${donor.message}</p>
-                            <p style="color: var(--gray); font-size: 0.85rem;">${formatDate(donor.date)}</p>
-                        </div>
-                        <div class="donor-amount">₹${donor.amount.toLocaleString()}</div>
-                    </div>
-                `).join('');
-            }
         }
 
         async function initializeSampleCampaigns() {
@@ -3458,48 +3300,48 @@
                     },
                     {
                         id: 'camp_007',
-                        title: 'Fund MBA Dreams for Talented Village Girl',
-                        description: 'Kavita, from a small village in UP, cracked CAT exam and got admission to a top B-school. Her parents are farmers who cannot afford the ₹15 lakh annual fees. She wants to become an entrepreneur and uplift her village.',
-                        goal: 1500000,
-                        raised: 420000,
-                        organizer: { name: 'Kavita Singh', uid: 'user_013' },
+                        title: 'Support Ananya\'s Computer Science Degree',
+                        description: 'Ananya scored 98% in her 12th boards and got admission to IIT Bombay for Computer Science. Her father is a small shopkeeper who cannot afford the ₹4 lakh annual fees. She wants to become an entrepreneur and uplift her village.',
+                        goal: 400000,
+                        raised: 180000,
+                        organizer: { name: 'Ananya Patel', uid: 'user_007' },
                         category: 'education',
-                        location: 'Lucknow, Uttar Pradesh',
+                        location: 'Mumbai, Maharashtra',
                         status: 'active',
                         urgent: false,
                         imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=300&fit=crop',
-                        donors: 156,
-                        daysLeft: 35,
-                        duration: '60',
-                        created: new Date('2025-09-14'),
+                        donors: 89,
+                        daysLeft: 50,
+                        duration: '90',
+                        created: new Date('2025-09-05'),
                         isSampleCampaign: true,
                         verified: true,
                         donorsList: [
-                            { name: 'Future Innovators', amount: 5000, message: 'Dream big, Ananya!', date: new Date('2025-09-12') },
-                            { name: 'Anonymous', amount: 3000, message: 'Support your education.', date: new Date('2025-09-11') }
+                            { name: 'Future Innovators', amount: 5000, message: 'Dream big, Ananya!', date: new Date('2025-09-04') },
+                            { name: 'Anonymous', amount: 3000, message: 'Support your education.', date: new Date('2025-09-03') }
                         ]
                     },
                     {
                         id: 'camp_008',
-                        title: 'Kidney Transplant for Single Father',
-                        description: 'Suresh, a 42-year-old single father of two daughters, is suffering from kidney failure. He needs an urgent transplant costing ₹12 lakhs. He has been on dialysis for 2 years and his health is deteriorating rapidly.',
-                        goal: 1200000,
-                        raised: 550000,
-                        organizer: { name: 'Suresh\'s Daughters', uid: 'user_014' },
+                        title: 'Medical Treatment for Elderly Artist',
+                        description: 'A renowned local artist, Mrs. Sharma, needs urgent treatment for a critical heart condition. Her family is struggling to raise the ₹10 lakhs required for the surgery. Your contribution can help her recover and continue her artistic legacy.',
+                        goal: 1000000,
+                        raised: 400000,
+                        organizer: { name: 'Friends of Mrs. Sharma', uid: 'user_015' },
                         category: 'medical',
-                        location: 'Chennai, Tamil Nadu',
+                        location: 'Kolkata, West Bengal',
                         status: 'active',
                         urgent: true,
-                        imageUrl: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop',
-                        donors: 198,
-                        daysLeft: 18,
-                        duration: '45',
-                        created: new Date('2025-09-24'),
+                        imageUrl: 'https://images.unsplash.com/photo-1516549655169-0a1dd7228f2d?w=400&h=300&fit=crop',
+                        donors: 150,
+                        daysLeft: 25,
+                        duration: '40',
+                        created: new Date('2025-09-19'),
                         isSampleCampaign: true,
                         verified: true,
                         donorsList: [
-                            { name: 'Hope Foundation', amount: 20000, message: 'Wishing Suresh a full recovery.', date: new Date('2025-09-23') },
-                            { name: 'Anonymous', amount: 15000, message: 'May he get well soon.', date: new Date('2025-09-22') }
+                            { name: 'Art Lovers Collective', amount: 10000, message: 'For Mrs. Sharma\'s health.', date: new Date('2025-09-18') },
+                            { name: 'Anonymous', amount: 5000, message: 'Speedy recovery!', date: new Date('2025-09-17') }
                         ]
                     },
                     {
@@ -3513,7 +3355,7 @@
                         location: 'Ranchi, Jharkhand',
                         status: 'active',
                         urgent: false,
-                        imageUrl: 'https://images.unsplash.com/photo-1456513080510-0b793f4b4173?w=400&h=300&fit=crop',
+                        imageUrl: 'https://images.unsplash.com/photo-1456513080510-0a1dd7228f2d?w=400&h=300&fit=crop',
                         donors: 78,
                         daysLeft: 40,
                         duration: '60',
@@ -3596,25 +3438,25 @@
                     },
                     {
                         id: 'camp_013',
-                        title: 'Support Ananya\'s Computer Science Degree',
-                        description: 'Ananya scored 98% in her 12th boards and got admission to IIT Bombay for Computer Science. Her father is a small shopkeeper who cannot afford the ₹4 lakh annual fees. She wants to become an entrepreneur and uplift her village.',
-                        goal: 400000,
-                        raised: 180000,
-                        organizer: { name: 'Ananya Patel', uid: 'user_007' },
+                        title: 'Fund MBA Dreams for Talented Village Girl',
+                        description: 'Kavita, from a small village in UP, cracked CAT exam and got admission to a top B-school. Her parents are farmers who cannot afford the ₹15 lakh annual fees. She wants to become an entrepreneur and uplift her village.',
+                        goal: 1500000,
+                        raised: 420000,
+                        organizer: { name: 'Kavita Singh', uid: 'user_013' },
                         category: 'education',
-                        location: 'Mumbai, Maharashtra',
+                        location: 'Lucknow, Uttar Pradesh',
                         status: 'active',
                         urgent: false,
                         imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=300&fit=crop',
-                        donors: 89,
-                        daysLeft: 50,
-                        duration: '90',
-                        created: new Date('2025-09-05'),
+                        donors: 156,
+                        daysLeft: 35,
+                        duration: '60',
+                        created: new Date('2025-09-14'),
                         isSampleCampaign: true,
                         verified: true,
                         donorsList: [
-                            { name: 'Future Innovators', amount: 5000, message: 'Dream big, Ananya!', date: new Date('2025-09-04') },
-                            { name: 'Anonymous', amount: 3000, message: 'Support your education.', date: new Date('2025-09-03') }
+                            { name: 'Future Innovators', amount: 5000, message: 'Dream big, Kavita!', date: new Date('2025-09-12') },
+                            { name: 'Anonymous', amount: 3000, message: 'Support your education.', date: new Date('2025-09-11') }
                         ]
                     },
                     {
@@ -3661,12 +3503,12 @@
                             if (!campaign.donorsList || campaign.donorsList.length === 0) {
                                 campaign.donorsList = generateDummyDonors(campaign);
                             }
-                            
+
                             // Generate payouts (up to 90% of raised amount)
                             if (!campaign.payouts || campaign.payouts.length === 0) {
                                 campaign.payouts = generatePayouts(campaign);
                             }
-                            
+
                             // Generate updates (2-3 updates)
                             if (!campaign.updates || campaign.updates.length === 0) {
                                 campaign.updates = generateUpdates(campaign);
@@ -4044,9 +3886,6 @@
                             <button class="btn btn-secondary btn-small" onclick="setPaymentLink('${campaign.id}')">
                                 <i class="fas fa-link"></i> Payment Link
                             </button>
-                            <button class="btn ${campaign.verified ? 'btn-success' : 'btn-outline'} btn-small" onclick="toggleVerification('${campaign.id}')">
-                                <i class="fas fa-${campaign.verified ? 'check-circle' : 'times-circle'}"></i> ${campaign.verified ? 'Verified' : 'Unverified'}
-                            </button>
                             <button class="btn btn-danger btn-small" onclick="deleteCampaign('${campaign.id}')">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
@@ -4121,7 +3960,7 @@
             document.getElementById('adminEditImage').value = campaign.imageUrl || '';
             document.getElementById('adminEditPaymentLink').value = campaign.paymentLink || '';
             document.getElementById('adminEditStatus').value = campaign.status || 'active';
-            
+
             // Set start date if available
             if (campaign.created) {
                 const dateObj = campaign.created instanceof Date ? campaign.created : new Date(campaign.created);
@@ -4311,46 +4150,13 @@
             }
         }
 
-        async function toggleVerification(campaignId) {
-            const campaign = allCampaigns.find(c => c.id === campaignId);
-            if (!campaign || !currentUser || !currentUser.isAdmin) return;
-
-            const newVerifiedStatus = !campaign.verified;
-            
-            try {
-                showNotification('Updating verification status...', 'info');
-
-                const updatedCampaign = {
-                    ...campaign,
-                    verified: newVerifiedStatus,
-                    updatedAt: new Date()
-                };
-
-                const { setDoc, doc } = window.firebaseServices;
-                const db = window.firebaseServices.db;
-                await setDoc(doc(db, 'campaigns', campaignId), updatedCampaign);
-
-                console.log('✅ Verification status updated:', campaignId);
-                showNotification(`Campaign ${newVerifiedStatus ? 'verified' : 'unverified'} successfully!`, 'success');
-
-                allCampaigns = allCampaigns.map(c => c.id === campaignId ? updatedCampaign : c);
-                campaigns = allCampaigns.filter(c => c.status === 'active');
-                renderCampaigns();
-                if (currentUser.isAdmin) renderAdminPanel();
-
-            } catch (error) {
-                console.error('❌ Verification update failed:', error);
-                showNotification('Failed to update verification: ' + error.message, 'error');
-            }
-        }
-
         // --- Campaign Detail Page ---
         function viewCampaign(campaignId) {
             const campaign = allCampaigns.find(c => c.id === campaignId);
             if (!campaign) return;
 
             currentCampaignId = campaignId;
-            
+
             // Check if user can manage this campaign
             const canManage = currentUser && (
                 currentUser.isAdmin || 
@@ -4369,8 +4175,7 @@
 
             // Handle multiple images in carousel
             const campaignImagesCarousel = document.getElementById('campaignImagesCarousel');
-            // Get images from imageUrls or images array, fallback to single image or imageUrl
-            const images = campaign.imageUrls || campaign.images || (campaign.imageUrl ? [campaign.imageUrl] : (campaign.image ? [campaign.image] : []));
+            const images = campaign.images || (campaign.image ? [campaign.image] : []);
 
             if (images.length > 0) {
                 campaignImagesCarousel.innerHTML = images.map((img, idx) => `
@@ -4407,6 +4212,7 @@
             document.getElementById('detailCampaignOrganizer').textContent = campaign.organizer.name;
             document.getElementById('detailCampaignLocation').textContent = campaign.location;
             document.getElementById('detailCampaignDate').textContent = formatDate(campaign.created);
+            document.getElementById('detailCampaignDescription').textContent = campaign.description; // Added description here
 
             const raised = campaign.raised || campaign.raisedAmount || 0;
             const goal = campaign.goal || campaign.goalAmount;
@@ -4446,7 +4252,7 @@
             } else {
                 payoutsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-wallet"></i><h3>No Payouts Yet</h3><p>Payouts will appear here once funds are withdrawn</p></div>';
             }
-            
+
             // Show add payout section for admin/creator
             const addPayoutSection = document.getElementById('addPayoutSection');
             if (canManage && addPayoutSection) {
@@ -4459,19 +4265,22 @@
             document.getElementById('updateCount').textContent = updates.length;
 
             if (updates.length > 0) {
-                updatesContainer.innerHTML = updates.map(update => `
-                <div class="update-item">
-                    <div class="update-header">
-                        <div class="update-title">${update.title}</div>
-                        <div class="update-date">${formatDate(update.date)}</div>
+                updatesContainer.innerHTML = updates.map(update => {
+                    const updateDate = update.date instanceof Date ? update.date : new Date(update.date);
+                    return `
+                    <div class="update-item">
+                        <div class="update-header">
+                            <div class="update-title">${update.title}</div>
+                            <div class="update-date">${formatDate(updateDate)}</div>
+                        </div>
+                        <div class="update-text">${update.text}</div>
                     </div>
-                    <div class="update-text">${update.text}</div>
-                </div>
-            `).join('');
+                    `;
+                }).join('');
             } else {
                 updatesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-bell"></i><h3>No Updates Yet</h3><p>Campaign updates will appear here as the organizer shares progress.</p></div>';
             }
-            
+
             // Show add update section for admin/creator
             const addUpdateSection = document.getElementById('addUpdateSection');
             if (canManage && addUpdateSection) {
@@ -4491,7 +4300,7 @@
             const donorsList = document.getElementById('donorsList');
 
             let donors = [];
-            
+
             // Always prioritize actual donors from donorsList
             if (campaign.donorsList && campaign.donorsList.length > 0) {
                 donors = campaign.donorsList;
@@ -5312,7 +5121,7 @@
                 if (campaignIndex !== -1) {
                     allCampaigns[campaignIndex] = campaign;
                 }
-                
+
                 showNotification('Payout added successfully!', 'success');
                 document.getElementById('addPayoutForm').reset();
                 viewCampaign(currentCampaignId); // Reload campaign view
@@ -5374,7 +5183,7 @@
                 if (campaignIndex !== -1) {
                     allCampaigns[campaignIndex] = campaign;
                 }
-                
+
                 showNotification('Update added successfully!', 'success');
                 document.getElementById('addUpdateForm').reset();
                 viewCampaign(currentCampaignId); // Reload campaign view
