@@ -202,19 +202,19 @@
         .hero {
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             color: var(--white);
-            padding: 100px 0 50px;
+            padding: 100px 0 30px;
             text-align: center;
         }
 
         .hero h1 {
-            font-size: 2.8rem;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
             font-weight: 700;
         }
 
         .hero p {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
@@ -231,7 +231,7 @@
         /* Trust Section */
         .trust-section {
             background: var(--white);
-            padding: 20px 0;
+            padding: 15px 0;
             text-align: center;
         }
 
@@ -507,7 +507,7 @@
             margin-bottom: 1.5rem;
             flex: 1;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -925,8 +925,8 @@
         .campaign-tabs {
             display: flex;
             gap: 1rem;
-            margin-bottom: 2rem;
-            padding: 0 2rem; /* Align with modal-body padding */
+            margin-bottom: 0;
+            padding: 0 2rem;
             border-bottom: 2px solid var(--border);
         }
 
@@ -969,15 +969,15 @@
         .campaign-meta {
             display: flex;
             gap: 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             color: var(--gray);
         }
 
         .campaign-story {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--dark);
-            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--gray);
+            margin-bottom: 1.5rem;
         }
 
         /* Payouts Section */
@@ -1803,7 +1803,7 @@
     <!-- Campaign Detail Page -->
     <div class="campaign-detail" id="campaignDetail">
         <div class="container">
-            <button class="btn btn-outline" onclick="showHomePage()" style="margin-bottom: 2rem;">
+            <button class="btn btn-outline" onclick="backToCampaigns()" style="margin-bottom: 2rem;">
                 <i class="fas fa-arrow-left"></i> Back to Campaigns
             </button>
 
@@ -1815,12 +1815,6 @@
                     <div class="campaign-badge" id="detailCampaignBadge">ACTIVE</div>
                 </div>
 
-                <div class="campaign-tabs">
-                    <button class="tab-btn active" onclick="showTab('storyTab')">Story</button>
-                    <button class="tab-btn" onclick="showTab('payoutsTab')">Payouts (<span id="payoutCount">0</span>)</button>
-                    <button class="tab-btn" onclick="showTab('updatesTab')">Updates (<span id="updateCount">0</span>)</button>
-                </div>
-
                 <div class="campaign-info">
                     <h1 class="campaign-detail-title" id="detailCampaignTitle"></h1>
 
@@ -1829,6 +1823,8 @@
                         <div><i class="fas fa-map-marker-alt"></i> <span id="detailCampaignLocation"></span></div>
                         <div><i class="fas fa-calendar"></i> <span id="detailCampaignDate"></span></div>
                     </div>
+
+                    <p class="campaign-story" id="detailCampaignStory"></p>
 
                     <div class="campaign-progress" style="margin-bottom: 2rem;">
                         <div class="progress-bar">
@@ -1852,10 +1848,18 @@
                             <i class="fas fa-share-alt"></i> Share
                         </button>
                     </div>
+                </div>
 
+                <div class="campaign-tabs">
+                    <button class="tab-btn active" onclick="showTab('storyTab')">Story</button>
+                    <button class="tab-btn" onclick="showTab('payoutsTab')">Payouts (<span id="payoutCount">0</span>)</button>
+                    <button class="tab-btn" onclick="showTab('updatesTab')">Updates (<span id="updateCount">0</span>)</button>
+                </div>
+
+                <div class="campaign-info" style="padding-top: 0;">
                     <!-- Story Tab -->
                     <div class="tab-content active" id="storyTab">
-                        <p class="campaign-story" id="detailCampaignStory"></p>
+                        <p style="color: var(--dark); font-size: 1.05rem; line-height: 1.8;" id="detailCampaignStoryFull"></p>
                     </div>
 
                     <!-- Payouts Tab -->
@@ -2583,9 +2587,15 @@
 
         // --- Helper Functions ---
         function formatDate(date) {
-            if (!date) return '';
-            const d = date instanceof Date ? date : new Date(date);
-            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            if (!date) return 'Invalid Date';
+            try {
+                const d = date instanceof Date ? date : new Date(date);
+                if (isNaN(d.getTime())) return 'Invalid Date';
+                return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            } catch (error) {
+                console.error('Date formatting error:', error);
+                return 'Invalid Date';
+            }
         }
 
         function showTab(tabId) {
@@ -2594,6 +2604,41 @@
             document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
             document.getElementById(tabId).classList.add('active');
         }
+
+        // URL routing for campaigns
+        function updateURL(campaignId) {
+            if (campaignId) {
+                window.history.pushState({ campaignId }, '', `#campaign/${campaignId}`);
+            } else {
+                window.history.pushState({}, '', '#campaigns');
+            }
+        }
+
+        function backToCampaigns() {
+            updateURL(null);
+            showHomePage();
+            setTimeout(() => {
+                document.getElementById('campaigns')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.campaignId) {
+                viewCampaign(event.state.campaignId);
+            } else {
+                showHomePage();
+            }
+        });
+
+        // Check URL on page load
+        window.addEventListener('load', () => {
+            const hash = window.location.hash;
+            if (hash.startsWith('#campaign/')) {
+                const campaignId = hash.replace('#campaign/', '');
+                viewCampaign(campaignId);
+            }
+        });
 
         function getDefaultCategoryImage(category) {
             const images = {
@@ -3047,12 +3092,15 @@
                     (campaign.organizer && campaign.organizer.uid === currentUser.uid)
                 );
 
+                // Get the correct image - prioritize imageUrl, then images array, then image field, then default
+                const campaignImage = campaign.imageUrl || (campaign.images && campaign.images[0]) || campaign.image || getDefaultCategoryImage(campaign.category);
+
                 const card = document.createElement('div');
                 card.className = 'campaign-card';
                 card.dataset.category = campaign.category;
                 card.innerHTML = `
                     <div class="campaign-image-container">
-                        <img src="${campaign.image || getDefaultCategoryImage(campaign.category)}" alt="${campaign.title}" class="campaign-image">
+                        <img src="${campaignImage}" alt="${campaign.title}" class="campaign-image">
                         <div class="campaign-badge ${campaign.urgent ? 'urgent-badge' : ''}">${campaign.urgent ? 'URGENT' : campaign.status.toUpperCase()}</div>
                         ${campaign.verified ? '<div class="campaign-badge" style="background: #28a745; left: auto; right: 15px;">VERIFIED</div>' : ''}
                     </div>
@@ -3076,7 +3124,7 @@
 
                         <div class="campaign-footer">
                             <div class="campaign-actions">
-                                <button class="btn btn-primary btn-small" onclick="viewCampaign('${campaign.id}')">
+                                <button class="btn btn-primary btn-small" onclick="viewCampaign('${campaign.id}'); updateURL('${campaign.id}');">
                                     <i class="fas fa-eye"></i> View Details
                                 </button>
                                 <button class="btn btn-outline btn-small" onclick="openDonationModal('${campaign.id}')">
@@ -3133,6 +3181,122 @@
                 left: scrollAmount > 0 ? scrollDistance : -scrollDistance,
                 behavior: 'smooth'
             });
+        }
+
+        function viewCampaign(campaignId) {
+            const campaign = allCampaigns.find(c => c.id === campaignId);
+            if (!campaign) {
+                showNotification('Campaign not found', 'error');
+                return;
+            }
+
+            currentCampaignId = campaignId;
+            updateURL(campaignId);
+
+            // Hide home page, show campaign detail
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('campaignDetail').classList.add('active');
+
+            // Populate campaign details
+            document.getElementById('detailCampaignTitle').textContent = campaign.title;
+            document.getElementById('detailCampaignOrganizer').textContent = campaign.organizer.name;
+            document.getElementById('detailCampaignLocation').textContent = campaign.location;
+            document.getElementById('detailCampaignDate').textContent = formatDate(campaign.created);
+            document.getElementById('detailCampaignStory').textContent = ''; // Remove from header
+            document.getElementById('detailCampaignStoryFull').textContent = campaign.description;
+
+            // Progress bar
+            const raised = campaign.raised || campaign.raisedAmount || 0;
+            const goal = campaign.goal || campaign.goalAmount;
+            const progressPercentage = Math.min((raised / goal) * 100, 100);
+            document.getElementById('detailProgressFill').style.width = progressPercentage + '%';
+            document.getElementById('detailAmountRaised').textContent = '₹' + raised.toLocaleString();
+            document.getElementById('detailGoalAmount').textContent = '₹' + goal.toLocaleString();
+            document.getElementById('detailDonorCount').textContent = (campaign.donors || 0) + ' donors';
+            document.getElementById('detailDaysLeft').textContent = campaign.daysLeft === 999 ? 'Ongoing' : campaign.daysLeft + ' days left';
+
+            // Campaign badge
+            document.getElementById('detailCampaignBadge').textContent = campaign.urgent ? 'URGENT' : campaign.status.toUpperCase();
+            document.getElementById('detailCampaignBadge').className = 'campaign-badge' + (campaign.urgent ? ' urgent-badge' : '');
+
+            // Load images carousel
+            const imagesCarousel = document.getElementById('campaignImagesCarousel');
+            imagesCarousel.innerHTML = '';
+            const images = campaign.imageUrls || [campaign.image || campaign.imageUrl || getDefaultCategoryImage(campaign.category)];
+            images.forEach(img => {
+                const imgDiv = document.createElement('div');
+                imgDiv.style.cssText = 'min-width: 100%; height: 100%; scroll-snap-align: start;';
+                imgDiv.innerHTML = `<img src="${img}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                imagesCarousel.appendChild(imgDiv);
+            });
+
+            // Load payouts, updates, and donors
+            loadCampaignPayouts(campaign);
+            loadCampaignUpdates(campaign);
+            loadCampaignDonors(campaign);
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function loadCampaignPayouts(campaign) {
+            const payouts = generatePayouts(campaign);
+            document.getElementById('payoutCount').textContent = payouts.length;
+            const payoutsList = document.getElementById('payoutsList');
+            
+            if (payouts.length === 0) {
+                payoutsList.innerHTML = '<div class="empty-state"><i class="fas fa-wallet"></i><h3>No Payouts Yet</h3><p>Payouts will appear here once funds are withdrawn.</p></div>';
+            } else {
+                payoutsList.innerHTML = payouts.map(payout => `
+                    <div class="payout-item">
+                        <div class="payout-header">
+                            <span class="payout-amount">₹${payout.amount.toLocaleString()}</span>
+                            <span class="payout-date">${formatDate(payout.date)}</span>
+                        </div>
+                        <p class="payout-purpose">${payout.purpose}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadCampaignUpdates(campaign) {
+            const updates = generateUpdates(campaign);
+            document.getElementById('updateCount').textContent = updates.length;
+            const updatesList = document.getElementById('updatesList');
+            
+            if (updates.length === 0) {
+                updatesList.innerHTML = '<div class="empty-state"><i class="fas fa-bullhorn"></i><h3>No Updates Yet</h3><p>Campaign updates will appear here.</p></div>';
+            } else {
+                updatesList.innerHTML = updates.map(update => `
+                    <div class="update-item">
+                        <div class="update-header">
+                            <span class="update-title">${update.title}</span>
+                            <span class="update-date">${formatDate(update.date)}</span>
+                        </div>
+                        <p class="update-text">${update.text}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadCampaignDonors(campaign) {
+            const donors = campaign.donorsList || generateDummyDonors(campaign);
+            const donorsList = document.getElementById('donorsList');
+            
+            if (donors.length === 0) {
+                donorsList.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><h3>No Donations Yet</h3><p>Be the first to support this campaign!</p></div>';
+            } else {
+                donorsList.innerHTML = donors.map(donor => `
+                    <div class="donor-item">
+                        <div class="donor-info">
+                            <h4>${donor.name}</h4>
+                            <p style="color: var(--gray); font-size: 0.9rem;">${donor.message}</p>
+                            <p style="color: var(--gray); font-size: 0.85rem;">${formatDate(donor.date)}</p>
+                        </div>
+                        <div class="donor-amount">₹${donor.amount.toLocaleString()}</div>
+                    </div>
+                `).join('');
+            }
         }
 
         async function initializeSampleCampaigns() {
@@ -3880,6 +4044,9 @@
                             <button class="btn btn-secondary btn-small" onclick="setPaymentLink('${campaign.id}')">
                                 <i class="fas fa-link"></i> Payment Link
                             </button>
+                            <button class="btn ${campaign.verified ? 'btn-success' : 'btn-outline'} btn-small" onclick="toggleVerification('${campaign.id}')">
+                                <i class="fas fa-${campaign.verified ? 'check-circle' : 'times-circle'}"></i> ${campaign.verified ? 'Verified' : 'Unverified'}
+                            </button>
                             <button class="btn btn-danger btn-small" onclick="deleteCampaign('${campaign.id}')">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
@@ -4144,6 +4311,39 @@
             }
         }
 
+        async function toggleVerification(campaignId) {
+            const campaign = allCampaigns.find(c => c.id === campaignId);
+            if (!campaign || !currentUser || !currentUser.isAdmin) return;
+
+            const newVerifiedStatus = !campaign.verified;
+            
+            try {
+                showNotification('Updating verification status...', 'info');
+
+                const updatedCampaign = {
+                    ...campaign,
+                    verified: newVerifiedStatus,
+                    updatedAt: new Date()
+                };
+
+                const { setDoc, doc } = window.firebaseServices;
+                const db = window.firebaseServices.db;
+                await setDoc(doc(db, 'campaigns', campaignId), updatedCampaign);
+
+                console.log('✅ Verification status updated:', campaignId);
+                showNotification(`Campaign ${newVerifiedStatus ? 'verified' : 'unverified'} successfully!`, 'success');
+
+                allCampaigns = allCampaigns.map(c => c.id === campaignId ? updatedCampaign : c);
+                campaigns = allCampaigns.filter(c => c.status === 'active');
+                renderCampaigns();
+                if (currentUser.isAdmin) renderAdminPanel();
+
+            } catch (error) {
+                console.error('❌ Verification update failed:', error);
+                showNotification('Failed to update verification: ' + error.message, 'error');
+            }
+        }
+
         // --- Campaign Detail Page ---
         function viewCampaign(campaignId) {
             const campaign = allCampaigns.find(c => c.id === campaignId);
@@ -4169,7 +4369,8 @@
 
             // Handle multiple images in carousel
             const campaignImagesCarousel = document.getElementById('campaignImagesCarousel');
-            const images = campaign.images || (campaign.image ? [campaign.image] : []);
+            // Get images from imageUrls or images array, fallback to single image or imageUrl
+            const images = campaign.imageUrls || campaign.images || (campaign.imageUrl ? [campaign.imageUrl] : (campaign.image ? [campaign.image] : []));
 
             if (images.length > 0) {
                 campaignImagesCarousel.innerHTML = images.map((img, idx) => `
@@ -4290,65 +4491,32 @@
             const donorsList = document.getElementById('donorsList');
 
             let donors = [];
-            // Use actual donors if available
-            const hasRealDonors = campaign.donorsList && campaign.donorsList.length > 0;
-
-            if (hasRealDonors) {
+            
+            // Always prioritize actual donors from donorsList
+            if (campaign.donorsList && campaign.donorsList.length > 0) {
                 donors = campaign.donorsList;
             } else if (campaign.isSampleCampaign) {
-                // Generate sample donors if no real ones exist
-                const dummyDonorPool = [
-                    { name: 'Anonymous', amount: 5000, message: 'Praying for your recovery!' },
-                    { name: 'Aditya Malhotra', amount: 10000, message: 'Stay strong!' },
-                    { name: 'Sneha Iyer', amount: 2500, message: 'Hope this helps.' },
-                    { name: 'Anonymous', amount: 1000, message: 'Best wishes' },
-                    { name: 'Deepak Choudhary', amount: 7500, message: 'Get well soon!' },
-                    { name: 'Pooja Nair', amount: 3000, message: 'Sending positive vibes!' },
-                    { name: 'Arjun Reddy', amount: 15000, message: 'May God bless you!' },
-                    { name: 'Anonymous', amount: 2000, message: 'You are in our prayers' },
-                    { name: 'Neha Kapoor', amount: 5000, message: 'Hang in there!' },
-                    { name: 'Rohan Deshmukh', amount: 8000, message: 'Wishing you a speedy recovery' },
-                    { name: 'Priyanka Sinha', amount: 4000, message: 'Stay positive!' },
-                    { name: 'Karthik Menon', amount: 6000, message: 'Keep fighting!' },
-                    { name: 'Divya Bhatt', amount: 3500, message: 'We are with you!' },
-                    { name: 'Sanjay Kulkarni', amount: 12000, message: 'Hope for the best!' },
-                    { name: 'Tanvi Shah', amount: 2800, message: 'Prayers for your family' },
-                    { name: 'Vikram Saxena', amount: 9000, message: 'You can do this!' },
-                    { name: 'Anjali Joshi', amount: 5500, message: 'God bless you' },
-                    { name: 'Gaurav Pandey', amount: 7800, message: 'Wishing you well' },
-                    { name: 'Shruti Bose', amount: 6200, message: 'God is with you' },
-                    { name: 'Manish Tiwari', amount: 10500, message: 'Never give up!' },
-                    { name: 'Anonymous', amount: 3500, message: 'Stay blessed' },
-                    { name: 'Rajesh Kumar', amount: 4200, message: 'Prayers and support' },
-                    { name: 'Lakshmi Devi', amount: 6800, message: 'God will help you' },
-                    { name: 'Sunil Reddy', amount: 5400, message: 'Keep your spirits up' },
-                    { name: 'Ananya Sharma', amount: 7200, message: 'Wishing you strength' },
-                    { name: 'Prakash Jain', amount: 9800, message: 'You will overcome this' }
-                ];
-                const seed = campaign.id.split('_')[1] || '001';
-                const seedNum = parseInt(seed);
+                // Generate sample donors only for sample campaigns
+                donors = generateDummyDonors(campaign);
+            }
 
-                const shuffled = [...dummyDonorPool].sort((a, b) => {
-                    const hashA = (a.name.charCodeAt(0) + seedNum) % dummyDonorPool.length;
-                    const hashB = (b.name.charCodeAt(0) + seedNum) % dummyDonorPool.length;
-                    return hashA - hashB;
-                });
-                const donorCount = 8 + (seedNum % 3); // 8-10 donors
-                donors = shuffled.slice(0, donorCount);
-                donors = donors.map((d, idx) => ({
-                    ...d,
-                    date: new Date(Date.now() - ((seedNum + idx) % 7) * 24 * 60 * 60 * 1000)
-                }));
-            } else {
+            if (donors.length === 0) {
                 donorsList.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><h3>No Donations Yet</h3><p>Be the first to support this campaign!</p></div>';
                 return;
             }
+
+            // Sort donors by date (most recent first)
+            donors.sort((a, b) => {
+                const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+                const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+                return dateB - dateA;
+            });
 
             donorsList.innerHTML = donors.map(donor => `
                 <div class="donor-item">
                     <div class="donor-info">
                         <h4>${donor.name}</h4>
-                        <p style="color: var(--gray); font-size: 0.9rem;">${donor.message}</p>
+                        <p style="color: var(--gray); font-size: 0.9rem;">${donor.message || 'Thank you for your support!'}</p>
                         ${donor.date ? `<small style="color: var(--gray);">${formatDate(donor.date)}</small>` : ''}
                     </div>
                     <div class="donor-amount">₹${donor.amount.toLocaleString()}</div>
@@ -5095,7 +5263,10 @@
         // --- Add Payout Function ---
         async function addPayout() {
             const campaign = allCampaigns.find(c => c.id === currentCampaignId);
-            if (!campaign) return;
+            if (!campaign) {
+                showNotification('Campaign not found!', 'error');
+                return;
+            }
 
             const canManage = currentUser && (
                 currentUser.isAdmin || 
@@ -5111,34 +5282,53 @@
             const purpose = document.getElementById('payoutPurpose').value;
             const date = new Date(document.getElementById('payoutDate').value);
 
-            if (!amount || !purpose || !date) {
-                showNotification('Please fill in all fields.', 'warning');
+            if (!amount || !purpose || !date || isNaN(date.getTime())) {
+                showNotification('Please fill in all fields correctly.', 'warning');
                 return;
             }
 
-            const newPayout = {
-                id: `${campaign.id}-payout-${Date.now()}`,
-                amount: amount,
-                purpose: purpose,
-                date: date,
-                campaignId: campaign.id
-            };
+            try {
+                showNotification('Adding payout...', 'info');
 
-            if (!campaign.payouts) campaign.payouts = [];
-            campaign.payouts.unshift(newPayout);
-            campaign.updatedAt = new Date();
+                const newPayout = {
+                    id: `${campaign.id}-payout-${Date.now()}`,
+                    amount: amount,
+                    purpose: purpose,
+                    date: date,
+                    campaignId: campaign.id
+                };
 
-            await saveCampaignToFirestore(campaign);
-            
-            showNotification('Payout added successfully!', 'success');
-            document.getElementById('addPayoutForm').reset();
-            viewCampaign(currentCampaignId); // Reload campaign view
+                if (!campaign.payouts) campaign.payouts = [];
+                campaign.payouts.unshift(newPayout);
+                campaign.updatedAt = new Date();
+
+                // Save to Firestore
+                const { setDoc, doc } = window.firebaseServices;
+                const db = window.firebaseServices.db;
+                await setDoc(doc(db, 'campaigns', campaign.id), campaign);
+
+                // Update local array
+                const campaignIndex = allCampaigns.findIndex(c => c.id === campaign.id);
+                if (campaignIndex !== -1) {
+                    allCampaigns[campaignIndex] = campaign;
+                }
+                
+                showNotification('Payout added successfully!', 'success');
+                document.getElementById('addPayoutForm').reset();
+                viewCampaign(currentCampaignId); // Reload campaign view
+            } catch (error) {
+                console.error('Error adding payout:', error);
+                showNotification('Failed to add payout: ' + error.message, 'error');
+            }
         }
 
         // --- Add Update Function ---
         async function addUpdate() {
             const campaign = allCampaigns.find(c => c.id === currentCampaignId);
-            if (!campaign) return;
+            if (!campaign) {
+                showNotification('Campaign not found!', 'error');
+                return;
+            }
 
             const canManage = currentUser && (
                 currentUser.isAdmin || 
@@ -5154,33 +5344,65 @@
             const text = document.getElementById('updateText').value;
             const date = new Date(document.getElementById('updateDate').value);
 
-            if (!title || !text || !date) {
-                showNotification('Please fill in all fields.', 'warning');
+            if (!title || !text || !date || isNaN(date.getTime())) {
+                showNotification('Please fill in all fields correctly.', 'warning');
                 return;
             }
 
-            const newUpdate = {
-                id: `${campaign.id}-update-${Date.now()}`,
-                title: title,
-                text: text,
-                date: date,
-                campaignId: campaign.id
-            };
+            try {
+                showNotification('Adding update...', 'info');
 
-            if (!campaign.updates) campaign.updates = [];
-            campaign.updates.unshift(newUpdate);
-            campaign.updatedAt = new Date();
+                const newUpdate = {
+                    id: `${campaign.id}-update-${Date.now()}`,
+                    title: title,
+                    text: text,
+                    date: date,
+                    campaignId: campaign.id
+                };
 
-            await saveCampaignToFirestore(campaign);
-            
-            showNotification('Update added successfully!', 'success');
-            document.getElementById('addUpdateForm').reset();
-            viewCampaign(currentCampaignId); // Reload campaign view
+                if (!campaign.updates) campaign.updates = [];
+                campaign.updates.unshift(newUpdate);
+                campaign.updatedAt = new Date();
+
+                // Save to Firestore
+                const { setDoc, doc } = window.firebaseServices;
+                const db = window.firebaseServices.db;
+                await setDoc(doc(db, 'campaigns', campaign.id), campaign);
+
+                // Update local array
+                const campaignIndex = allCampaigns.findIndex(c => c.id === campaign.id);
+                if (campaignIndex !== -1) {
+                    allCampaigns[campaignIndex] = campaign;
+                }
+                
+                showNotification('Update added successfully!', 'success');
+                document.getElementById('addUpdateForm').reset();
+                viewCampaign(currentCampaignId); // Reload campaign view
+            } catch (error) {
+                console.error('Error adding update:', error);
+                showNotification('Failed to add update: ' + error.message, 'error');
+            }
         }
 
         // --- Event Listeners & Initialization ---
         document.addEventListener('DOMContentLoaded', function() {
             initializeSampleCampaigns(); // Load initial data (Firebase or fallback)
+
+            // Check for campaign parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const campaignId = urlParams.get('campaign');
+            if (campaignId) {
+                // Wait for campaigns to load, then open the specific campaign
+                setTimeout(() => {
+                    const campaign = allCampaigns.find(c => c.id === campaignId);
+                    if (campaign) {
+                        viewCampaign(campaignId);
+                    } else {
+                        showNotification('Campaign not found', 'error');
+                        showHomePage();
+                    }
+                }, 1000);
+            }
 
             // Initialize success stories carousel
             const successCarousel = document.getElementById('successStoriesCarousel');
