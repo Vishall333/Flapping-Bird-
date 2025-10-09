@@ -489,7 +489,7 @@
         }
 
         .campaign-title {
-            font-size: 1 rem;
+            font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
             color: var(--dark);
@@ -1825,7 +1825,7 @@
                     </div>
 
                     <div style="margin-bottom: 1.5rem;">
-                        <p id="detailCampaignDescription" style="color: var(--gray); font-size: 1rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;"></p>
+                        <p id="detailCampaignDescription" style="color: var(--gray); font-size: 1rem; line-height: 1.6; max-height: 4.8em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;"></p>
                     </div>
 
                     <div class="campaign-progress" style="margin-bottom: 2rem;">
@@ -2589,8 +2589,22 @@
 
         // --- Helper Functions ---
         function formatDate(date) {
-            if (!date) return '';
+            if (!date) return 'N/A';
+            
+            // Handle Firestore Timestamp objects
+            if (date && typeof date.toDate === 'function') {
+                date = date.toDate();
+            }
+            
+            // Convert to Date object if it's not already
             const d = date instanceof Date ? date : new Date(date);
+            
+            // Check if date is valid
+            if (isNaN(d.getTime())) {
+                console.warn('Invalid date:', date);
+                return 'Invalid Date';
+            }
+            
             return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         }
 
@@ -4321,16 +4335,19 @@
                 return dateB - dateA;
             });
 
-            donorsList.innerHTML = donors.map(donor => `
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <h4>${donor.name}</h4>
-                        <p style="color: var(--gray); font-size: 0.9rem;">${donor.message || 'Thank you for your support!'}</p>
-                        ${donor.date ? `<small style="color: var(--gray);">${formatDate(donor.date)}</small>` : ''}
+            donorsList.innerHTML = donors.map(donor => {
+                const donorDate = donor.date ? formatDate(donor.date) : '';
+                return `
+                    <div class="donor-item">
+                        <div class="donor-info">
+                            <h4>${donor.name}</h4>
+                            <p style="color: var(--gray); font-size: 0.9rem;">${donor.message || 'Thank you for your support!'}</p>
+                            ${donorDate ? `<small style="color: var(--gray);">${donorDate}</small>` : ''}
+                        </div>
+                        <div class="donor-amount">₹${donor.amount.toLocaleString()}</div>
                     </div>
-                    <div class="donor-amount">₹${donor.amount.toLocaleString()}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // --- Donation Process ---
@@ -4548,17 +4565,55 @@
 
         function shareCampaign() {
             if (currentCampaignId) {
-                const campaignUrl = `${window.location.origin}?campaign=${currentCampaignId}`;
+                const campaign = allCampaigns.find(c => c.id === currentCampaignId);
+                const campaignTitle = campaign ? campaign.title : 'Campaign';
+                
+                // Generate the full campaign URL with proper protocol
+                const baseUrl = window.location.origin + window.location.pathname;
+                const campaignUrl = `${baseUrl}?campaign=${currentCampaignId}`;
+                
                 if (navigator.share) {
-                    navigator.share({ title: 'Support this campaign', text: 'Help make a difference by supporting this fundraising campaign', url: campaignUrl });
-                } else {
-                    navigator.clipboard.writeText(campaignUrl).then(() => {
-                        showNotification('Campaign link copied to clipboard!', 'success');
-                    }).catch(() => {
-                        showNotification('Campaign URL: ' + campaignUrl, 'info');
+                    navigator.share({ 
+                        title: `Support: ${campaignTitle}`, 
+                        text: 'Help make a difference by supporting this fundraising campaign', 
+                        url: campaignUrl 
+                    }).catch(err => {
+                        console.log('Share failed:', err);
+                        // Fallback to copy
+                        copyToClipboard(campaignUrl);
                     });
+                } else {
+                    copyToClipboard(campaignUrl);
                 }
             }
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification('Campaign link copied to clipboard!', 'success');
+                }).catch(() => {
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showNotification('Campaign link copied to clipboard!', 'success');
+            } catch (err) {
+                showNotification('Campaign URL: ' + text, 'info');
+            }
+            document.body.removeChild(textArea);
         }
 
         // --- Modals & Notifications ---
@@ -5201,16 +5256,25 @@
             const urlParams = new URLSearchParams(window.location.search);
             const campaignId = urlParams.get('campaign');
             if (campaignId) {
-                // Wait for campaigns to load, then open the specific campaign
-                setTimeout(() => {
+                // Function to check and open campaign
+                const openCampaignFromUrl = () => {
                     const campaign = allCampaigns.find(c => c.id === campaignId);
                     if (campaign) {
                         viewCampaign(campaignId);
-                    } else {
+                        // Clear the URL parameter after opening
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } else if (allCampaigns.length > 0) {
+                        // Campaigns loaded but not found
                         showNotification('Campaign not found', 'error');
                         showHomePage();
+                    } else {
+                        // Wait a bit more for campaigns to load
+                        setTimeout(openCampaignFromUrl, 500);
                     }
-                }, 1000);
+                };
+                
+                // Start checking
+                setTimeout(openCampaignFromUrl, 500);
             }
 
             // Initialize success stories carousel
@@ -5264,5 +5328,55 @@
             }
         });
     </script>
+
+<script>
+// ======== Firebase Campaign Loading Fix ==========
+function showLoading() {
+  const el = document.getElementById('campaignDetail');
+  if (el) {
+    el.innerHTML = '<div style="padding: 3rem; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#00b386;"></i><p style="margin-top:1rem;color:#555;">Loading campaign details...</p></div>';
+  }
+}
+
+async function loadCampaignData() {
+  const params = new URLSearchParams(window.location.search);
+  const campaignId = params.get('campaign');
+  if (!campaignId) return;
+
+  showLoading();
+
+  try {
+    const docRef = doc(db, "campaigns", campaignId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      renderCampaign(docSnap.data());
+    } else {
+      document.getElementById('campaignDetail').innerHTML =
+        '<div style="padding: 3rem; text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;color:#ff3838;"></i><p style="margin-top:1rem;color:#555;">Campaign not found or may have been removed.</p></div>';
+    }
+  } catch (e) {
+    console.error(e);
+    document.getElementById('campaignDetail').innerHTML =
+      '<div style="padding: 3rem; text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;color:#ff3838;"></i><p style="margin-top:1rem;color:#555;">Error loading campaign details.</p></div>';
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadCampaignData();
+});
+</script>
+<style>
+/* ======== Truncate Campaign Title for Mobile ========== */
+.campaign-detail-title {
+  font-size: 1.6rem !important;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
+
 </body>
 </html>
