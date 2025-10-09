@@ -5330,41 +5330,31 @@
     </script>
 
 <script>
-// ======== Firebase Campaign Loading Fix ==========
-function showLoading() {
-  const el = document.getElementById('campaignDetail');
-  if (el) {
-    el.innerHTML = '<div style="padding: 3rem; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#00b386;"></i><p style="margin-top:1rem;color:#555;">Loading campaign details...</p></div>';
+
+<script>
+// Lightweight loading UI for shared campaign links (safe — doesn't call Firebase directly)
+(function() {
+  function showLoading() {
+    const el = document.getElementById('campaignDetail');
+    if (el) {
+      el.innerHTML = '<div style="padding: 3rem; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#00b386;"></i><p style="margin-top:1rem;color:#555;">Loading campaign details...</p></div>';
+    }
   }
-}
-
-async function loadCampaignData() {
-  const params = new URLSearchParams(window.location.search);
-  const campaignId = params.get('campaign');
-  if (!campaignId) return;
-
-  showLoading();
-
   try {
-    const docRef = doc(db, "campaigns", campaignId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      renderCampaign(docSnap.data());
-    } else {
-      document.getElementById('campaignDetail').innerHTML =
-        '<div style="padding: 3rem; text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;color:#ff3838;"></i><p style="margin-top:1rem;color:#555;">Campaign not found or may have been removed.</p></div>';
+    const params = new URLSearchParams(window.location.search);
+    const campaignId = params.get('campaign');
+    if (campaignId) {
+      // Show loading UI immediately while the app fetches campaigns asynchronously
+      showLoading();
+      // Do NOT attempt direct Firebase calls here — the main app handles fetching & opening the campaign.
     }
   } catch (e) {
-    console.error(e);
-    document.getElementById('campaignDetail').innerHTML =
-      '<div style="padding: 3rem; text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;color:#ff3838;"></i><p style="margin-top:1rem;color:#555;">Error loading campaign details.</p></div>';
+    // silent fail (browser compatibility)
+    console.warn('URL parse or loading UI failed', e);
   }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  loadCampaignData();
-});
+})();
 </script>
+
 <style>
 /* ======== Truncate Campaign Title for Mobile ========== */
 .campaign-detail-title {
@@ -5377,6 +5367,5 @@ window.addEventListener("DOMContentLoaded", () => {
   text-overflow: ellipsis;
 }
 </style>
-
 </body>
 </html>
