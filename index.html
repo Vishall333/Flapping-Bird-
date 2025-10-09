@@ -5367,5 +5367,30 @@
   text-overflow: ellipsis;
 }
 </style>
+
+<script>
+function renderCampaignImages(images, title) {
+    if (!images || images.length === 0) {
+        return `<img src="default-placeholder.jpg" class="campaign-image" alt="${title}">`;
+    }
+    return images.map(img => `<img src="${img}" class="campaign-image" alt="${title}">`).join('');
+}
+</script>
+
+
+<script>
+function renderDetailImages(images) {
+    const container = document.getElementById('campaignImagesCarousel');
+    container.innerHTML = '';
+    if (!images || images.length === 0) {
+        container.innerHTML = `<img src="default-placeholder.jpg" style="width:100%;height:100%;object-fit:cover;">`;
+        return;
+    }
+    images.forEach(url => {
+        container.innerHTML += `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+    });
+}
+</script>
+
 </body>
 </html>
